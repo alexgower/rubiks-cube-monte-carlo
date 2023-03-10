@@ -2,7 +2,9 @@
 
 # - Check rotations on real Rubik's Cube
 
-# ---
+# - make energy function faster (strip half of if statements and remove half?)
+
+# - make mode where only introduce swaps after cetain temperature
 
 
 

@@ -6,6 +6,8 @@
 
 # - get head around using 2 relaxation iterations when using relaxation_iterations_finder_mode
 
+# - todo 3 to 2 taus
+
 # ---
 
 
@@ -19,7 +21,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     # Notes:
     # - relaxation_iterations_vector: vector of maximum_iterations to use for each temperature in the temperature vector
     # [default will be tau(T) = tau(T_1)*[(tau(T_0)/tau(T_1)]^((T1-T)/(T_1-T_0))]
-    # [where tau(T_1) = |R_{f,l,o}| = number of generators of Rubik's rotation group and tau(T_0) = 1000]
+    # [where tau(T_1) = |R_{f,l,o}| = number of generators of Rubik's rotation group and tau(T_0) = 1000] - TODO CHANGE WITH cube.L
     # - average_sample_size: number of E and E^2 samples to taken in average calculations for each temperature.
     # - relaxation_iterations_finder_mode: If true, will use flat maximum iterations of 10,000 for every temperature, and will record
     # and return the number of iterations needed to relax at each temperature
@@ -41,7 +43,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     # Create relaxation_iterations_vector
     if relaxation_iterations_finder_mode==false && isnothing(relaxation_iterations_vector)
         # Set default relaxation_iterations_vector if none provided and relaxation_iterations_finder_mode not on
-        tau_0 = 500
+        tau_0 = 5000
 
         # Number of generators of size-L Rubik's cube is number of faces * number of layers per face * number of
         # rotation orientations per layer = 6 * eil((L-1)/2) * 2
@@ -50,10 +52,10 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
         relaxation_iterations_vector = [tau_1 * (tau_0/tau_1)^((T1-T)/(T1-T0)) for T in temperature_vector]
 
     else
-        # If relaxation_iterations_finder_mode is on, set max_iterations as 10,000 as a constant
-        relaxation_iterations_vector = [5000 for T in temperature_vector]
-        tau_0 = 5000
-        tau_1 = 5000
+        # If relaxation_iterations_finder_mode is on, set max_iterations as 100,000 as a constant
+        relaxation_iterations_vector = [100000 for T in temperature_vector]
+        tau_0 = 100000
+        tau_1 = 100000
     end
 
 
@@ -65,6 +67,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     # Metropolis+Swap algorithm will terminate when either the configuration correlation function (compared with t=0
     # configuration) has dropped to e^(-2) (i.e. 2 relaxation times) or 10*tau_1 (which should be a reasonable upper bound  to this) 
     # iterations have been reached
+    # TODO re add verbose
     run_metropolis_swap_algorithm!(cube, 0.0; swap_move_probability=0.0, maximum_iterations=2*tau_1, verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-2))
 
     if verbose_annealing
@@ -81,6 +84,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
 
     if relaxation_iterations_finder_mode
         relaxation_iterations_by_temperature = zeros(length(temperature_vector))
+        accepted_candidates_by_temperature = zeros(length(temperature_vector))
         final_configuration_correlation_function_by_temperature = zeros(length(temperature_vector))
     end
 
@@ -91,7 +95,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
         beta = 1/T
 
         if verbose_annealing
-            printstyled("Currently at Temperature:  $T [$(temperature_index)/$(length(temperature_vector))] \n"; underline=true)
+            printstyled("Currently at Temperature:  $T [$(temperature_index)/$(length(temperature_vector))] (P_swap=$swap_move_probability, L=$(cube.L))\n"; underline=true)
         end
 
 
@@ -101,7 +105,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
         # Run Metropolis+Swap algorithm to relax Rubik's cube at this temperature
         # Metropolis+Swap algorithm will terminate when either the configuration correlation function (compared with t=0
         # configuration) has dropped to e^(-2) (i.e. 2 relaxation times) or 2*relation_iterations have been reached
-        relaxation_converged, final_configuration_correlation_function, final_iteration_number = run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability, maximum_iterations=2*relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-2))
+        relaxation_converged, final_configuration_correlation_function, final_iteration_number, final_accepted_candidates_number = run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability, maximum_iterations=2*relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-3))
 
 
 
@@ -127,6 +131,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
 
         if relaxation_iterations_finder_mode
             relaxation_iterations_by_temperature[temperature_index] = final_iteration_number/2 # (divide by 2 as relaxation stage uses 2 relaxation_iterations before stopping)
+            accepted_candidates_by_temperature[temperature_index] = final_accepted_candidates_number/2 # (divide by 2 as relaxation stage uses 2 relaxation_iterations before stopping)
             final_configuration_correlation_function_by_temperature[temperature_index] = final_configuration_correlation_function # (these should be around e^-2 not e^-1)
         end
 
@@ -135,6 +140,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
             println("Average Energy: $(E_average_by_temperature[temperature_index])")
             println("-Average Energy/Solved Configuration Energy: $(-E_average_by_temperature[temperature_index]/solved_configuration_energy(cube))")
             println("2*Relaxation Iterations: $final_iteration_number")
+            println("Accepted Candidates: $final_accepted_candidates_number")
             println("Relaxation Converged?: $relaxation_converged")
             println("Final Configuration Correlation Function (for t=2*tau): $final_configuration_correlation_function")
         end
@@ -143,7 +149,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     end
 
     # Return results as dictionary
-    return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, relaxation_iterations_by_temperature, final_configuration_correlation_function_by_temperature 
+    return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature 
 
 
 end
