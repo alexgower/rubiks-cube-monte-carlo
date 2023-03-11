@@ -13,7 +13,7 @@
 
 include("rubiks_cube.jl")
 
-function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, relaxation_iterations_vector=nothing, average_sample_size::Int64=500, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, relaxation_iterations_finder_mode::Bool=false)
+function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, relaxation_iterations_vector=nothing, average_sample_size::Int64=500, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, relaxation_iterations_finder_mode::Bool=false)
 
     # Runs temperature anneal on Rubik's Cube using the Metropolis+Swap algorithm at each temperature to
     # relax and probe properties of the cube.
@@ -53,9 +53,9 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
 
     else
         # If relaxation_iterations_finder_mode is on, set max_iterations as 100,000 as a constant
-        relaxation_iterations_vector = [100000 for T in temperature_vector]
-        tau_0 = 100000
-        tau_1 = 100000
+        relaxation_iterations_vector = [5000 for T in temperature_vector]
+        tau_0 = 5000
+        tau_1 = 5000
     end
 
 
@@ -95,7 +95,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
         beta = 1/T
 
         if verbose_annealing
-            printstyled("Currently at Temperature:  $T [$(temperature_index)/$(length(temperature_vector))] (P_swap=$swap_move_probability, L=$(cube.L))\n"; underline=true)
+            printstyled("Currently at Temperature:  $T [$(temperature_index)/$(length(temperature_vector))] (P_swap=$swap_move_probability, T_swap=$T_swap, L=$(cube.L))\n"; underline=true)
         end
 
 
@@ -105,7 +105,19 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
         # Run Metropolis+Swap algorithm to relax Rubik's cube at this temperature
         # Metropolis+Swap algorithm will terminate when either the configuration correlation function (compared with t=0
         # configuration) has dropped to e^(-2) (i.e. 2 relaxation times) or 2*relation_iterations have been reached
-        relaxation_converged, final_configuration_correlation_function, final_iteration_number, final_accepted_candidates_number = run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability, maximum_iterations=2*relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-3))
+
+        # Only include swap moves below a certain temperature T_swap
+        if T <= T_swap && swap_move_probability!=0.0
+            printstyled("Now using swap moves \n", color=:blue)
+            swap_move_probability_at_this_temperature = swap_move_probability
+            verbose_metropolis_swap_at_this_temperature = false
+        else
+            swap_move_probability_at_this_temperature = 0.0
+            verbose_metropolis_swap_at_this_temperature = false
+
+        end
+
+        relaxation_converged, final_configuration_correlation_function, final_iteration_number, final_accepted_candidates_number = run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=2*relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap_at_this_temperature, configuration_correlation_convergence_criteria=exp(-3))
 
 
 
@@ -120,7 +132,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
             # Metropolis+Swap algorithm will terminate when either the configuration correlation function (compared with
             # t=0 configuration) has dropped to e^(-1) (i.e. 1 relaxation time) or tau(T) (which should be a reasonable
             # upper bound to this) iterations have been reached
-            run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability, maximum_iterations=relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-1))
+            run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap_at_this_temperature, configuration_correlation_convergence_criteria=exp(-1))
 
             E_running_total += energy(cube)
             E_squared_running_total += energy(cube)^2

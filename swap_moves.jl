@@ -203,7 +203,7 @@ function opposite_rotate_cubelets!(cube::RubiksCube, cubelet_subsystem_label::St
     # Validation:
     # Only allow corners or central edges as subystems in this function, and only allow central edges for odd L cubes (as don't exist for even L cubes)
     if !(cubelet_subsystem_label=="sigma_" || cubelet_subsystem_label=="tau_") || (cubelet_subsystem_label=="tau_" && iseven(cube.L))
-        throw(ArgumentError("This cubelet subsystem label doesn't make sense for this cube, or doesn't make sense to have an opposite rotation swap move"))
+        throw(ArgumentError("This cubelet subsystem label ($cubelet_subsystem_label) doesn't make sense for this cube, or doesn't make sense to have an opposite rotation swap move"))
     end
     
     cubelet_subsystem = get_cubelet_subsystem(cube,cubelet_subsystem_label)
@@ -288,8 +288,13 @@ function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reve
         else # O_{X,(a,b)} case
             # Give random cubelet_subsystem_label, and random cubelet indices (within number_of_cubelets_in_subsystem)
 
-            rotatable_cubelet_subsystem_labels = ["sigma_", "tau_"]
-            cubelet_subsystem_label = rotatable_cubelet_subsystem_labels[rand(1:2)]
+            if isodd(cube.L)
+                rotatable_cubelet_subsystem_labels = ["sigma_", "tau_"]
+                cubelet_subsystem_label = rotatable_cubelet_subsystem_labels[rand(1:2)]
+            else
+                cubelet_subsystem_label ="sigma_"
+            end
+
 
             if cubelet_subsystem_label=="sigma_"
                 number_of_cubelets_in_subsystem = 8

@@ -129,23 +129,26 @@ function energy(cube::RubiksCube)
         for i in 1:cube.L
             for j in 1:cube.L
 
-                # Add up nearest neighbour (if exists) coupling energy (=-1 if same spin as current site, else 0)
-                if (i-1) >= 1
-                    if face(cube, face_number)[i-1, j] == face(cube,face_number)[i, j]
-                        E -= 1
-                    end
-                end
+                # Note can remove up and left nearest neighbour bond checks as will have already been included once 
+                # from another facelet (hence we don't need the factor of 1/2 in energy at the end)
+
+                # # Add up nearest neighbour (if exists) coupling energy (=-1 if same spin as current site, else 0)
+                # if (i-1) >= 1
+                #     if face(cube, face_number)[i-1, j] == face(cube,face_number)[i, j]
+                #         E -= 1
+                #     end
+                # end
+
+                # # Add left nearest neighbour (if exists) coupling energy (=-1 if same spin as current site, else 0)
+                # if (j-1) >= 1
+                #     if face(cube, face_number)[i, j-1] == face(cube, face_number)[i, j]
+                #         E -= 1
+                #     end
+                # end
 
                 # Add down nearest neighbour (if exists) coupling energy (=-1 if same spin as current site, else 0)
                 if (i+1) <= cube.L
                     if face(cube, face_number)[i+1, j] == face(cube, face_number)[i, j]
-                        E -= 1
-                    end
-                end
-
-                # Add left nearest neighbour (if exists) coupling energy (=-1 if same spin as current site, else 0)
-                if (j-1) >= 1
-                    if face(cube, face_number)[i, j-1] == face(cube, face_number)[i, j]
                         E -= 1
                     end
                 end
@@ -155,15 +158,14 @@ function energy(cube::RubiksCube)
                     if face(cube, face_number)[i, j+1] == face(cube, face_number)[i, j]
                         E -= 1
                     end
+
                 end
 
             end
         end
     end
 
-    # Finally return total energy value for the whole Rubik's cube 
-    # This is equal to HALF of this sum which double counts bonds
-    return Int(0.5*E)
+    return E
 end
 
 # Function (just for convenience) to get energy of solved configuration of RubiksCube of this size left

@@ -8,6 +8,8 @@
 
 # - use ensemble work
 
+# - todo maybe make T_swap vector?
+
 # ---
 
 using Plots
@@ -17,7 +19,7 @@ include("monte_carlo.jl")
 include("anneal.jl")
 include("swap_moves.jl")
 
-@inbounds @fastmath function swap_prob_anneal_experiment(simulation_name::String, L::Int64, swap_move_probabilities::Vector{Float64}, T_1::Float64, T_0::Float64, N_T::Int64)
+@inbounds @fastmath function swap_prob_anneal_experiment(simulation_name::String, L::Int64, swap_move_probabilities::Vector{Float64}, T_swap::Float64, T_1::Float64, T_0::Float64, N_T::Int64)
 
 
     # Cover everything in try/except clause so can print errors to file if running remotely
@@ -35,7 +37,7 @@ include("swap_moves.jl")
 
             # Create a Rubik's cube object and run annealing function on it
             cube = RubiksCube(L)
-            temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature = anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, verbose_annealing=true, relaxation_iterations_finder_mode=true)
+            temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature = anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, relaxation_iterations_finder_mode=true)
 
             println("Final Configuration:")
             println(cube.configuration)
@@ -58,7 +60,7 @@ include("swap_moves.jl")
                 touch(joinpath("results",simulation_name_to_use))
 
                 open(joinpath("results",simulation_name_to_use), "w") do simulation_file
-                    write(simulation_file, "Simulation:L=$L&P_s=$swap_move_probability&T_1=$T_1&T_0=$T_0&N_T=$N_T \n")
+                    write(simulation_file, "Simulation:L=$L, P_s=$swap_move_probability, T_swap=$T_swap, T_1=$T_1, T_0=$T_0, N_T=$N_T \n")
                     write(simulation_file, "Temperature T, <E>(T), <-E/E_0>(T), <E^2>(T), Relaxation Iterations=tau(T), Accepted Candidates A(T), Final Configuration Correlation Function Value \n")
                     
                     for temperature_index in 1:N_T+1
@@ -85,7 +87,8 @@ include("swap_moves.jl")
         try
 
             plot(temperature_vector, normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Solved Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
-            
+            vline!([T_swap], linestyle=:dash)
+
             savefig("results/$simulation_name.png")
 
         catch ex

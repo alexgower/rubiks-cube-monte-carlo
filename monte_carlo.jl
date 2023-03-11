@@ -28,7 +28,7 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
     if verbose
         println("Candidate Configuraiton: ")
         println(cube.configuration)
-        println("Swap Move Information: ")
+        println("Candidate Generating Rotation Information: ")
         println(candidate_reversing_information[1]) 
         println(candidate_reversing_information[2])
     end
