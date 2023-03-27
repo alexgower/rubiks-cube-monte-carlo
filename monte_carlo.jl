@@ -1,12 +1,3 @@
-# --- To Do: ---
-
-# - properly check all array mutation not assignment is done correctly
-
-# - check acceptance rate for efficiency
-
-# ----
-
-
 include("rubiks_cube.jl")
 include("swap_moves.jl")
 
@@ -57,13 +48,13 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
             end
         end
 
-        # Also return accepted_candidates_increase = 1 (TODO remove possibly)
+        # Also return accepted_candidates_increase = 1
         return 1
     else
         # Otherwise we reject the candidate configuration and revert it to the original configuraiton
-        candidate_generating_function!(cube;reverse=true,candidate_reversing_information)
+        candidate_generating_function!(cube;reverse=true,candidate_reversing_information=candidate_reversing_information)
 
-        # Also return accepted_candidates_increase = 0 (TODO remove possibly)
+        # Also return accepted_candidates_increase = 0
         return 0
     end
 end
