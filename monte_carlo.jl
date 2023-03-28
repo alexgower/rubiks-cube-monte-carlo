@@ -3,7 +3,7 @@ include("swap_moves.jl")
 
 
 function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!::Function, beta::Float64, verbose::Bool)
-    # Perform Metropolis algorithm Monte Carlo Step on cube and candidate generated configurations at given beta---
+    # Perform Metropolis algorithm Monte Carlo Step on cube and candidate generated configurations at given beta
     # i.e. here we either reverse the candidate_generating_function's action on the cube (i.e. reject candidate configuration) or not
 
     current_energy = energy(cube)
@@ -13,15 +13,16 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
         println(cube.configuration)
     end
 
-    candidate_reversing_information = candidate_generating_function!(cube) # This function just returns 'candidate_reversing_information' after modifying cube so we know how to reverse modification
+    # Generate candidate configuration and calculate it's energy
+    # This function just returns 'candidate_reversing_information' after modifying cube so we know how to reverse modification
+    candidate_reversing_information = candidate_generating_function!(cube) 
     candidate_energy = energy(cube)
 
     if verbose
         println("Candidate Configuraiton: ")
         println(cube.configuration)
         println("Candidate Generating Rotation Information: ")
-        println(candidate_reversing_information[1]) 
-        println(candidate_reversing_information[2])
+        println(candidate_reversing_information) 
     end
 
     # Implement the acceptance distribution A(x'|x) = min(1, P(x')/P(x)) by calculating the acceptance
@@ -74,7 +75,7 @@ function run_metropolis_swap_algorithm!(cube::RubiksCube, beta::Float64; swap_mo
 
     # Make initial count variable and variable to count accepted candidates
     current_iteration = 0
-    accepted_candidates = 0 # (TODO remove possibly)
+    accepted_candidates = 0
 
     # Make initial configuration correlation function convergence scheme parameters
     initial_cube = RubiksCube(cube.L)
@@ -83,11 +84,10 @@ function run_metropolis_swap_algorithm!(cube::RubiksCube, beta::Float64; swap_mo
 
     while (current_iteration <= maximum_iterations) && (current_configuration_correlation_function_value > configuration_correlation_convergence_criteria)
 
-
         # Pick a random number between 0 and 1, 
         # If it is smaller than the swap_move_probability then we propose a swap move candidate configuration, else we propose a slice rotated candidate configuration
         if rand() < swap_move_probability
-            candidate_generating_function = random_swap_move!
+            candidate_generating_function! = random_swap_move!
             
             if verbose
                 printstyled("Proposed swap move \n"; color=:blue)
@@ -95,7 +95,7 @@ function run_metropolis_swap_algorithm!(cube::RubiksCube, beta::Float64; swap_mo
         else
             # (The random_rotate() function within the Rubik's Cube class just implements proposal probability g(x'|x) = 1/|R_{f,l,o}| for
             # whatever sized Rubik's cube we are dealing with)
-            candidate_generating_function = random_rotate!
+            candidate_generating_function! = random_rotate!
         end
 
 
@@ -104,7 +104,7 @@ function run_metropolis_swap_algorithm!(cube::RubiksCube, beta::Float64; swap_mo
         end
 
         # Now do a Monte Carlo timestep using this candidate configuration at this beta
-        accepted_candidates_increase = monte_carlo_timestep!(cube, candidate_generating_function, beta, verbose)
+        accepted_candidates_increase = monte_carlo_timestep!(cube, candidate_generating_function!, beta, verbose)
 
         # Update iteration number, accepted_candidates and configuration correlation function and go to next iteration
         current_iteration += 1

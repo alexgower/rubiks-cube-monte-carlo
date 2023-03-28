@@ -1,3 +1,7 @@
+# ----------
+
+using Combinatorics
+
 function test_move_reversals(cube::RubiksCube)
 
     println("3-CYCLE SWAP MOVES TEST ---")
@@ -74,3 +78,5 @@ function test_move_reversals(cube::RubiksCube)
     end
 
 end
+
+# ----------
