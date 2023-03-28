@@ -80,19 +80,19 @@ function get_cubelet_subsystem(cube::RubiksCube,cubelet_subsystem_label::String)
                             [view(cube.configuration[4],cube.L,1+i), view(cube.configuration[3],1,1+i)],
                             [view(cube.configuration[4],cube.L,cube.L-i), view(cube.configuration[3],1,cube.L-i)],
                             [view(cube.configuration[5],1+i,cube.L), view(cube.configuration[1],1+i,1)],
-                            [view(cube.configuration[5],cube.L,cube.L), view(cube.configuration[1],cube.L,1)],
+                            [view(cube.configuration[5],cube.L-i,cube.L), view(cube.configuration[1],cube.L-i,1)],
                             [view(cube.configuration[1],1+i,cube.L), view(cube.configuration[6],1+i,1)],
-                            [view(cube.configuration[1],cube.L,cube.L), view(cube.configuration[6],cube.L,1)],
+                            [view(cube.configuration[1],cube.L-i,cube.L), view(cube.configuration[6],cube.L-i,1)],
                             [view(cube.configuration[5],1,1+i), view(cube.configuration[2],1+i,1)],
                             [view(cube.configuration[5],1,cube.L-i), view(cube.configuration[2],cube.L-i,1)],
-                            [view(cube.configuration[6],1,1+i), view(cube.configuration[2],1,cube.L-i)],
+                            [view(cube.configuration[6],1,1+i), view(cube.configuration[2],cube.L-i,cube.L)],
                             [view(cube.configuration[6],1,cube.L-i), view(cube.configuration[2],1+i,cube.L)],
                             [view(cube.configuration[4],1+i,cube.L), view(cube.configuration[6],cube.L,1+i)],
-                            [view(cube.configuration[4],1,cube.L-i), view(cube.configuration[6],cube.L,cube.L-i)],
+                            [view(cube.configuration[4],cube.L-i,cube.L), view(cube.configuration[6],cube.L,cube.L-i)],
                             [view(cube.configuration[4],1+i,1), view(cube.configuration[5],cube.L,cube.L-i)],
                             [view(cube.configuration[4],cube.L-i,1), view(cube.configuration[5],cube.L,1+i)],
-                            [view(cube.configuration[6],1+i,cube.L), view(cube.configuration[3],1,cube.L-i)],
-                            [view(cube.configuration[6],1,cube.L-i), view(cube.configuration[3],1+i,cube.L)],
+                            [view(cube.configuration[6],1+i,cube.L), view(cube.configuration[3],cube.L-i,cube.L)],
+                            [view(cube.configuration[6],cube.L-i,cube.L), view(cube.configuration[3],1+i,cube.L)],
                             [view(cube.configuration[5],1+i,1), view(cube.configuration[3],cube.L-i,1)],
                             [view(cube.configuration[5],cube.L-i,1), view(cube.configuration[3],1+i,1)]]
     
@@ -314,8 +314,10 @@ function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reve
         cubelet_subsystem_label, random_cubelet_indices = candidate_reversing_information
         
         if length(random_cubelet_indices) == 3 # P_{X,(a,b,c)} case
-            # Just 3-cycle in opposite direction i.e. [2,3,1] --> [1,2,3] back to normal
-            three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[2], random_cubelet_indices[3], random_cubelet_indices[1])
+            # Now just want 3-cycle in opposite direction therefore just define the cubelets in an odd signature order e.g. [1,3,2]
+            # i.e. before we did [1,2,3] ---> [3,1,2]
+            # and now we are saing [(1),(3),(2)] = [3,2,1] --> [1,3,2] = [(2),(1),(3)]
+            three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[3], random_cubelet_indices[2])
 
         else # O_{X,(a,b)} case
             # Just reverse cubelet_index order so previously anticlockwise rotated cubelet is rotated clockwise by same amount and vice versa

@@ -165,12 +165,16 @@ function energy(cube::RubiksCube)
         end
     end
 
-    return E
+    # TODO this uses Oli energy definition, I think we should remove the 2*
+    return 2*E
+    # return E
 end
 
 # Function (just for convenience) to get energy of solved configuration of RubiksCube of this size left
 function solved_configuration_energy(cube::RubiksCube)
-    return -12*cube.L*(cube.L - 1)
+    # TODO this uses Oli energy definition, I think we should remove the 2*
+    return 2*-12*cube.L*(cube.L - 1)
+    # return -12*cube.L*(cube.L - 1)
 end
 
 # Function (just for convenience) to get infinite temperature energy of RubiksCube of this size

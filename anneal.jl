@@ -8,6 +8,8 @@
 
 # - todo 3 to 2 taus
 
+# - double check orientation swaps reverse correctly 
+
 # ---
 
 
@@ -53,9 +55,10 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
 
     else
         # If relaxation_iterations_finder_mode is on, set max_iterations as 100,000 as a constant
-        relaxation_iterations_vector = [5000 for T in temperature_vector]
-        tau_0 = 5000
-        tau_1 = 5000
+        fixed_tau = 100000
+        relaxation_iterations_vector = [fixed_tau for T in temperature_vector]
+        tau_0 = fixed_tau
+        tau_1 = fixed_tau
     end
 
 
@@ -106,18 +109,15 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
         # Metropolis+Swap algorithm will terminate when either the configuration correlation function (compared with t=0
         # configuration) has dropped to e^(-2) (i.e. 2 relaxation times) or 2*relation_iterations have been reached
 
-        # Only include swap moves below a certain temperature T_swap
+        # Only include swap moves below a certain temperature T_swap 
         if T <= T_swap && swap_move_probability!=0.0
-            printstyled("Now using swap moves \n", color=:blue)
+            println("Using swap moves \n")
             swap_move_probability_at_this_temperature = swap_move_probability
-            verbose_metropolis_swap_at_this_temperature = false
         else
             swap_move_probability_at_this_temperature = 0.0
-            verbose_metropolis_swap_at_this_temperature = false
-
         end
 
-        relaxation_converged, final_configuration_correlation_function, final_iteration_number, final_accepted_candidates_number = run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=2*relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap_at_this_temperature, configuration_correlation_convergence_criteria=exp(-3))
+        relaxation_converged, final_configuration_correlation_function, final_iteration_number, final_accepted_candidates_number = run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=2*relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-2))
 
 
 
@@ -153,6 +153,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
             println("-Average Energy/Solved Configuration Energy: $(-E_average_by_temperature[temperature_index]/solved_configuration_energy(cube))")
             println("2*Relaxation Iterations: $final_iteration_number")
             println("Accepted Candidates: $final_accepted_candidates_number")
+            println("Acceptance Rate: $((final_accepted_candidates_number/final_iteration_number)*100) %")
             println("Relaxation Converged?: $relaxation_converged")
             println("Final Configuration Correlation Function (for t=2*tau): $final_configuration_correlation_function")
         end
