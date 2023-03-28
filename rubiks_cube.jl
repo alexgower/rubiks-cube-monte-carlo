@@ -2,16 +2,15 @@
 
 # - Check rotations on real Rubik's Cube
 
-# - make energy function faster (strip half of if statements and remove half?)
+# - TODO change face indices to 1-indexed in paper?
 
-# - make mode where only introduce swaps after cetain temperature
-
+# ---
 
 
 # ------ RubiksCube Struct and Configuration ------
 
 mutable struct RubiksCube
-    # An L x L x L Rubik's Cube type has a: size and configuration
+    # An L x L x L Rubik's Cube type has a size and configuration
     # (these are initialised together so won't be inconsistent unless reassign L maliciously)
 
     # Each facelet can have one of 6 spins (colours):
@@ -75,8 +74,7 @@ function get_cubelet_subsystems_labels(L::Int64)
 end
 
 
-
-function face(cube::RubiksCube, face_number::Int64)
+@inline function face(cube::RubiksCube, face_number::Int64)
     # Function to get an individual face_number's face configuration from a RubiksCube
     return cube.configuration[face_number]
 end
@@ -245,7 +243,7 @@ function rotate!(cube::RubiksCube, f::Int64, l::Int64, o::Int64)
         end
 
         # Rotations only make sense if l+1 (accounting for 0 index for l) is less than (n+1)/2 (i.e. the middle layer)
-        # (This also accounts for not rotating central facelets for odd-n cubes so is consistent for both even and odd cases )
+        # (This also accounts for not rotating central facelets for odd-n cubes so is consistent for both even and odd cases)
         # Also l must be positive and f must be =< 6 and f must be >=1 and o must be 0 or 1
         if !(l+1 < (cube.L + 1)/2) || (l < 0) || (f > 6) || (f < 1) || !(o == 0 || o == 1)
             throw(ArgumentError("These rotation indices f,l,o do not make sense"))
