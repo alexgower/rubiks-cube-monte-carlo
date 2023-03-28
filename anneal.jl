@@ -6,8 +6,6 @@
 
 # - get head around using 2 relaxation iterations when using relaxation_iterations_finder_mode
 
-# - todo 3 to 2 taus
-
 # - double check orientation swaps reverse correctly 
 
 # ---
@@ -42,10 +40,13 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     T0 = temperature_vector[end]
 
 
+    big_tau = 5000
+
     # Create relaxation_iterations_vector
     if relaxation_iterations_finder_mode==false && isnothing(relaxation_iterations_vector)
         # Set default relaxation_iterations_vector if none provided and relaxation_iterations_finder_mode not on
-        tau_0 = 5000
+        # TODO this should vary with L
+        tau_0 = big_tau
 
         # Number of generators of size-L Rubik's cube is number of faces * number of layers per face * number of
         # rotation orientations per layer = 6 * eil((L-1)/2) * 2
@@ -55,10 +56,9 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
 
     else
         # If relaxation_iterations_finder_mode is on, set max_iterations as 100,000 as a constant
-        fixed_tau = 100000
-        relaxation_iterations_vector = [fixed_tau for T in temperature_vector]
-        tau_0 = fixed_tau
-        tau_1 = fixed_tau
+        relaxation_iterations_vector = [big_tau for T in temperature_vector]
+        tau_0 = big_tau
+        tau_1 = big_tau
     end
 
 
@@ -71,7 +71,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     # configuration) has dropped to e^(-2) (i.e. 2 relaxation times) or 10*tau_1 (which should be a reasonable upper bound  to this) 
     # iterations have been reached
     # TODO re add verbose
-    run_metropolis_swap_algorithm!(cube, 0.0; swap_move_probability=0.0, maximum_iterations=2*tau_1, verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-2))
+    run_metropolis_swap_algorithm!(cube, 0.0; swap_move_probability=0.0, maximum_iterations=2*tau_1, verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-10))
 
     if verbose_annealing
         println("Mixed cube")
@@ -132,7 +132,8 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
             # Metropolis+Swap algorithm will terminate when either the configuration correlation function (compared with
             # t=0 configuration) has dropped to e^(-1) (i.e. 1 relaxation time) or tau(T) (which should be a reasonable
             # upper bound to this) iterations have been reached
-            run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap_at_this_temperature, configuration_correlation_convergence_criteria=exp(-1))
+            # TODO change exp(-1)
+            run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-1))
 
             E_running_total += energy(cube)
             E_squared_running_total += energy(cube)^2

@@ -26,6 +26,9 @@
 
 using StatsBase
 
+# TODO remove
+using Combinatorics
+
 include("rubiks_cube.jl")
 
 function get_cubelet_subsystem(cube::RubiksCube,cubelet_subsystem_label::String)
@@ -292,7 +295,7 @@ function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reve
                 rotatable_cubelet_subsystem_labels = ["sigma_", "tau_"]
                 cubelet_subsystem_label = rotatable_cubelet_subsystem_labels[rand(1:2)]
             else
-                cubelet_subsystem_label ="sigma_"
+                cubelet_subsystem_label = "sigma_"
             end
 
 
@@ -314,9 +317,17 @@ function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reve
         cubelet_subsystem_label, random_cubelet_indices = candidate_reversing_information
         
         if length(random_cubelet_indices) == 3 # P_{X,(a,b,c)} case
+            # TODO remove
+            # # Now just want 3-cycle in opposite direction therefore just 3-cycle twice (referencing cubelet indices in same order)
+            # # i.e. before we did [1,2,3] ---> [3,1,2]
+            # # and now we do [3,1,2] --> [2,3,1] --> [1,2,3] to return
+            # three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[2], random_cubelet_indices[3])
+            # three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[2], random_cubelet_indices[3])
+            
+            
             # Now just want 3-cycle in opposite direction therefore just define the cubelets in an odd signature order e.g. [1,3,2]
             # i.e. before we did [1,2,3] ---> [3,1,2]
-            # and now we are saing [(1),(3),(2)] = [3,2,1] --> [1,3,2] = [(2),(1),(3)]
+            # and now we are saying [(1),(3),(2)] = [3,2,1] --> [1,3,2] = [(2),(1),(3)]
             three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[3], random_cubelet_indices[2])
 
         else # O_{X,(a,b)} case
