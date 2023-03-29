@@ -13,11 +13,6 @@
 
 # We also use the constraint that the sum of orientations of cubelets in a cubelet subsystem X is fixed
 # ***This means that the minimum allowed cubelet configuration orientation change is opposite rotations of 2 cubelet's orientations***
-# --- To Do: ---
-
-# - Put diagrams from Draft 1 neat somewhere for conventions
-
-# ----
 
 using StatsBase
 
@@ -147,8 +142,6 @@ function get_cubelet_subsystem(cube::RubiksCube,cubelet_subsystem_label::String)
                                                     [view(cube.configuration[face_number],cube.L-i,Int((cube.L+1)/2))], [view(cube.configuration[face_number],Int((cube.L+1)/2),1+i)]])
         end
 
-
-
     end
     
     return subsystem_array
@@ -158,7 +151,7 @@ end
 
 
 
-function three_cycle_cubelets!(cube::RubiksCube, cubelet_subsystem_label::String, cubelet_index_1::Int64, cubelet_index_2::Int64, cubelet_index_3::Int64)
+function three_cycle_cubelets!(cube::RubiksCube, cubelet_subsystem_label::String, cubelet_index_1::Int64, cubelet_index_2::Int64, cubelet_index_3::Int64)    
     # Conducts P_{X,(a,b,c)} i.e. a 3-cycle in cubelet subsystem X of cubelets in positions -->1-->2-->3-->
 
     # Validation (all cubelet subsystems have size 24 except for the corners (8) and central edges (12))
@@ -186,10 +179,9 @@ end
 
 
 
-function opposite_rotate_cubelets!(cube::RubiksCube, cubelet_subsystem_label::String, cubelet_index_1, cubelet_index_2)
+function opposite_rotate_cubelets!(cube::RubiksCube, cubelet_subsystem_label::String, cubelet_index_1, cubelet_index_2)    
     # Conducts O_{X,(a,b),o} i.e. an orientation rotation in cubelet subsystem X of factor +1 (anticlockwise) to cubelet in position 1 and -1 (clockwise) to cubelet in position 2
     # e.g. [facelet_1, facelet_2, facelet_3] --> [facelet_3, facelet_1, facelet_2] is 1 (anticlockwise) rotation unit (as we used anticlockwise convention in defining facelets in cubelet array)
-    # Note 
 
     # Note wing edge orientations are actually fully constrained by their positions so we only have corner and central edge cases that can have these orientation swap moves
     # Note corners have 3 facelets therefore can be rotated clockwise or anticlockwise, but switching cubelet_index_1 and cubelet_index_2 allows both possibilities
@@ -261,19 +253,17 @@ function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reve
         # (i.e uniform random choice over 3-cycle swap moves in any of the cubelet_subystems or of the 2 (corners or central edges) opposite-rotation swap moves)
         # (This isn't perfect - as not accounting for number of distinct 2/3 cubelets can pick in each cubelet_subystem for a 3-cycle/opposite-rotaiton swap move)
         # (But is much better than having a 50/50 chance between either one of the (2) types of opposite-rotation swap move, or one of the (many) types of 3-cycle swap move)
+    
         swap_move_type = rand(1:2 + length(cube.cubelet_subsystems_labels))
-
-        # TODO restore
-        if swap_move_type < 0 # P_{X,(a,b,c)} case 
+        if swap_move_type > 2 
+            # P_{X,(a,b,c)} case 
 
             # Give random cubelet_subsystem_label, and random cubelet indices (within number_of_cubelets_in_subsystem)
             cubelet_subsystem_label = cube.cubelet_subsystems_labels[rand(1:length(cube.cubelet_subsystems_labels))]
 
             if cubelet_subsystem_label=="sigma_"
-                println("SIGMAAAAA") # TODO remove
                 number_of_cubelets_in_subsystem = 8
             elseif cubelet_subsystem_label=="tau_"
-                println("TAUUUUUUUUUUUUUUUUU") # TODO remove
                 number_of_cubelets_in_subsystem = 12
             else
                 number_of_cubelets_in_subsystem = 24
@@ -284,7 +274,8 @@ function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reve
 
             three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[2], random_cubelet_indices[3])
 
-        else # O_{X,(a,b)} case
+        else 
+            # O_{X,(a,b)} case
             # Give random cubelet_subsystem_label, and random cubelet indices (within number_of_cubelets_in_subsystem)
 
             if isodd(cube.L)
@@ -297,7 +288,8 @@ function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reve
 
             if cubelet_subsystem_label=="sigma_"
                 number_of_cubelets_in_subsystem = 8
-            else #(cubelet_subsystem_label=="tau_" case)
+            else 
+                #(cubelet_subsystem_label=="tau_" case)
                 number_of_cubelets_in_subsystem = 12
             end
 

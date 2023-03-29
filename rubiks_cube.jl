@@ -1,12 +1,3 @@
-# --- To Do: ---
-
-# - Check rotations on real Rubik's Cube
-
-# - TODO change face indices to 1-indexed in paper?
-
-# ---
-
-
 # ------ RubiksCube Struct and Configuration ------
 
 mutable struct RubiksCube
@@ -156,7 +147,6 @@ function energy(cube::RubiksCube)
                     if face(cube, face_number)[i, j+1] == face(cube, face_number)[i, j]
                         E -= 1
                     end
-
                 end
 
             end
@@ -220,7 +210,7 @@ function rotate!(cube::RubiksCube, f::Int64, l::Int64, o::Int64)
     # Note this is a mutating function i.e. it modifies the cube object in place and does not return anything
 
     # f = face number of rotation (between 1 and 6) - NOTE THIS IS A DIFFERENT CONVENTION TO THE PAPER DRAFT CURRENTLY
-    # l = layer number of rotation (integer between 0 and (n+1)/2)
+    # l = layer number of rotation (integer between 0 and (n-1)/2)
     # o = orientation number of rotation (0 = clockwise, 1 = anticlockwise)
 
     # Firstly notice that an anticlockwise (o=1) rotation is always equal to 3 successive clockwise (o=0) rotations
@@ -369,7 +359,7 @@ function rotate!(cube::RubiksCube, f::Int64, l::Int64, o::Int64)
         # Now if we are rotating a face (i.e. l=0) then we have to rotate the facelets on the actual face too
         # np.rot90() is an anti-clockwise rotation by default so we have to do it 3 times to get an clockwise rotation
         if l == 0
-            cube.configuration[f, :, :] = rotr90(cube.configuration[f, :, :])
+            cube.configuration[f] .= rotr90(cube.configuration[f])
         end
     end
 end
@@ -391,7 +381,7 @@ function random_rotate!(cube::RubiksCube; reverse::Bool=false, candidate_reversi
         # Next choose random layer to rotate
         # We have that 0 < l < floor[n/2 - 1]  i.e. odd-n cubes cannot rotate central facelet, and even-n cubes have
         # layers up to 'half way' (after which layers are associated with opposite face)
-        l = rand(0:floor(Int,(cube.L/2) -1))
+        l = rand(0:floor(Int,(cube.L/2)-1))
 
         # Next choose a random orientation to rotate (0 = clockwise, 1 = anticlockwise)
         o = rand(0:1)

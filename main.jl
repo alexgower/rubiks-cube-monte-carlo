@@ -1,8 +1,21 @@
 #--- To Do: ---
 
-# - possibly integrate energy/order parameter histories in MC program
+# - possibly integrate energy/order parameter histories into this MC program
 # - add average order parameter and order parameter squared alongside average energy measurement
 # - use ensemble work
+
+# - change face indices to 1-indexed in paper?
+# - check rotations on real Rubik's Cube
+#- Put conventiondiagrams from Draft 1 neat somewhere for conventions
+
+# - change to Alex not Oli energy, check graph change and change in paper
+
+# - fiddle with swap move choices, including when do orientation v 3-cycles
+
+# - Run relaxation_iterations_finder_mode to get good relaxation_iterations_vector
+# - Find best maximum iterations
+# - Make tau_0 vary with cube.L
+# - get head around using 2 relaxation iterations when using relaxation_iterations_finder_mode
 
 # ---
 
@@ -21,7 +34,7 @@ include("swap_moves.jl")
         temperature_vector::Vector{Float64} = [T_1*(T_0/T_1)^(m/N_T) for m in 0:N_T]
         normalised_E_average_by_temperature = []
         infinite_temperature_normalised_E_average_by_temperature = []
-        combined_relaxation_iterations_by_temperature = []
+        # combined_relaxation_iterations_by_temperature = []
 
         for (index,swap_move_probability) in pairs(swap_move_probabilities)
             simulation_name_to_use = simulation_name * '_' * string(swap_move_probability)
@@ -37,7 +50,7 @@ include("swap_moves.jl")
 
             push!(normalised_E_average_by_temperature, -E_average_by_temperature ./ solved_configuration_energy(cube))
             push!(infinite_temperature_normalised_E_average_by_temperature, -E_average_by_temperature ./ infinite_temperature_energy(cube))
-            push!(combined_relaxation_iterations_by_temperature, relaxation_iterations_by_temperature)
+            # push!(combined_relaxation_iterations_by_temperature, relaxation_iterations_by_temperature)
 
 
             # Save Results ----------
@@ -64,21 +77,38 @@ include("swap_moves.jl")
         end
         
 
-        # Display and Save Plot ----------
+        
         try
+            # Create plot ----------
+            
             if normalization == "solved"
-                plot(temperature_vector, normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Solved Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
+                graph = plot(temperature_vector, normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Solved Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
+                hline!(graph, [-0.16666666666666666], linestyle=:dash, color=:black, label="")
+                hline!(graph, [-1.0], linestyle=:dash, color=:black, label="")
             elseif normalization == "infinite_temperature"
-                plot(temperature_vector, alternative_normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Infinite Temperature Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities),1,length(swap_move_probabilities)))
+                graph = plot(temperature_vector, infinite_temperature_normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Infinite Temperature Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
+                hline!(graph, [-1.0], linestyle=:dash, color=:black, label="")
+                hline!(graph, [-6.0], linestyle=:dash, color=:black, label="")
             end
 
-            vline!([T_swap], linestyle=:dash, label="Swap Moves Enabled")
+            vline!(graph, [T_swap], linestyle=:dash, label="Swap Moves Enabled")
 
-            savefig("results/$simulation_name.png")
+            # Add other data to graph for comparison if exists ----------
+            if isfile(joinpath("results","other_data.csv"))
+                data_matrix = readdlm(joinpath("results","other_data.csv"), ',', Float64, '\n', skipstart=0)
+
+                other_temperature_vector = copy(data_matrix[:,1])
+                other_data = data_matrix[:,2]
+            
+                plot!(graph, other_temperature_vector, other_data, label="Ollie Results", seriestype=:scatter, color="blue", ms=2, ma=0.5)
+            end
+
+            # Save graph ----------
+            savefig(graph, "results/$simulation_name.png")
 
             # Relaxation iterations plotter ---
-            plot(temperature_vector, combined_relaxation_iterations_by_temperature, xlabel="Temperature", ylabel="Relaxation Iterations", title="Relaxation Iterations by Temperature", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
-            vline!([T_swap], linestyle=:dash, label="Swap Moves Enabled")
+            # plot(temperature_vector, combined_relaxation_iterations_by_temperature, xlabel="Temperature", ylabel="Relaxation Iterations", title="Relaxation Iterations by Temperature", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
+            # vline!([T_swap], linestyle=:dash, label="Swap Moves Enabled")
 
         catch ex
             println("Cannot display or save results")
