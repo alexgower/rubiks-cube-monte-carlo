@@ -21,6 +21,11 @@
 
 # ---
 
+# Xeon Only ---
+# DEPOT_PATH[1]="/u/rscratch/apg59/.julia"
+# using Pkg
+# Pkg.instantiate()
+
 using Plots
 using DelimitedFiles
 
