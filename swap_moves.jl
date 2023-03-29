@@ -245,8 +245,8 @@ function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reve
 
     # With (cube, reverse=true, candidate_reversing_information) as arguments, it simply undoes the previous swap_move
 
-    if !reverse # (i.e. if not reversing)
-
+    if !reverse 
+        # (i.e. if not reversing)
         # First choose random type of swap_move
 
         # Make the 3-cycle swap moves equally likely to the orientation swap moves

@@ -124,7 +124,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
             # Metropolis+Swap algorithm will terminate when either the configuration correlation function (compared with
             # t=0 configuration) has dropped to e^(-1) (i.e. 1 relaxation time) or tau(T) (which should be a reasonable
             # upper bound to this) iterations have been reached
-            run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=relaxation_iterations_vector[temperature_index], verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-1))
+            run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=relaxation_iterations_vector[temperature_index], verbose=false, configuration_correlation_convergence_criteria=exp(-1))
 
             E_running_total += energy(cube)
             E_squared_running_total += energy(cube)^2
