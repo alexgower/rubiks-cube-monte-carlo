@@ -28,23 +28,29 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     big_tau = 5000
 
     # Create relaxation_iterations_vector
-    if relaxation_iterations_finder_mode==false && isnothing(relaxation_iterations_vector)
+    if isnothing(relaxation_iterations_vector)
+        if relaxation_iterations_finder_mode==false 
 
-        # Set default relaxation_iterations_vector if none provided and relaxation_iterations_finder_mode not on
-        tau_0 = big_tau
+            # Set default relaxation_iterations_vector if none provided and relaxation_iterations_finder_mode not on
+            tau_0 = big_tau
 
-        # Number of generators of size-L Rubik's cube is number of faces * number of layers per face * number of
-        # rotation orientations per layer = 6 * ceil((L-1)/2) * 2
-        tau_1 = 6 * ceil((cube.L-1)/2) * 2
+            # Number of generators of size-L Rubik's cube is number of faces * number of layers per face * number of
+            # rotation orientations per layer = 6 * ceil((L-1)/2) * 2
+            tau_1 = 6 * ceil((cube.L-1)/2) * 2
 
-        relaxation_iterations_vector = [tau_1 * (tau_0/tau_1)^((T1-T)/(T1-T0)) for T in temperature_vector]
+            relaxation_iterations_vector = [tau_1 * (tau_0/tau_1)^((T1-T)/(T1-T0)) for T in temperature_vector]
 
-    else
+        elseif relaxation_iterations_finder_mode==true
 
-        # If relaxation_iterations_finder_mode is on, set max_iterations as 100,000 as a constant
-        relaxation_iterations_vector = [big_tau for T in temperature_vector]
-        tau_0 = big_tau
-        tau_1 = big_tau
+            # If relaxation_iterations_finder_mode is on, set max_iterations as 100,000 as a constant
+            relaxation_iterations_vector = [big_tau for T in temperature_vector]
+            tau_0 = big_tau
+            tau_1 = big_tau
+        end
+
+    else    
+        tau_0 = relaxation_iterations_vector[1]
+        tau_1 = relaxation_iterations_vector[end]
 
     end
 
@@ -72,13 +78,9 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     # Create arrays to store parameters for each temeprature
     E_average_by_temperature = zeros(length(temperature_vector))
     E_squared_average_by_temperature = zeros(length(temperature_vector))
-
-    if relaxation_iterations_finder_mode
-        relaxation_iterations_by_temperature = zeros(length(temperature_vector))
-        accepted_candidates_by_temperature = zeros(length(temperature_vector))
-        final_configuration_correlation_function_by_temperature = zeros(length(temperature_vector))
-    end
-
+    relaxation_iterations_by_temperature = zeros(length(temperature_vector))
+    accepted_candidates_by_temperature = zeros(length(temperature_vector))
+    final_configuration_correlation_function_by_temperature = zeros(length(temperature_vector))
 
     
     # Cool Rubik's cube from T_1 to T_0 by temperatures described in the temperature vector
