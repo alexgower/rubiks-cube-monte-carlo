@@ -63,11 +63,14 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     # Metropolis+Swap algorithm will terminate when either the configuration correlation function (compared with t=0
     # configuration) has dropped to e^(-10) (i.e. 10 relaxation times) or 10*tau_1 (which should be a reasonable upper bound to this) 
     # iterations have been reached
+    # TODO restore no swap moves
     run_metropolis_swap_algorithm!(cube, 0.0; swap_move_probability=0.0, maximum_iterations=10*tau_1, verbose=false, configuration_correlation_convergence_criteria=exp(-10))
 
-    if verbose_annealing
+    # if verbose_annealing
+    if true # TODO restore
         println("Mixed cube")
         println("Cube Energy/Infinite Temperature Energy: $(energy(cube)/infinite_temperature_energy(cube))")
+        println(cube.configuration)
     end
 
 

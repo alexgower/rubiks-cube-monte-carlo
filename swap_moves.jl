@@ -255,7 +255,8 @@ function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reve
         # (But is much better than having a 50/50 chance between either one of the (2) types of opposite-rotation swap move, or one of the (many) types of 3-cycle swap move)
     
         swap_move_type = rand(1:2 + length(cube.cubelet_subsystems_labels))
-        if swap_move_type > 2 
+
+        if swap_move_type > 2 # TODO restore 
             # P_{X,(a,b,c)} case 
 
             # Give random cubelet_subsystem_label, and random cubelet indices (within number_of_cubelets_in_subsystem)

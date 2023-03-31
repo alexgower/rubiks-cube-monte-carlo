@@ -249,115 +249,91 @@ function rotate!(cube::RubiksCube, f::Int64, l::Int64, o::Int64)
         if f == 1
 
             # 4 cycle of [f, i, j] (where (-) means reverse order):
-            # [2,cube.L-l,j]-(+)->[6,i,1+l]-(-)->[4,1+l,j]-(+)->[5,i,cube.L-l]-(-)->
-
-            # Gather line configurations that are going to be moved
-            lineConfiguration1 = cube.configuration[2][cube.L-l,:]
-            lineConfiguration2 = cube.configuration[6][:,1+l]
-            lineConfiguration3 = cube.configuration[4][1+l,:]
-            lineConfiguration4 = cube.configuration[5][:,cube.L-l]
+            # [2,cube.L-l,:] -(+)-> [6,:,1+l] -(-)-> [4,1+l,:] -(+)-> [5,:,cube.L-l] -(-)-> 
 
             # Assign line configurations to correct new places
             # Ensure to reverse order if need be
-            cube.configuration[6][:, 1+l] = lineConfiguration1[:]
-            cube.configuration[4][1+l, :] = reverse(lineConfiguration2[:])
-            cube.configuration[5][:,cube.L-l] = lineConfiguration3[:]
-            cube.configuration[2][cube.L-l,:] = reverse(lineConfiguration4[:])
+            temp = cube.configuration[5][:,cube.L-l]
+
+            cube.configuration[5][:,cube.L-l] = copy(cube.configuration[4][1+l,:])
+            cube.configuration[4][1+l, :] = reverse(copy(cube.configuration[6][:,1+l]))
+            cube.configuration[6][:, 1+l] = copy(cube.configuration[2][cube.L-l,:])
+            cube.configuration[2][cube.L-l,:] = reverse(copy(temp))
 
         elseif f == 2
 
             # 4 cycle of [f, i, j] (where (-) means reverse order):
-            # [3,cube.L-l,j]-(-)->[6,1+l,j]-(+)->[1,1+l,j]-(+)->[5,1+l,j]-(-)->
-
-            # Gather line configurations that are going to be moved
-            lineConfiguration1 = cube.configuration[3][cube.L-l,:]
-            lineConfiguration2 = cube.configuration[6][1+l,:]
-            lineConfiguration3 = cube.configuration[1][1+l,:]
-            lineConfiguration4 = cube.configuration[5][1+l,:]
+            # [3,cube.L-l,:] -(-)-> [6,1+l,:] -(+)-> [1,1+l,:] -(+)-> [5,1+l,:] -(-)->
 
             # Assign line configurations to correct new places
             # Ensure to reverse order if need be
-            cube.configuration[6][1+l,:] = reverse(lineConfiguration1[:])
-            cube.configuration[1][1+l,:] = lineConfiguration2[:]
-            cube.configuration[5][1+l,:] = lineConfiguration3[:]
-            cube.configuration[3][cube.L-l,:]  = reverse(lineConfiguration4[:])
+            temp = cube.configuration[5][1+l,:]
+
+            cube.configuration[5][1+l,:] = copy(cube.configuration[1][1+l,:])
+            cube.configuration[1][1+l,:] = copy(cube.configuration[6][1+l,:])
+            cube.configuration[6][1+l,:] = reverse(copy(cube.configuration[3][cube.L-l,:]))
+            cube.configuration[3][cube.L-l,:] = reverse(copy(temp))
 
         elseif f == 3
 
             # 4 cycle of [f, i, j] (where (-) means reverse order):
-            # [4,cube.L-l,j]-(+)->[6,i,1+l]-(-)->[2,1+l,j]-(-)->[5,i,1+l]-(+)->
-
-            # Gather line configurations that are going to be moved
-            lineConfiguration1 = cube.configuration[4][cube.L-l,:]
-            lineConfiguration2 = cube.configuration[6][:,1+l]
-            lineConfiguration3 = cube.configuration[2][1+l,:]
-            lineConfiguration4 = cube.configuration[5][:,1+l]
+            # [4,cube.L-l,:] -(-)-> [6,:,cube.L-l] -(+)-> [2,1+l,:] -(-)-> [5,:,1+l] -(+)->
 
             # Assign line configurations to correct new places
             # Ensure to reverse order if need be
-            cube.configuration[6][:,1+l] = lineConfiguration1[:]
-            cube.configuration[2][1+l,:] = reverse(lineConfiguration2[:])
-            cube.configuration[5][:,1+l] = reverse(lineConfiguration3[:])
-            cube.configuration[4][cube.L-l,:] = lineConfiguration4[:]
+            temp = cube.configuration[5][:,1+l]
+
+            cube.configuration[5][:,1+l] = reverse(copy(cube.configuration[2][1+l,:]))
+            cube.configuration[2][1+l,:] = copy(cube.configuration[6][:,cube.L-l])
+            cube.configuration[6][:,cube.L-l] = reverse(copy(cube.configuration[4][cube.L-l,:]))
+            cube.configuration[4][cube.L-l,:] = copy(temp)
 
         elseif f == 4
 
             # 4 cycle of [f, i, j] (where (-) means reverse order):
-            # [1,cube.L-l,j]-(+)->[6,cube.L-l,j]-(-)->[3,1+l,j]-(-)->[5,cube.L-l,j]-(+)->
-
-            # Gather line configurations that are going to be moved
-            lineConfiguration1 = cube.configuration[1][cube.L-l,:]
-            lineConfiguration2 = cube.configuration[6][cube.L-l,:]
-            lineConfiguration3 = cube.configuration[3][1+l,:]
-            lineConfiguration4 = cube.configuration[5][cube.L-l,:]
+            # [1,cube.L-l,:] -(+)-> [6,cube.L-l,:] -(-)-> [3,1+l,:] -(-)-> [5,cube.L-l,:] -(+)->
 
             # Assign line configurations to correct new places
             # Ensure to reverse order if need be
-            cube.configuration[6][cube.L-l,:] = lineConfiguration1[:]
-            cube.configuration[3][1+l,:] = reverse(lineConfiguration2[:])
-            cube.configuration[5][cube.L-l,:] = reverse(lineConfiguration3[:])
-            cube.configuration[1][cube.L-l,:]  = lineConfiguration4[:]
+            temp = cube.configuration[5][cube.L-l,:]
+
+            cube.configuration[5][cube.L-l,:] = reverse(copy(cube.configuration[3][1+l,:]))
+            cube.configuration[3][1+l,:] = reverse(copy(cube.configuration[6][cube.L-l,:]))
+            cube.configuration[6][cube.L-l,:] = copy(cube.configuration[1][cube.L-l,:])
+            cube.configuration[1][cube.L-l,:] = copy(temp)
 
         elseif f == 5
 
             # 4 cycle of [f, i, j] (where (-) means reverse order):
-            # [3,i,1+l]-(+)->[2,i,1+l]-(+)->[1,i,1+l]-(+)->[4,i,1+l]-(+)->
-
-            # Gather line configurations that are going to be moved
-            lineConfiguration1 = cube.configuration[3][:,1+l]
-            lineConfiguration2 = cube.configuration[2][:,1+l]
-            lineConfiguration3 = cube.configuration[1][:,1+l]
-            lineConfiguration4 = cube.configuration[4][:,1+l]
+            # [3,:,1+l] -(+)-> [2,:,1+l] -(+)-> [1,:,1+l] -(+)-> [4,:,1+l]-(+)->
 
             # Assign line configurations to correct new places
             # Ensure to reverse order if need be
-            cube.configuration[2][:,1+l] = lineConfiguration1[:]
-            cube.configuration[1][:,1+l] = lineConfiguration2[:]
-            cube.configuration[4][:,1+l] = lineConfiguration3[:]
-            cube.configuration[3][:,1+l] = lineConfiguration4[:]
+            temp = cube.configuration[4][:,1+l]
+
+            cube.configuration[4][:,1+l] = copy(cube.configuration[1][:,1+l])
+            cube.configuration[1][:,1+l] = copy(cube.configuration[2][:,1+l])
+            cube.configuration[2][:,1+l] = copy(cube.configuration[3][:,1+l])
+            cube.configuration[3][:,1+l] = copy(temp)
 
         elseif f == 6
 
             # 4 cycle of [f, i, j]:
-            # [1,i,cube.L-l]-(+)->[2,i,cube.L-l]-(+)->[3,i,cube.L-l]-(+)->[4,i,cube.L-l]-(+)->
-
-            # Gather line configurations that are going to be moved
-            lineConfiguration1 = cube.configuration[1][:,cube.L-l]
-            lineConfiguration2 = cube.configuration[2][:,cube.L-l]
-            lineConfiguration3 = cube.configuration[3][:,cube.L-l]
-            lineConfiguration4 = cube.configuration[4][:,cube.L-l]
+            # [1,:,cube.L-l] -(+)-> [2,:,cube.L-l] -(+)-> [3,:,cube.L-l] -(+)-> [4,:,cube.L-l]-(+)->
 
             # Assign line configurations to correct new places
             # Ensure to reverse order if need be
-            cube.configuration[2][:,cube.L-l] = lineConfiguration1[:]
-            cube.configuration[3][:,cube.L-l] = lineConfiguration2[:]
-            cube.configuration[4][:,cube.L-l] = lineConfiguration3[:]
-            cube.configuration[1][:,cube.L-l] = lineConfiguration4[:]
+            temp = cube.configuration[4][:,cube.L-l]
+
+            cube.configuration[4][:,cube.L-l] = copy(cube.configuration[3][:,cube.L-l])
+            cube.configuration[3][:,cube.L-l] = copy(cube.configuration[2][:,cube.L-l])
+            cube.configuration[2][:,cube.L-l] = copy(cube.configuration[1][:,cube.L-l])
+            cube.configuration[1][:,cube.L-l] = copy(temp)
 
         end
 
         # Now if we are rotating a face (i.e. l=0) then we have to rotate the facelets on the actual face too
-        # np.rot90() is an anti-clockwise rotation by default so we have to do it 3 times to get an clockwise rotation
+        # rot90() is a clockwise rotation by default
         if l == 0
             cube.configuration[f] .= rotr90(cube.configuration[f])
         end

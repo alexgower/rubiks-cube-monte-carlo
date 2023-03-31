@@ -5,8 +5,7 @@
 # - use ensemble work
 
 # - change face indices to 1-indexed in paper?
-# - check rotations on real Rubik's Cube
-#- Put conventiondiagrams from Draft 1 neat somewhere for conventions
+#- Put convention diagrams from Draft 1 neat somewhere for conventions
 
 # - change to Alex not Oli energy, check graph change and change in paper
 
@@ -56,6 +55,7 @@ include("swap_moves.jl")
                 temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature = anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, relaxation_iterations_finder_mode=true)
             else
                 relaxation_iterations_vector = [big_tau for T in temperature_vector]
+                # TODO verbose
                 temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature = anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, relaxation_iterations_vector = relaxation_iterations_vector)
             end
 
