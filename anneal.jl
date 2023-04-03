@@ -26,13 +26,14 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     T0 = temperature_vector[end]
 
     big_tau = 5000
+    bigger_tau = big_tau * 6 * cube.L^2
 
     # Create relaxation_iterations_vector
     if isnothing(relaxation_iterations_vector)
         if relaxation_iterations_finder_mode==false 
 
             # Set default relaxation_iterations_vector if none provided and relaxation_iterations_finder_mode not on
-            tau_0 = big_tau
+            tau_0 = bigger_tau
 
             # Number of generators of size-L Rubik's cube is number of faces * number of layers per face * number of
             # rotation orientations per layer = 6 * ceil((L-1)/2) * 2
@@ -43,9 +44,9 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
         elseif relaxation_iterations_finder_mode==true
 
             # If relaxation_iterations_finder_mode is on, set max_iterations as 100,000 as a constant
-            relaxation_iterations_vector = [big_tau for T in temperature_vector]
-            tau_0 = big_tau
-            tau_1 = big_tau
+            relaxation_iterations_vector = [bigger_tau for T in temperature_vector]
+            tau_0 = bigger_tau
+            tau_1 = bigger_tau
         end
 
     else    
@@ -63,14 +64,12 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     # Metropolis+Swap algorithm will terminate when either the configuration correlation function (compared with t=0
     # configuration) has dropped to e^(-10) (i.e. 10 relaxation times) or 10*tau_1 (which should be a reasonable upper bound to this) 
     # iterations have been reached
-    # TODO restore no swap moves
     run_metropolis_swap_algorithm!(cube, 0.0; swap_move_probability=0.0, maximum_iterations=10*tau_1, verbose=false, configuration_correlation_convergence_criteria=exp(-10))
 
-    # if verbose_annealing
-    if true # TODO restore
+    if verbose_annealing
+        printstyled("New Cube With P_swap = $swap_move_probability below T_swap = $T_swap \n"; color=:blue)
         println("Mixed cube")
         println("Cube Energy/Infinite Temperature Energy: $(energy(cube)/infinite_temperature_energy(cube))")
-        println(cube.configuration)
     end
 
 
@@ -90,13 +89,6 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     for (temperature_index, T) in pairs(temperature_vector)
         beta = 1/T
 
-        if verbose_annealing
-            printstyled("Currently at Temperature:  $T [$(temperature_index)/$(length(temperature_vector))] (P_swap=$swap_move_probability, T_swap=$T_swap, L=$(cube.L))\n"; underline=true)
-        end
-
-
-
-
         # Relaxation Stage ---
 
         # Run Metropolis+Swap algorithm to relax Rubik's cube at this temperature
@@ -105,9 +97,6 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
 
         # Only allow swap moves below a certain temperature T_swap 
         if T <= T_swap && swap_move_probability!=0.0
-            if verbose_annealing
-                println("Using swap moves at this temperature")
-            end
             swap_move_probability_at_this_temperature = swap_move_probability
         else
             swap_move_probability_at_this_temperature = 0.0
@@ -146,6 +135,12 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
 
         # Print current temperature and average energy if verbose_annealing mode activated
         if verbose_annealing
+            printstyled("Currently at Temperature:  $T [$(temperature_index)/$(length(temperature_vector))] (P_swap=$swap_move_probability, T_swap=$T_swap, L=$(cube.L))\n"; underline=true)
+
+            if T <= T_swap && swap_move_probability!=0.0
+                println("Using swap moves at this temperature")
+            end
+
             println("Average Energy: $(E_average_by_temperature[temperature_index])")
             println("-Average Energy/Solved Configuration Energy: $(-E_average_by_temperature[temperature_index]/solved_configuration_energy(cube))")
             println("2*Relaxation Iterations: $final_iteration_number")
