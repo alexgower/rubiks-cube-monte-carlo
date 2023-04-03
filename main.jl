@@ -18,6 +18,8 @@
 
 # - another ProfileView?
 
+# - Make error traces actually save to file
+
 # ---
 
 # Xeon Only ---
@@ -55,7 +57,6 @@ include("swap_moves.jl")
                 temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature = anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, relaxation_iterations_finder_mode=true)
             else
                 relaxation_iterations_vector = [big_tau for T in temperature_vector]
-                # TODO verbose
                 temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature = anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, relaxation_iterations_vector = relaxation_iterations_vector)
             end
 
@@ -99,7 +100,7 @@ include("swap_moves.jl")
                 graph = plot(temperature_vector, normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Solved Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
                 hline!(graph, [-0.16666666666666666], linestyle=:dash, color=:black, label="")
                 hline!(graph, [-1.0], linestyle=:dash, color=:black, label="")
-            elseif normalization == "infinite_temperature"
+            else # normalization == "infinite_temperature" case
                 graph = plot(temperature_vector, infinite_temperature_normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Infinite Temperature Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
                 hline!(graph, [-1.0], linestyle=:dash, color=:black, label="")
                 hline!(graph, [-6.0], linestyle=:dash, color=:black, label="")
@@ -142,4 +143,5 @@ include("swap_moves.jl")
 
     end
 end
+
 
