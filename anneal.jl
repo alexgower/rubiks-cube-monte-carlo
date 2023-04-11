@@ -25,7 +25,7 @@ function anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_mov
     T1 = temperature_vector[1]
     T0 = temperature_vector[end]
 
-    big_tau = 5000
+    big_tau = 15
     bigger_tau = big_tau * 6 * cube.L^2
 
     # Create relaxation_iterations_vector

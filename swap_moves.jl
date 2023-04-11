@@ -18,7 +18,7 @@ using StatsBase
 
 include("rubiks_cube.jl")
 
-function get_cubelet_subsystem(cube::RubiksCube,cubelet_subsystem_label::String)
+@inline function get_cubelet_subsystem(cube::RubiksCube,cubelet_subsystem_label::String)
     # Function to return an array of references to cube's configuration for the cubelets in subsystem_label
 
     # First chop cubelet_subsystem_label X_i,j into subsystem_type = X and subsystem_details= [i,j]
@@ -151,8 +151,8 @@ end
 
 
 
-function three_cycle_cubelets!(cube::RubiksCube, cubelet_subsystem_label::String, cubelet_index_1::Int64, cubelet_index_2::Int64, cubelet_index_3::Int64)    
-    # Conducts P_{X,(a,b,c)} i.e. a 3-cycle in cubelet subsystem X of cubelets in positions -->1-->2-->3-->
+@inline function three_cycle_cubelets!(cube::RubiksCube, cubelet_subsystem_label::String, cubelet_index_1::Int64, cubelet_index_2::Int64, cubelet_index_3::Int64)    
+    # Conducts P3_{X,(a,b,c)} i.e. a 3-cycle in cubelet subsystem X of cubelets in positions -->1-->2-->3-->
 
     # Validation (all cubelet subsystems have size 24 except for the corners (8) and central edges (12))
     if max(cubelet_index_1, cubelet_index_2, cubelet_index_3) > 24 || min(cubelet_index_1, cubelet_index_2, cubelet_index_3) < 1 || (cubelet_subsystem_label=="sigma_" && max(cubelet_index_1, cubelet_index_2, cubelet_index_3) > 8 ) || (cubelet_subsystem_label=="tau_" && max(cubelet_index_1, cubelet_index_2, cubelet_index_3) > 12 )
@@ -177,9 +177,7 @@ function three_cycle_cubelets!(cube::RubiksCube, cubelet_subsystem_label::String
 
 end
 
-
-
-function opposite_rotate_cubelets!(cube::RubiksCube, cubelet_subsystem_label::String, cubelet_index_1, cubelet_index_2)    
+@inline function opposite_rotate_cubelets!(cube::RubiksCube, cubelet_subsystem_label::String, cubelet_index_1, cubelet_index_2)    
     # Conducts O_{X,(a,b),o} i.e. an orientation rotation in cubelet subsystem X of factor +1 (anticlockwise) to cubelet in position 1 and -1 (clockwise) to cubelet in position 2
     # e.g. [facelet_1, facelet_2, facelet_3] --> [facelet_3, facelet_1, facelet_2] is 1 (anticlockwise) rotation unit (as we used anticlockwise convention in defining facelets in cubelet array)
 
@@ -233,8 +231,138 @@ end
 
 
 
+@inline function two_cycle_cubelets!(cube::RubiksCube, cubelet_subsystem_label::String, cubelet_index_1::Int64, cubelet_index_2::Int64)    
+    # Conducts P2_{X,(a,b} i.e. a 2-cycle in cubelet subsystem X of cubelets in positions 1<-->2
 
-function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reversing_information=nothing)
+    # Validation (all cubelet subsystems have size 24 except for the corners (8) and central edges (12))
+    if max(cubelet_index_1, cubelet_index_2) > 24 || min(cubelet_index_1, cubelet_index_2) < 1 || (cubelet_subsystem_label=="sigma_" && max(cubelet_index_1, cubelet_index_2) > 8 ) || (cubelet_subsystem_label=="tau_" && max(cubelet_index_1, cubelet_index_2) > 12 )
+        throw(ArgumentError("Cubelet indices are outside range of cubelet subsystem"))
+    end
+
+    cubelet_subsystem = get_cubelet_subsystem(cube, cubelet_subsystem_label)
+
+    # No matter how many facelets each cubelet in this cubelet_subsystem contains (hence the for loop):
+    # Move cubelet 1's value to cubelet 2's position 
+    # Move cubelet 2's value to cubelet 1's position 
+    for facelet_index in eachindex(cubelet_subsystem[cubelet_index_1])
+        temp = copy(cubelet_subsystem[cubelet_index_2][facelet_index])
+
+        cubelet_subsystem[cubelet_index_2][facelet_index] .= cubelet_subsystem[cubelet_index_1][facelet_index]
+        cubelet_subsystem[cubelet_index_1][facelet_index] .= temp
+    end
+
+
+end
+
+
+
+@inline function random_parity_sector_switch_coupled_two_cycles!(cube::RubiksCube; reverse::Bool=false, candidate_reversing_information=nothing)    
+    
+    if !reverse
+        # Conducts many simultaneous P2_{X,(a,b)} i.e. 2-cycle in cubelet subsystem X of cubelets in positions 1<-->2 
+        # But in such a way that we respect the fundamental constraints of the cube (i.e. so it is still solvable afterwards)
+
+        # The required fundamental constraints on cubelet position permutations are:
+        # [constraints in brackets are only required for odd L cubes]
+        # 1. sgn(sigma) = sgn(x_i) [= sgn(tau)]
+        # 2. [sgn(eta_k) = sgn(sigma)sgn(theta_k)]
+        # 3. sgn(omega_ij) = sgn(sigma)sgn(theta_i)sgn(theta_j) (for i != j)
+
+        # So first we just choose which of {sigma, {theta_k}} we want to perform a 2-cycle on (and thus change their permutation parity)
+        # Then we use the above constraints to determine which of {{x_i},[tau],[{eta_k]}],omega_ij} we also need to perform
+        # TODO speedup this?
+        # TODO make opposite_rotate_cubelets and three_cycle_cubelets have similar function embedding?
+
+        subsystems_to_two_cycle::Vector{String} = []
+
+        # Choose which {sigma, {theta_k}} we want to perform a 2-cycle on
+        two_cycle_sigma = rand([true,false])
+        two_cycle_theta_ks = [rand([true,false]) for k in 1:ceil(Int, (cube.L-3)/2)]
+
+        # Independent subsystems
+        if two_cycle_sigma
+            append!(subsystems_to_two_cycle, ["sigma_"])
+        end
+
+        for (k,two_cycle_theta_k) in pairs(two_cycle_theta_ks)
+            if two_cycle_theta_k
+                append!(subsystems_to_two_cycle, ["theta_$k"])
+            end
+        end
+
+        # Constraint 1
+        if two_cycle_sigma
+            append!(subsystems_to_two_cycle, vcat(["x_$i" for i in 1:ceil(Int, (cube.L-3)/2)]))
+
+            if isodd(cube.L)
+                append!(subsystems_to_two_cycle, ["tau_"])
+            end
+        end
+
+        # Constraint 2
+        if isodd(cube.L)
+            for (k,two_cycle_theta_k) in pairs(two_cycle_theta_ks)
+                # Use XOR to determine whether need to 2_cycle eta_k
+                if two_cycle_sigma ⊻ two_cycle_theta_k
+                    append!(subsystems_to_two_cycle, ["eta_$k"])
+                end
+            end
+        end
+
+        # Constraint 3
+        for (i,two_cycle_theta_i) in pairs(two_cycle_theta_ks)
+            for (j,two_cycle_theta_j) in pairs(two_cycle_theta_ks[1:i-1])
+                    # Use XOR to determine whether need to 2_cycle omega_ij
+                    if two_cycle_sigma ⊻ two_cycle_theta_i ⊻ two_cycle_theta_j
+                        append!(subsystems_to_two_cycle, ["omega_$i,$j"])
+                    end
+            end
+        end
+                
+        # Now get 2 random cubelet indices for each cubelet subsystem to be two_cycled and pass these to two_cycle_cubelets!
+        candidate_reversing_information = [[subsystem_name,0,0] for subsystem_name in subsystems_to_two_cycle]
+
+        for cubelet_subsystem_candidate_reversing_information in candidate_reversing_information
+
+            if cubelet_subsystem_candidate_reversing_information[1]=="sigma_"
+                number_of_cubelets_in_subsystem = 8
+            elseif cubelet_subsystem_candidate_reversing_information[1]=="tau_"
+                number_of_cubelets_in_subsystem = 12
+            else
+                number_of_cubelets_in_subsystem = 24
+            end
+
+            # Get two non-duplicated indices within the number of cubelets in the subsystem
+            cubelet_subsystem_candidate_reversing_information[2],cubelet_subsystem_candidate_reversing_information[3] = sample(1:number_of_cubelets_in_subsystem, 2, replace=false)
+
+            # Pass to two_cycle_cubelets
+            two_cycle_cubelets!(cube,cubelet_subsystem_candidate_reversing_information[1],cubelet_subsystem_candidate_reversing_information[2],cubelet_subsystem_candidate_reversing_information[3])
+
+        end
+
+        return candidate_reversing_information
+
+    # Reversing case
+    else
+        # Just undo all 2_cycles by doing another 2_cycle on the same cubelets
+
+        for cubelet_subsystem_candidate_reversing_information in candidate_reversing_information
+            # Pass to two_cycle_cubelets
+            two_cycle_cubelets!(cube,cubelet_subsystem_candidate_reversing_information[1],cubelet_subsystem_candidate_reversing_information[2],cubelet_subsystem_candidate_reversing_information[3])
+        end
+
+
+    end
+
+end
+
+
+
+
+
+
+
+@inline function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reversing_information=nothing)
 
     # With (cube) arguments: performs random swap_move of type:
     # - P_{X,(a,b,c)} i.e. a 3-cycle in cubelet subsystem X of cubelets in positions -->a-->b-->c-->
@@ -245,76 +373,95 @@ function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reve
 
     # With (cube, reverse=true, candidate_reversing_information) as arguments, it simply undoes the previous swap_move
 
+    p_parity_exchange_swap = 0.2
+
     if !reverse 
         # (i.e. if not reversing)
         # First choose random type of swap_move
 
-        # Make the 3-cycle swap moves equally likely to the orientation swap moves
-        # (i.e uniform random choice over 3-cycle swap moves in any of the cubelet_subystems or of the 2 (corners or central edges) opposite-rotation swap moves)
-        # (This isn't perfect - as not accounting for number of distinct 2/3 cubelets can pick in each cubelet_subystem for a 3-cycle/opposite-rotaiton swap move)
-        # (But is much better than having a 50/50 chance between either one of the (2) types of opposite-rotation swap move, or one of the (many) types of 3-cycle swap move)
-    
-        swap_move_type = rand(1:2 + length(cube.cubelet_subsystems_labels))
+        # Firstly choose whether doing a 'parity sector exchange' swap move or not 
+        if rand() < p_parity_exchange_swap
+            candidate_reversing_information = random_parity_sector_switch_coupled_two_cycles!(cube)
 
-        if swap_move_type > 2 # TODO restore 
-            # P_{X,(a,b,c)} case 
+        # Not parity secetor exchange  case
+        else
+            # Make the 3-cycle swap moves equally likely to the orientation swap moves
+            # (i.e uniform random choice over 3-cycle swap moves in any of the cubelet_subystems or of the 2 (corners or central edges) opposite-rotation swap moves)
+            # (This isn't perfect - as not accounting for number of distinct 2/3 cubelets can pick in each cubelet_subystem for a 3-cycle/opposite-rotaiton swap move)
+            # (But is much better than having a 50/50 chance between either one of the (2) types of opposite-rotation swap move, or one of the (many) types of 3-cycle swap move)
+        
+            swap_move_type = rand(1:2 + length(cube.cubelet_subsystems_labels))
 
-            # Give random cubelet_subsystem_label, and random cubelet indices (within number_of_cubelets_in_subsystem)
-            cubelet_subsystem_label = cube.cubelet_subsystems_labels[rand(1:length(cube.cubelet_subsystems_labels))]
+            if swap_move_type > 2 # TODO restore 
+                # P_{X,(a,b,c)} case 
 
-            if cubelet_subsystem_label=="sigma_"
-                number_of_cubelets_in_subsystem = 8
-            elseif cubelet_subsystem_label=="tau_"
-                number_of_cubelets_in_subsystem = 12
-            else
-                number_of_cubelets_in_subsystem = 24
-            end
+                # Give random cubelet_subsystem_label, and random cubelet indices (within number_of_cubelets_in_subsystem)
+                cubelet_subsystem_label = cube.cubelet_subsystems_labels[rand(1:length(cube.cubelet_subsystems_labels))]
 
-            # Get three non-duplicated indices within the number of cubelets in the subsystem
-            random_cubelet_indices = sample(1:number_of_cubelets_in_subsystem, 3, replace=false)
+                if cubelet_subsystem_label=="sigma_"
+                    number_of_cubelets_in_subsystem = 8
+                elseif cubelet_subsystem_label=="tau_"
+                    number_of_cubelets_in_subsystem = 12
+                else
+                    number_of_cubelets_in_subsystem = 24
+                end
 
-            three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[2], random_cubelet_indices[3])
+                # Get three non-duplicated indices within the number of cubelets in the subsystem
+                random_cubelet_indices = sample(1:number_of_cubelets_in_subsystem, 3, replace=false)
 
-        else 
-            # O_{X,(a,b)} case
-            # Give random cubelet_subsystem_label, and random cubelet indices (within number_of_cubelets_in_subsystem)
+                three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[2], random_cubelet_indices[3])
 
-            if isodd(cube.L)
-                rotatable_cubelet_subsystem_labels = ["sigma_", "tau_"]                
-                cubelet_subsystem_label = rotatable_cubelet_subsystem_labels[rand(1:2)]
-            else
-                cubelet_subsystem_label = "sigma_"
-            end
-
-
-            if cubelet_subsystem_label=="sigma_"
-                number_of_cubelets_in_subsystem = 8
             else 
-                #(cubelet_subsystem_label=="tau_" case)
-                number_of_cubelets_in_subsystem = 12
+                # O_{X,(a,b)} case
+                # Give random cubelet_subsystem_label, and random cubelet indices (within number_of_cubelets_in_subsystem)
+
+                if isodd(cube.L)
+                    rotatable_cubelet_subsystem_labels = ["sigma_", "tau_"]                
+                    cubelet_subsystem_label = rotatable_cubelet_subsystem_labels[rand(1:2)]
+                else
+                    cubelet_subsystem_label = "sigma_"
+                end
+
+
+                if cubelet_subsystem_label=="sigma_"
+                    number_of_cubelets_in_subsystem = 8
+                else 
+                    #(cubelet_subsystem_label=="tau_" case)
+                    number_of_cubelets_in_subsystem = 12
+                end
+
+                random_cubelet_indices = sample(1:number_of_cubelets_in_subsystem, 2, replace=false)
+
+                opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[2])
+
             end
 
-            random_cubelet_indices = sample(1:number_of_cubelets_in_subsystem, 2, replace=false)
-
-            opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[2])
-
+            candidate_reversing_information = (cubelet_subsystem_label,random_cubelet_indices)
         end
 
-        return (cubelet_subsystem_label,random_cubelet_indices)
 
     else # Reversing case
+        # First deal with not parity exchange sector swap case
+
+        if typeof(candidate_reversing_information) == Tuple{String, Vector{Int64}}
+
         cubelet_subsystem_label, random_cubelet_indices = candidate_reversing_information
         
-        if length(random_cubelet_indices) == 3 # P_{X,(a,b,c)} case
+            if length(random_cubelet_indices) == 3 # P_{X,(a,b,c)} case
 
-            # Now just want 3-cycle in opposite direction therefore just define the cubelets in an odd signature order e.g. [1,3,2]
-            # i.e. before we did [1,2,3] ---> [3,1,2]
-            # and now we are saying [(1),(3),(2)] = [3,2,1] --> [1,3,2] = [(2),(1),(3)]
-            three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[3], random_cubelet_indices[2])
+                # Now just want 3-cycle in opposite direction therefore just define the cubelets in an odd signature order e.g. [1,3,2]
+                # i.e. before we did [1,2,3] ---> [3,1,2]
+                # and now we are saying [(1),(3),(2)] = [3,2,1] --> [1,3,2] = [(2),(1),(3)]
+                three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[1], random_cubelet_indices[3], random_cubelet_indices[2])
 
-        else # O_{X,(a,b)} case
-            # Just reverse cubelet_index order so previously anticlockwise rotated cubelet is rotated clockwise by same amount and vice versa
-            opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[2], random_cubelet_indices[1])
+            else # O_{X,(a,b)} case
+                # Just reverse cubelet_index order so previously anticlockwise rotated cubelet is rotated clockwise by same amount and vice versa
+                opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices[2], random_cubelet_indices[1])
+            end
+        
+        # Parity exchange sector swap case
+        else
+            random_parity_sector_switch_coupled_two_cycles!(cube; reverse=true, candidate_reversing_information=candidate_reversing_information)
         end
 
     end
