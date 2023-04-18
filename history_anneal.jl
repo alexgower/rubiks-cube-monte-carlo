@@ -1,6 +1,6 @@
 include("rubiks_cube.jl")
 
-function history_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false)
+function history_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, mix::Bool=true)
 
     # Runs history anneal on Rubik's Cube using the Metroolis+Swap algorithm at each temperature to probe properties of the cube.
     # Unlike typical anneal we do not relax the cube at each temperature, and we only take one energy sample per temperature
@@ -9,14 +9,18 @@ function history_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; 
 
     # Mixing Stage ---
 
-    # (Randomise Rubik's cube initially by running Metropolis algorithm at infinite temperature)
-    # i.e. beta = 0, swap_move_probability = 0, and by default have maximum_iterations = 10,000 or a configuration correlation function value of e^-10
-    run_metropolis_swap_algorithm!(cube, 0.0; swap_move_probability=0.0, maximum_iterations=10000, verbose=false, configuration_correlation_convergence_criteria=exp(-10))
+    if mix
 
-    if verbose_annealing
-        printstyled("New Cube With P_swap = $swap_move_probability below T_swap = $T_swap \n"; color=:blue)
-        println("Mixed cube")
-        println("Cube Energy/Infinite Temperature Energy: $(energy(cube)/infinite_temperature_energy(cube))")
+        # (Randomise Rubik's cube initially by running Metropolis algorithm at infinite temperature)
+        # i.e. beta = 0, swap_move_probability = 0, and by default have maximum_iterations = 10,000 or a configuration correlation function value of e^-10
+        run_metropolis_swap_algorithm!(cube, 0.0; swap_move_probability=0.0, maximum_iterations=10000, verbose=false, configuration_correlation_convergence_criteria=exp(-10))
+
+        if verbose_annealing
+            printstyled("New Cube With P_swap = $swap_move_probability below T_swap = $T_swap \n"; color=:blue)
+            println("Mixed cube")
+            println("Cube Energy/Infinite Temperature Energy: $(energy(cube)/infinite_temperature_energy(cube))")
+        end
+
     end
 
 

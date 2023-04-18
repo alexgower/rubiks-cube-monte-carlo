@@ -21,7 +21,7 @@ include("rubiks_cube.jl")
 include("monte_carlo.jl")
 include("history_anneal.jl")
 
-@inbounds @fastmath function history_anneal_experiment(simulation_name::String, L::Int64, swap_move_probabilities::Vector{Float64}, T_swap::Float64, T_1::Float64, T_0::Float64, N_T::Int64; verbose_metropolis_swap::Bool=false, normalization::String="solved")
+@inbounds @fastmath function history_anneal_experiment(cube::RubiksCube, simulation_name::String, L::Int64, swap_move_probabilities::Vector{Float64}, T_swap::Float64, T_1::Float64, T_0::Float64, N_T::Int64; verbose_metropolis_swap::Bool=false, normalization::String="solved")
 
 
     # Cover everything in try/except clause so can print errors to file if running remotely
@@ -36,7 +36,8 @@ include("history_anneal.jl")
             # Run Rubik's Cube Energy History Anneal ----------
 
             # Create a Rubik's cube object and run annealing function on it
-            cube = RubiksCube(L)
+            # TODO RESTORE
+            #cube = RubiksCube(L)
 
             temperature_vector, E_by_temperature =  history_anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap)
 
