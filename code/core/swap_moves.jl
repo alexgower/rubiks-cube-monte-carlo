@@ -110,7 +110,7 @@ include("rubiks_cube.jl")
 
         i = parse(Int64,subsystem_details[1])
 
-        for face_number in 1:6
+        @inbounds @simd for face_number in 1:6
             subsystem_array = vcat(subsystem_array, [[view(cube.configuration[face_number],1+i,1+i)], [view(cube.configuration[face_number],1+i,cube.L-i)],
                                                     [view(cube.configuration[face_number],cube.L-i,cube.L-i)], [view(cube.configuration[face_number],cube.L-i,1+i)]])
         end
@@ -122,7 +122,7 @@ include("rubiks_cube.jl")
         i = parse(Int64,subsystem_details[1])
         j = parse(Int64,subsystem_details[2])
 
-        for face_number in 1:6
+        @inbounds @simd for face_number in 1:6
             subsystem_array = vcat(subsystem_array, [[view(cube.configuration[face_number],1+i,1+j)], [view(cube.configuration[face_number],1+j,cube.L-i)],
                                                     [view(cube.configuration[face_number],cube.L-i,cube.L-j)], [view(cube.configuration[face_number],cube.L-j,1+i)]])
         end
@@ -133,7 +133,7 @@ include("rubiks_cube.jl")
 
         i = parse(Int64,subsystem_details[1])
 
-        for face_number in 1:6
+        @inbounds @simd for face_number in 1:6
             subsystem_array = vcat(subsystem_array, [[view(cube.configuration[face_number],1+i,Int((cube.L+1)/2))], [view(cube.configuration[face_number],Int((cube.L+1)/2),cube.L-i)],
                                                     [view(cube.configuration[face_number],cube.L-i,Int((cube.L+1)/2))], [view(cube.configuration[face_number],Int((cube.L+1)/2),1+i)]])
         end
@@ -165,7 +165,7 @@ end
     # Move cubelet 2's value to cubelet 3's position 
     # Move cubelet 1's value to cubelet 2's position 
     # Move cubelet 3's value to cubelet 1's position 
-    for facelet_index in eachindex(cubelet_subsystem[cubelet_index_1])
+    @inbounds @simd for facelet_index in eachindex(cubelet_subsystem[cubelet_index_1])
         temp = copy(cubelet_subsystem[cubelet_index_3][facelet_index])
 
         cubelet_subsystem[cubelet_index_3][facelet_index] .= cubelet_subsystem[cubelet_index_2][facelet_index]
@@ -257,7 +257,7 @@ end
     # No matter how many facelets each cubelet in this cubelet_subsystem contains (hence the for loop):
     # Move cubelet 1's value to cubelet 2's position 
     # Move cubelet 2's value to cubelet 1's position 
-    for facelet_index in eachindex(cubelet_subsystem[cubelet_index_1])
+    @inbounds @simd for facelet_index in eachindex(cubelet_subsystem[cubelet_index_1])
         temp = copy(cubelet_subsystem[cubelet_index_2][facelet_index])
 
         cubelet_subsystem[cubelet_index_2][facelet_index] .= cubelet_subsystem[cubelet_index_1][facelet_index]
@@ -296,7 +296,7 @@ end
             append!(subsystems_to_two_cycle, ["sigma_"])
         end
 
-        for (k,two_cycle_theta_k) in pairs(two_cycle_theta_ks)
+        @inbounds @simd for (k,two_cycle_theta_k) in pairs(two_cycle_theta_ks)
             if two_cycle_theta_k
                 append!(subsystems_to_two_cycle, ["theta_$k"])
             end
@@ -313,7 +313,7 @@ end
 
         # Constraint 2
         if isodd(cube.L)
-            for (k,two_cycle_theta_k) in pairs(two_cycle_theta_ks)
+            @inbounds @simd for (k,two_cycle_theta_k) in pairs(two_cycle_theta_ks)
                 # Use XOR to determine whether need to 2_cycle eta_k
                 if two_cycle_sigma ⊻ two_cycle_theta_k
                     append!(subsystems_to_two_cycle, ["eta_$k"])
@@ -322,8 +322,8 @@ end
         end
 
         # Constraint 3
-        for (i,two_cycle_theta_i) in pairs(two_cycle_theta_ks)
-            for (j,two_cycle_theta_j) in pairs(two_cycle_theta_ks[1:i-1])
+        @inbounds @simd for (i,two_cycle_theta_i) in pairs(two_cycle_theta_ks)
+            @inbounds @simd for (j,two_cycle_theta_j) in pairs(two_cycle_theta_ks[1:i-1])
                     # Use XOR to determine whether need to 2_cycle omega_ij
                     if two_cycle_sigma ⊻ two_cycle_theta_i ⊻ two_cycle_theta_j
                         append!(subsystems_to_two_cycle, ["omega_$i,$j"])
@@ -334,7 +334,7 @@ end
         # Now get 2 random cubelet indices for each cubelet subsystem to be two_cycled and pass these to two_cycle_cubelets!
         candidate_reversing_information = [[subsystem_name,0,0] for subsystem_name in subsystems_to_two_cycle]
 
-        for cubelet_subsystem_candidate_reversing_information in candidate_reversing_information
+        @inbounds @simd cubelet_subsystem_candidate_reversing_information in candidate_reversing_information
 
             if cubelet_subsystem_candidate_reversing_information[1]=="sigma_"
                 number_of_cubelets_in_subsystem = 8
@@ -358,7 +358,7 @@ end
     else
         # Just undo all 2_cycles by doing another 2_cycle on the same cubelets
 
-        for cubelet_subsystem_candidate_reversing_information in candidate_reversing_information
+        @inbounds @simd for cubelet_subsystem_candidate_reversing_information in candidate_reversing_information
             # Pass to two_cycle_cubelets
             two_cycle_cubelets!(cube,cubelet_subsystem_candidate_reversing_information[1],cubelet_subsystem_candidate_reversing_information[2],cubelet_subsystem_candidate_reversing_information[3])
         end
@@ -468,7 +468,7 @@ end
 
     # The probability of doing a coupled 2-cycle instead of a standard 3-cycle/orientation swap move is given by p_parity_exchange_swap
     # This can be optimised (larger values slows down simulation but is more likely to reach solved configuration)
-    p_parity_exchange_swap = 0.3
+    p_parity_exchange_swap = 0.35
 
     if !reverse 
         # (i.e. if not reversing)
