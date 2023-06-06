@@ -468,7 +468,7 @@ end
 
     # The probability of doing a coupled 2-cycle instead of a standard 3-cycle/orientation swap move is given by p_parity_exchange_swap
     # This can be optimised (larger values slows down simulation but is more likely to reach solved configuration)
-    p_parity_exchange_swap = 0.4
+    p_parity_exchange_swap = 0.3
 
     if !reverse 
         # (i.e. if not reversing)
