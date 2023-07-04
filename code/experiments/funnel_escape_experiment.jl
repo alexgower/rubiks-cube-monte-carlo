@@ -19,7 +19,7 @@ include("../probes/history_anneal.jl")
 
             # Run Rubik's Cube Energy History Anneal ----------
 
-            # Create a Rubik's cube object and run annealing function on it
+            # Use provided Rubik's cube object and run annealing function on it
 
             temperature_vector, E_by_time =  history_anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, mix=false)
 
@@ -32,9 +32,9 @@ include("../probes/history_anneal.jl")
 
             # Save Results ----------
             try
-                touch(joinpath("../../funnel_escape_results",simulation_name_to_use))
+                touch(joinpath("results/funnel_escape_results",simulation_name_to_use))
 
-                open(joinpath("../../funnel_escape_results",simulation_name_to_use), "w") do simulation_file
+                open(joinpath("results/funnel_escape_results",simulation_name_to_use), "w") do simulation_file
                     write(simulation_file, "Simulation:L=$L, P_s=$swap_move_probability, T=$T, N_t=$N_t \n")
                     write(simulation_file, "Time Index t, E(t) \n")
                     

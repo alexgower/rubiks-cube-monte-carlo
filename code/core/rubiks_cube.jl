@@ -378,3 +378,52 @@ function random_rotate!(cube::RubiksCube; reverse::Bool=false, candidate_reversi
         rotate!(cube, f, l, mod(o+1,2))
     end
 end
+
+
+
+
+
+# ----- Numbers -----
+function total_number_of_slice_rotations(L::Int64)
+    # Returns the total number of swap moves in a cube of size L
+    # Note that this is the same as the number of edges in the configuration network
+    # (i.e. the number of edges in the configuration graph)
+
+    if L == 1
+        return 0
+    end
+
+    if isodd(L)
+        return 6*(L-1)
+    else
+        return 6*L
+    end
+end
+
+
+
+
+
+# ----- Neighbours -----
+function slice_rotation_neighbour_energy_deltas!(cube::RubiksCube, neighbour_energy_deltas::Vector{Float64})
+    current_cube_energy = energy(cube)
+    neighbour_index = 1
+
+    for f in 1:6
+        for l in 0:floor(Int,(cube.L/2)-1)
+            for o in 0:1
+                # Do rotation
+                rotate!(cube, f, l, o)
+
+                # Calculate energy difference
+                neighbour_energy_deltas[neighbour_index] .= energy(cube) - current_cube_energy
+
+                # Undo rotation and increase neighbour index
+                rotate!(cube, f, l, mod(o+1,2))
+                neighbour_index += 1
+            end
+        end
+    end
+
+end
+

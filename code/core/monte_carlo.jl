@@ -2,7 +2,7 @@ include("rubiks_cube.jl")
 include("swap_moves.jl")
 
 
-function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!::Function, beta::Float64, verbose::Bool)
+function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!::Function, beta::Float64; verbose::Bool)
     # Perform Metropolis algorithm Monte Carlo Step on cube and candidate generated configurations at given beta
     # i.e. here we either reverse the candidate_generating_function's action on the cube (i.e. reject candidate configuration) or not
 
@@ -29,6 +29,8 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
     # ratio alpha = P(x')/P(x), then generating a random number u between 0 and 1, then accepting the candidate
     # if u <= alpha
 
+
+
     # Only print information if verbose mode on
     if verbose
         println("Current Energy: $current_energy")
@@ -36,8 +38,16 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
         println("Alpha: $(exp(beta * (current_energy - candidate_energy)))")
     end
 
-    if rand() <= exp(beta * (current_energy - candidate_energy))
-        # If the acceptance probability alpha is larger than u then we accept the new state i.e do not reverse it
+
+    alpha = exp(beta * (current_energy - candidate_energy))
+
+    # alpha = alpha < 0.001 ? 0.005 : alpha # TODO REMOVE
+    # heaviside(x) = x > 0 ? 1 : 0 # TODO REMOVE
+    # epsilon = 2.0 # TODO REMOVE
+    # alpha = exp(beta * ((current_energy - candidate_energy)- epsilon*sign(current_energy - candidate_energy)*heaviside(abs(current_energy - candidate_energy)-epsilon))) # TODO REMOVE
+
+
+    if rand() <=  alpha # If the acceptance probability alpha is larger than u then we accept the new state i.e do not reverse it
 
         if verbose
             printstyled("Switched \n"; color=:green)
@@ -96,7 +106,7 @@ function run_metropolis_swap_algorithm!(cube::RubiksCube, beta::Float64; swap_mo
         end
 
         # Now do a Monte Carlo timestep using this candidate configuration at this beta
-        accepted_candidates_increase = monte_carlo_timestep!(cube, candidate_generating_function!, beta, verbose)
+        accepted_candidates_increase = monte_carlo_timestep!(cube, candidate_generating_function!, beta; verbose=verbose)
 
         # Update iteration number, accepted_candidates and configuration correlation function and go to next iteration
         current_iteration += 1

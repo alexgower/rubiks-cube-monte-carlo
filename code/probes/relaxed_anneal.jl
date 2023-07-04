@@ -6,7 +6,7 @@ include("../core/monte_carlo.jl")
 
 
 
-@inbounds @fastmath function relaxed_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, relaxation_iterations_vector=nothing, average_sample_size::Int64=100, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, mixing_p_swap::Float64=0.0)
+@inbounds @fastmath function relaxed_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, relaxation_iterations_vector=nothing, average_sample_size::Int64=100, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, mixing_p_swap::Float64=0.0, neighbour_energy_deltas_sample_temperatures::Vector{Float64}=empty([0.0]), collecting_swap_move_neighbours::Bool=false)
 
     # Notes ---
 
@@ -40,8 +40,10 @@ include("../core/monte_carlo.jl")
         relaxation_iterations_vector = [tau_1 * (tau_0/tau_1)^((T1-T)/(T1-T0)) for T in temperature_vector]
     end
 
+    # Variables for later
     tau_0 = relaxation_iterations_vector[1]
     tau_1 = relaxation_iterations_vector[end]
+    collecting_neighbour_energy_deltas = !isempty(neighbour_energy_deltas_sample_temperatures)
 
 
 
@@ -70,6 +72,12 @@ include("../core/monte_carlo.jl")
     measured_relaxation_iterations_by_temperature = zeros(length(temperature_vector))
     accepted_candidates_by_temperature = zeros(length(temperature_vector))
     final_configuration_correlation_function_by_temperature = zeros(length(temperature_vector))
+
+    # If collecting neighbouring energy deltas then create array to store them
+    if collecting_neighbour_energy_deltas
+        number_of_neighbours = configuration_network_degree(cube.L, collecting_swap_move_neighbours)
+        neighbour_energy_deltas_by_temperature = zeros(length(neighbour_energy_deltas_sample_temperatures),average_sample_size*number_of_neighbours)
+    end
 
     
     # Cool Rubik's cube from T_1 to T_0 by temperatures described in the temperature vector
@@ -101,6 +109,7 @@ include("../core/monte_carlo.jl")
         E_running_total = 0.0
         E_squared_running_total = 0.0
 
+
         for sample_index in 1:average_sample_size
 
             # Metropolis+Swap algorithm will terminate when either the configuration correlation function (compared with
@@ -110,6 +119,14 @@ include("../core/monte_carlo.jl")
 
             E_running_total += energy(cube)
             E_squared_running_total += energy(cube)^2
+
+            # If collecting neighbouring energy deltas at this temperature then measure and store them
+            if collecting_neighbour_energy_deltas && insorted(T, neighbour_energy_deltas_sample_temperatures)
+                if verbose_annealing
+                    println("Collecting neighbour energy deltas at T = $T")
+                end
+                neighbour_energy_deltas_by_temperature[indexin(T,neighbour_energy_deltas_sample_temperatures), (sample_index-1)*number_of_neighbours+1:sample_index*number_of_neighbours] .= neighbour_energy_deltas(cube, false)
+            end
         end
 
         E_average_by_temperature[temperature_index] = E_running_total/average_sample_size
@@ -139,8 +156,11 @@ include("../core/monte_carlo.jl")
     end
 
     # Return results as dictionary
-    return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature 
-
+    if collecting_neighbour_energy_deltas
+        return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature, neighbour_energy_deltas_by_temperature
+    else
+        return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature 
+    end
 end
 
 
