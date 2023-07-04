@@ -15,6 +15,7 @@
 # ***This means that the minimum allowed cubelet configuration orientation change is opposite rotations of 2 cubelet's orientations***
 
 using StatsBase
+using Combinatorics
 
 include("rubiks_cube.jl")
 
@@ -267,7 +268,53 @@ end
 end
 
 
+@inline function get_coupled_subsystems_to_two_cycle(cube::RubiksCube, two_cycle_sigma, two_cycle_theta_ks)
 
+    subsystems_to_two_cycle::Vector{String} = []
+
+    # Independent subsystems
+    if two_cycle_sigma
+        append!(subsystems_to_two_cycle, ["sigma_"])
+    end
+
+    @inbounds for (k,two_cycle_theta_k) in pairs(two_cycle_theta_ks)
+        if two_cycle_theta_k
+            append!(subsystems_to_two_cycle, ["theta_$k"])
+        end
+    end
+
+    # Constraint 1
+    if two_cycle_sigma
+        append!(subsystems_to_two_cycle, vcat(["x_$i" for i in 1:ceil(Int, (cube.L-3)/2)]))
+
+        if isodd(cube.L)
+            append!(subsystems_to_two_cycle, ["tau_"])
+        end
+    end
+
+    # Constraint 2
+    if isodd(cube.L)
+        @inbounds for (k,two_cycle_theta_k) in pairs(two_cycle_theta_ks)
+            # Use XOR to determine whether need to 2_cycle eta_k
+            if two_cycle_sigma ⊻ two_cycle_theta_k
+                append!(subsystems_to_two_cycle, ["eta_$k"])
+            end
+        end
+    end
+
+    # Constraint 3
+    @inbounds for (i,two_cycle_theta_i) in pairs(two_cycle_theta_ks)
+        @inbounds for (j,two_cycle_theta_j) in pairs(two_cycle_theta_ks[1:i-1])
+                # Use XOR to determine whether need to 2_cycle omega_ij
+                if two_cycle_sigma ⊻ two_cycle_theta_i ⊻ two_cycle_theta_j
+                    append!(subsystems_to_two_cycle, ["omega_$i,$j"])
+                end
+        end
+    end
+
+    return subsystems_to_two_cycle
+
+end
 
 
 @inline function random_parity_sector_switch_coupled_two_cycles!(cube::RubiksCube; reverse::Bool=false, candidate_reversing_information=nothing)    
@@ -285,56 +332,18 @@ end
         # So first we just choose which of {sigma, {theta_k}} we want to perform a 2-cycle on (and thus change their permutation parity)
         # Then we use the above constraints to determine which of {{x_i},[tau],[{eta_k]}],omega_ij} we also need to perform
         
-        subsystems_to_two_cycle::Vector{String} = []
 
         # Choose which {sigma, {theta_k}} we want to perform a 2-cycle on
         two_cycle_sigma = rand([true,false])
         two_cycle_theta_ks = [rand([true,false]) for k in 1:ceil(Int, (cube.L-3)/2)]
 
-        # Independent subsystems
-        if two_cycle_sigma
-            append!(subsystems_to_two_cycle, ["sigma_"])
-        end
-
-        @inbounds @simd for (k,two_cycle_theta_k) in pairs(two_cycle_theta_ks)
-            if two_cycle_theta_k
-                append!(subsystems_to_two_cycle, ["theta_$k"])
-            end
-        end
-
-        # Constraint 1
-        if two_cycle_sigma
-            append!(subsystems_to_two_cycle, vcat(["x_$i" for i in 1:ceil(Int, (cube.L-3)/2)]))
-
-            if isodd(cube.L)
-                append!(subsystems_to_two_cycle, ["tau_"])
-            end
-        end
-
-        # Constraint 2
-        if isodd(cube.L)
-            @inbounds @simd for (k,two_cycle_theta_k) in pairs(two_cycle_theta_ks)
-                # Use XOR to determine whether need to 2_cycle eta_k
-                if two_cycle_sigma ⊻ two_cycle_theta_k
-                    append!(subsystems_to_two_cycle, ["eta_$k"])
-                end
-            end
-        end
-
-        # Constraint 3
-        @inbounds @simd for (i,two_cycle_theta_i) in pairs(two_cycle_theta_ks)
-            @inbounds @simd for (j,two_cycle_theta_j) in pairs(two_cycle_theta_ks[1:i-1])
-                    # Use XOR to determine whether need to 2_cycle omega_ij
-                    if two_cycle_sigma ⊻ two_cycle_theta_i ⊻ two_cycle_theta_j
-                        append!(subsystems_to_two_cycle, ["omega_$i,$j"])
-                    end
-            end
-        end
+        # Get full list of all subsystems which must be two cycled in order to respect fundamental constraints of cube given which of above sigma and theta_ks are being two cycled
+        subsystems_to_two_cycle::Vector{String} = get_coupled_subsystems_to_two_cycle(cube,two_cycle_sigma,two_cycle_theta_ks)
                 
         # Now get 2 random cubelet indices for each cubelet subsystem to be two_cycled and pass these to two_cycle_cubelets!
         candidate_reversing_information = [[subsystem_name,0,0] for subsystem_name in subsystems_to_two_cycle]
 
-        @inbounds @simd cubelet_subsystem_candidate_reversing_information in candidate_reversing_information
+        @inbounds @simd for cubelet_subsystem_candidate_reversing_information in candidate_reversing_information
 
             if cubelet_subsystem_candidate_reversing_information[1]=="sigma_"
                 number_of_cubelets_in_subsystem = 8
@@ -456,26 +465,27 @@ end
 @inline function random_swap_move!(cube::RubiksCube; reverse::Bool=false, candidate_reversing_information=nothing)
 
     # With (cube) arguments: performs random swap_move of type:
-    # - P_{X,(a,b,c)} i.e. a 3-cycle in cubelet subsystem X of cubelets in positions -->a-->b-->c-->
+    # - P_3{X,(a,b,c)} i.e. a 3-cycle in cubelet subsystem X of cubelets in positions -->a-->b-->c-->
     # or
-    # - O_{X,(a,b)} i.e. an orientation rotation in cubelet subsystem X of factor +1 (anticlockwise) to cubelet in position a and -1(clockwise) to cubelet in position b
+    # - O_{X,(a,b)} i.e. an opposite orientation rotation in cubelet subsystem X of factor +1 (anticlockwise) to cubelet in position a and -1(clockwise) to cubelet in position b
     # or
-    # - Coupled P2_{X,(a,b)} i.e. coupled 2-cycles in such a way that fundamental constraints are conserved
+    # - Coupled P2_{X,(a,b)} i.e. coupled subsystem 2-cycles in such a way that fundamental constraints are conserved
 
     # Returns candidate_reversing_information = (X, (a,b) or (a,b,c))
 
     # With (cube, reverse=true, candidate_reversing_information) as arguments, it simply undoes the previous swap_move
 
-    # The probability of doing a coupled 2-cycle instead of a standard 3-cycle/orientation swap move is given by p_parity_exchange_swap
-    # This can be optimised (larger values slows down simulation but is more likely to reach solved configuration)
-    p_parity_exchange_swap = 0.35
+    # Currently we have a perfect uniform distribution of suggesting each type of swap move, but we can bias some classes of swap moves over others using the variables below
+    bias_of_coupled_subsystem_two_cycles_over_three_cycles_or_opposite_orientation_rotations = 0.0
+    bias_of_three_cycles_over_opposite_orientation_rotations = 0.0
+
 
     if !reverse 
         # (i.e. if not reversing)
         # First choose random type of swap_move
 
-        # Firstly choose whether doing a 'parity sector exchange' swap move or not 
-        if rand() < p_parity_exchange_swap
+        # Firstly choose whether doing a coupled subsystem 2-cycle swap move or not
+        if rand() < (number_of_coupled_subsystem_two_cycle_swap_moves(cube; inequivalent=true)/total_number_of_swap_moves(cube;inequivalent=true)) + bias_of_coupled_subsystem_two_cycles_over_three_cycles_or_opposite_orientation_rotations
             # Parity sector exchange case
 
             candidate_reversing_information = random_parity_sector_switch_coupled_two_cycles!(cube)
@@ -483,19 +493,14 @@ end
         else
             # Not parity sector exchange case
 
-            # Make the 3-cycle swap moves equally likely to the orientation swap moves
-            # (i.e uniform random choice over 3-cycle swap moves in any of the cubelet_subystems or of the 2 (corners or central edges) opposite-rotation swap moves)
-            # (This isn't perfect - as not accounting for number of distinct 2/3 cubelets can pick in each cubelet_subystem for a 3-cycle/opposite-rotaiton swap move)
-            # (But is much better than having a 50/50 chance between either one of the (2) types of opposite-rotation swap move, or one of the (many) types of 3-cycle swap move)
-        
-            swap_move_type = rand(1:2 + length(cube.cubelet_subsystems_labels))
-
-            if swap_move_type > 2 
-                # P_{X,(a,b,c)} case 
+            # Now choose between three cycles or opposite orientation rotations
+            
+            if rand() < (number_of_three_cycle_swap_moves(cube;inequivalent=true)/(number_of_three_cycle_swap_moves(cube;inequivalent=true)+number_of_opposite_orientation_rotation_swap_moves(cube))) + bias_of_three_cycles_over_opposite_orientation_rotations
+                # P_{X,(a,b,c)} i.e. three cycle case 
                 candidate_reversing_information = random_three_cycle!(cube)
 
             else 
-                # O_{X,(a,b)} case
+                # O_{X,(a,b)} i.e. opposite orientation rotation case
                 candidate_reversing_information = random_orientation_rotation!(cube)
                 
             end
@@ -530,3 +535,322 @@ end
     end
 
 end 
+
+
+
+# Numbers ---
+
+function number_of_opposite_orientation_rotation_swap_moves(cube::RubiksCube)
+    
+    number_of_opposite_orientation_rotation_swap_moves = 0
+
+    if cube.L == 1
+        return 0
+    end
+
+    # Add for 'corners' (always 8 cubelets in subsystem, choose permutations of 2 from this 8 as clockwise/anticlockwise matters, then 2 types of rotation as 1 unit or 2 units)
+    number_of_opposite_orientation_rotation_swap_moves += length(permutations(1:8, 2))*2
+
+    if isodd(cube.L)
+        # Add for 'central edges' for odd cubes (always 12 cubelets in subsystem, choose permutations of 2 from thi 12 as clockwise/anticlockiwse matters, then 1 type of rotation)
+        number_of_opposite_orientation_rotation_swap_moves += length(permutations(1:12, 2))
+    end
+
+    return number_of_opposite_orientation_rotation_swap_moves
+
+end
+
+
+
+function number_of_three_cycle_swap_moves(cube::RubiksCube; inequivalent=false)
+    
+    number_of_three_cycle_swap_moves = 0
+
+    for cubelet_subsystem_label in cube.cubelet_subsystems_labels
+
+        if cubelet_subsystem_label=="sigma_"
+            number_of_cubelets_in_subsystem = 8
+        elseif cubelet_subsystem_label=="tau_"
+            number_of_cubelets_in_subsystem = 12
+        else
+            number_of_cubelets_in_subsystem = 24
+        end
+
+        # For every subsystem add a three cycle using permutation of 3 from the number of cubelets in subystem (as order matters)
+        # This will 'overcount' 'inequivalent' 3-cycles by a factor of 3 as (A,B,C) (C,A,B), (B,C,A) will have the same effect on the cube
+        # However in reality every 3-cycle is overcounted by the same factor of 3 so we just use this to perform random three-cycle swap moves on cubes
+        number_of_three_cycle_swap_moves += length(permutations(1:number_of_cubelets_in_subsystem, 3))
+
+    
+    end
+
+    if !inequivalent
+
+        return number_of_three_cycle_swap_moves
+
+    else
+        # However for calculating weighting factor between classes of swap moves (three cycles, opposite orientation rotations and coupled subsystem two cycles)
+        # it is worth only accounting inequivalent 3 cycles so we do not unintentionally generate a bias towards them
+        return Int(number_of_three_cycle_swap_moves/3)
+    end
+
+end
+
+
+
+function number_of_coupled_subsystem_two_cycle_swap_moves(cube::RubiksCube; inequivalent=false)
+    if cube.L == 1
+        return 0
+    end
+
+
+    number_of_coupled_subsystem_two_cycle_swap_moves = 0
+
+    # The number of subclasses of coupled subsystem two cycle swap moves is equivalent to the number of ways of assining +1/-1 to {sigma, {theta_k}}
+    # (as by knowing the parity changes of these, we can uniquely determine the required parity changes of others)
+
+    # Note that theta_k has k run in 1:ceil(Int, (cube.L-3)/2)
+    number_of_coupled_subsystem_two_cycle_subclasses = 2^(1+ceil(Int, (cube.L-3)/2))
+
+
+    # Now we generate a set of true/false values (equivalently a bitstring of 1s and 0s) for every one of these subclass cases
+    # (but trim so only (1+ceil(Int, (cube.L-3)/2)) bits)
+    all_coupled_subsystem_two_cycle_subclass_sigma_and_theta_k_parity_changes = [reverse(reverse(bitstring(a))[1:(1+ceil(Int, (cube.L-3)/2))]) for a in 0:number_of_coupled_subsystem_two_cycle_subclasses-1]
+
+
+    # For every subclass of coupled subsystem two cycle swap move:
+    for subclass in all_coupled_subsystem_two_cycle_subclass_sigma_and_theta_k_parity_changes
+
+        # We first get the list of ALL subsystems that must be two cycled in order to respect the fundamental constraints of the cube
+        two_cycle_sigma = parse(Bool,subclass[1])
+        two_cycle_theta_ks = isempty(subclass[2:end]) ? [] : parse.(Bool, split(subclass[2:end],""))
+
+        subsystems_to_two_cycle::Vector{String} = get_coupled_subsystems_to_two_cycle(cube,two_cycle_sigma, two_cycle_theta_ks)
+
+        # For every subsystem that must be two cycled calculate and add permutations of 2 cubelets from number of cubelets in subsystem
+        # TODO Note
+
+        for subsystem_to_two_cycle in subsystems_to_two_cycle
+            if subsystem_to_two_cycle=="sigma_"
+                number_of_cubelets_in_subsystem = 8
+            elseif subsystem_to_two_cycle=="tau_"
+                number_of_cubelets_in_subsystem = 12
+            else
+                number_of_cubelets_in_subsystem = 24
+            end
+
+            # This will 'overcount' 'inequivalent' 2-cycles by a factor of 3 as (A,B) and (B,A) will have the same effect on the cube
+            # However in reality every 2-cycle is overcounted by the same factor of 2 so we just use this to perform random two-cycle swap moves on cubes
+            number_of_coupled_subsystem_two_cycle_swap_moves += length(permutations(1:number_of_cubelets_in_subsystem, 2))
+
+        end
+
+    end
+
+    if !inequivalent
+
+        return number_of_coupled_subsystem_two_cycle_swap_moves
+
+    else
+        # However for calculating weighting factor between classes of swap moves (three cycles, opposite orientation rotations and coupled subsystem two cycles)
+        # it is worth only accounting inequivalent 2 cycles so we do not unintentionally generate a bias towards them
+        return Int(number_of_coupled_subsystem_two_cycle_swap_moves/2)
+    end
+
+end
+
+
+function total_number_of_swap_moves(cube::RubiksCube; inequivalent=false)
+
+    total_number_of_swap_moves = 0
+
+    total_number_of_swap_moves += number_of_opposite_orientation_rotation_swap_moves(cube)
+
+    total_number_of_swap_moves += number_of_three_cycle_swap_moves(cube; inequivalent=inequivalent)
+
+    total_number_of_swap_moves += number_of_coupled_subsystem_two_cycle_swap_moves(cube; inequivalent=inequivalent)
+
+    return total_number_of_swap_moves
+
+end
+
+
+@inline function configuration_network_degree(L::Int64, including_swap_moves::Bool)
+
+    if including_swap_moves
+        return total_number_of_swap_moves(RubiksCube(L))
+    else
+        return total_number_of_slice_rotations(L)
+    end
+
+end 
+
+
+
+
+
+# ----- Neighbours -----
+
+function add_opposite_orientation_rotation_neighbour_energy_deltas!(cube::RubiksCube, opposite_orientation_rotation_neighbour_energy_deltas)
+    
+    current_cube_energy = energy(cube)
+    neighbour_index = 1
+
+    # Determine which rotable subsystems are present in the cube
+    if isodd(cube.L)
+        cubelet_subsystem_labels = ["sigma_", "tau_"]
+    else
+        cubelet_subsystem_labels = ["sigma_"]
+    end
+
+    # For every rotable subsystem
+    for cubelet_subsystem_label in cubelet_subsystem_labels
+
+        if cubelet_subsystem_label == "sigma_"
+            number_of_cubelets_in_subsystem = 8
+        else # (cubelet_subsystem_label=="tau_" case)
+            number_of_cubelets_in_subsystem = 12
+        end
+
+        # For every pair of cubelets in the subsystem
+        all_random_cubelet_indices_combinations = permutations(1:number_of_cubelets_in_subsystem, 2)
+
+        for random_cubelet_indices_combination in all_random_cubelet_indices_combinations
+            
+            # Do one unit opposite orientation rotation to neighbouring configuration and add delta energy
+            opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[2])
+            opposite_orientation_rotation_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
+            neighbour_index += 1
+
+            # Do the second unit of opposite orientation rotations that are availbe to corners only if evaluating for corners
+            if cubelet_subsystem_label == "sigma_"
+                opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[2])
+                opposite_orientation_rotation_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
+                neighbour_index += 1
+
+                # Reverse second unit of rotation if applied
+                # (Just reverse cubelet_index order so previously anticlockwise rotated cubelet is rotated clockwise by same amount and vice versa)
+                opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[2], random_cubelet_indices_combination[1])
+            end
+
+            # Reverse first unit of rotation
+            # (Just reverse cubelet_index order so previously anticlockwise rotated cubelet is rotated clockwise by same amount and vice versa)
+            opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[2], random_cubelet_indices_combination[1])
+        end
+
+    end
+end
+
+
+
+function add_three_cycle_swap_move_neighbour_energy_deltas!(cube::RubiksCube, three_cycle_swap_move_neighbour_energy_deltas)
+    
+    current_cube_energy = energy(cube)
+    neighbour_index = 1
+
+
+
+
+    # ---
+    
+    # Determine which rotable subsystems are present in the cube
+    if isodd(cube.L)
+        cubelet_subsystem_labels = ["sigma_", "tau_"]
+    else
+        cubelet_subsystem_labels = ["sigma_"]
+    end
+
+    # For every rotable subsystem
+    for cubelet_subsystem_label in cubelet_subsystem_labels
+
+        if cubelet_subsystem_label == "sigma_"
+            number_of_cubelets_in_subsystem = 8
+        else # (cubelet_subsystem_label=="tau_" case)
+            number_of_cubelets_in_subsystem = 12
+        end
+
+        # For every pair of cubelets in the subsystem
+        all_random_cubelet_indices_combinations = permutations(1:number_of_cubelets_in_subsystem, 2)
+
+        for random_cubelet_indices_combination in all_random_cubelet_indices_combinations
+            
+            # Do one unit opposite orientation rotation to neighbouring configuration and add delta energy
+            opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[2])
+            opposite_orientation_rotation_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
+            neighbour_index += 1
+
+            # Do the second unit of opposite orientation rotations that are availbe to corners only if evaluating for corners
+            if cubelet_subsystem_label == "sigma_"
+                opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[2])
+                opposite_orientation_rotation_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
+                neighbour_index += 1
+
+                # Reverse second unit of rotation if applied
+                # (Just reverse cubelet_index order so previously anticlockwise rotated cubelet is rotated clockwise by same amount and vice versa)
+                opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[2], random_cubelet_indices_combination[1])
+            end
+
+            # Reverse first unit of rotation
+            # (Just reverse cubelet_index order so previously anticlockwise rotated cubelet is rotated clockwise by same amount and vice versa)
+            opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[2], random_cubelet_indices_combination[1])
+        end
+
+    end
+end
+
+
+
+function swap_move_neighbour_energy_deltas!(cube::RubiksCube, neighbour_energy_deltas::Vector{Float64})
+
+
+    # Firstly add opposite orientation rotation neighbour delta energies
+    @views add_opposite_orientation_rotation_neighbour_energy_deltas!(cube, neighbour_energy_deltas[1:number_of_opposite_orientation_rotation_swap_moves(cube)])
+
+    println(neighbour_energy_deltas[1:number_of_opposite_orientation_rotation_swap_moves(cube)])
+
+    # Next add three cycle swap move neighbour delta energies
+    add_three_cycle_swap_move_neighbour_energy_deltas!(cube, neighbour_energy_deltas[(number_of_opposite_orientation_rotation_swap_moves(cube)+1):(number_of_opposite_orientation_rotation_swap_moves(cube)+number_of_three_cycle_swap_moves(cube))])
+
+    # # Finally add coupled subsystem two cycle swap move neighbour delta energies
+    # add_coupled_subsystem_two_cycle_swap_move_neighbour_energy_deltas!(cube, neighbour_energy_deltas[(number_of_opposite_orientation_rotation_swap_moves(cube)+number_of_three_cycle_swap_moves(cube)+1):end])
+
+
+    # ----
+
+    # for f in 1:6
+    #     for l in 0:floor(Int,(cube.L/2)-1)
+    #         for o in 0:1
+    #             # Do rotation
+    #             rotate!(cube, f, l, o)
+
+    #             # Calculate energy difference
+    #             neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
+
+    #             # Undo rotation and increase neighbour index
+    #             rotate!(cube, f, l, mod(o+1,2))
+    #             neighbour_index += 1
+    #         end
+    #     end
+    # end
+
+end
+
+
+
+
+
+
+
+function neighbour_energy_deltas(cube::RubiksCube, including_swap_moves::Bool)
+
+    neighbour_energy_deltas = zeros(configuration_network_degree(cube.L, including_swap_moves))
+
+    if including_swap_moves
+        swap_move_neighbour_energy_deltas!(cube, neighbour_energy_deltas)
+    else
+        slice_rotation_neighbour_energy_deltas!(cube, neighbour_energy_deltas)
+    end
+
+end
+
+

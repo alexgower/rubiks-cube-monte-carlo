@@ -1,9 +1,16 @@
-# Soon:
-- Test history_anneal
-- Test thin_funnel_experiment
+# Now:
+- Restore bias to 0.35 and subsystem calculation or neraby to speed up if needed
+- is statsbase needed swap moves?
 
+- Make neighbour_energy_deltas function part for swap moves
+- Automate running distribution and saving histograms
+
+# Soon:
 - Add order parameter measurements to relaxed_anneal and history_anneal
 - Add saved error logs to relaxed_anneal and history_anneal
+
+- Do configuration_network_degree function part including swap moves
+- Later do neighbour_energy_deltas function part for swap moves
 
 
 # -----
@@ -15,6 +22,7 @@
 
 # Maybe:
 - Find consistently best relaxation_iterations_vector
+- Replace number_of_three_cycle_swap_moves function with mathematical calulation
 
 # For Paper:
 - Note I am now using not double-counting-bonds definition of energy not Ollie's definition
