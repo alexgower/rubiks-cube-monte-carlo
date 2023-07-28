@@ -7,6 +7,8 @@ function test_move_reversals(cube::RubiksCube)
     number_of_three_cycles = 0
     number_of_opposite_orientation_rotations = 0
 
+    # --- Opposite Orientation Rotations ---
+
     println("ORIENTATION SWAP MOVES TEST ---")
 
     if isodd(cube.L)
@@ -47,6 +49,9 @@ function test_move_reversals(cube::RubiksCube)
 
         end
     end
+
+
+    # --- Three Cycles ---
 
     println("3-CYCLE SWAP MOVES TEST ---")
 

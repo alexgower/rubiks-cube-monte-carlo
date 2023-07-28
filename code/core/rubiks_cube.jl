@@ -400,12 +400,24 @@ function total_number_of_slice_rotations(L::Int64)
     end
 end
 
+@inline function get_number_of_cubelets_in_subsystem(subsystem_name::String)
+
+    if subsystem_name=="sigma_"
+        return 8
+    elseif subsystem_name=="tau_"
+        return 12
+    else
+        return 24
+    end
+
+end
+
 
 
 
 
 # ----- Neighbours -----
-function slice_rotation_neighbour_energy_deltas!(cube::RubiksCube, neighbour_energy_deltas::Vector{Float64})
+function all_slice_rotation_neighbour_energy_deltas!(cube::RubiksCube, neighbour_energy_deltas)
     current_cube_energy = energy(cube)
     neighbour_index = 1
 
@@ -416,7 +428,7 @@ function slice_rotation_neighbour_energy_deltas!(cube::RubiksCube, neighbour_ene
                 rotate!(cube, f, l, o)
 
                 # Calculate energy difference
-                neighbour_energy_deltas[neighbour_index] .= energy(cube) - current_cube_energy
+                neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
 
                 # Undo rotation and increase neighbour index
                 rotate!(cube, f, l, mod(o+1,2))

@@ -6,7 +6,7 @@ include("../core/monte_carlo.jl")
 
 
 
-@inbounds @fastmath function relaxed_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, relaxation_iterations_vector=nothing, average_sample_size::Int64=100, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, mixing_p_swap::Float64=0.0, neighbour_energy_deltas_sample_temperatures::Vector{Float64}=empty([0.0]), collecting_swap_move_neighbours::Bool=false)
+@inbounds @fastmath function relaxed_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, relaxation_iterations_vector=nothing, average_sample_size::Int64=100, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, mixing_p_swap::Float64=0.0, neighbour_energy_deltas_sample_temperatures::Vector{Float64}=empty([0.0]), collecting_swap_move_neighbours::Bool=false, neighbours_per_configuration_sample_size::Int64=0, energy_histogram_sample_temperatures::Vector{Float64}=empty([0.0]))
 
     # Notes ---
 
@@ -44,7 +44,7 @@ include("../core/monte_carlo.jl")
     tau_0 = relaxation_iterations_vector[1]
     tau_1 = relaxation_iterations_vector[end]
     collecting_neighbour_energy_deltas = !isempty(neighbour_energy_deltas_sample_temperatures)
-
+    creating_energy_histogram = !isempty(energy_histogram_sample_temperatures)
 
 
     # Mixing Stage ---
@@ -75,8 +75,19 @@ include("../core/monte_carlo.jl")
 
     # If collecting neighbouring energy deltas then create array to store them
     if collecting_neighbour_energy_deltas
-        number_of_neighbours = configuration_network_degree(cube.L, collecting_swap_move_neighbours)
+        # If neighbour_per_configuration_sample_size=0 (default) then just collect all neighbours, otherwise collect a random sample of neighbours
+        if neighbours_per_configuration_sample_size==0
+            number_of_neighbours = configuration_network_degree(cube.L, collecting_swap_move_neighbours)
+        else
+            number_of_neighbours = neighbours_per_configuration_sample_size
+        end
+        
         neighbour_energy_deltas_by_temperature = zeros(length(neighbour_energy_deltas_sample_temperatures),average_sample_size*number_of_neighbours)
+    end
+
+    # If creating energy histogram then create array to store it (with length just equal to average_sample_size)
+    if creating_energy_histogram
+        energy_samples_by_temperature = zeros(length(energy_histogram_sample_temperatures),average_sample_size)
     end
 
     
@@ -105,6 +116,33 @@ include("../core/monte_carlo.jl")
 
         # Measurement Stage ---
 
+         # If creating energy histogram at this temperature then measure and store them
+        if creating_energy_histogram 
+            if insorted(T, energy_histogram_sample_temperatures) && verbose_annealing
+                printstyled("!!! Creating energy histogram at T = $T\n"; color=:red)
+            end
+
+            # If completed final energy histogram then break out of for loop
+            if all(energy_histogram_sample_temperatures .> T)
+                break
+            end
+        end
+
+        # If collecting neighbouring energy deltas at this temperature then measure and store them
+        if collecting_neighbour_energy_deltas
+            if insorted(T, neighbour_energy_deltas_sample_temperatures) && verbose_annealing
+                printstyled("!!! Collecting neighbour energy deltas at T = $T\n"; color=:red)
+            end
+            
+            # If completed final neighbour energy deltas then break out of for loop
+            if all(neighbour_energy_deltas_sample_temperatures .> T)
+                break
+            end
+        end
+
+        
+        # Do measurements ---
+
         # Calculate <E> and <E^2> at this temperature but only take measurements every relation_iterations steps to ensure statistical independence
         E_running_total = 0.0
         E_squared_running_total = 0.0
@@ -117,16 +155,23 @@ include("../core/monte_carlo.jl")
             # upper bound to this) iterations have been reached
             run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=relaxation_iterations_vector[temperature_index], verbose=false, configuration_correlation_convergence_criteria=exp(-1))
 
-            E_running_total += energy(cube)
-            E_squared_running_total += energy(cube)^2
+            E = energy(cube)
+            E_running_total += E
+            E_squared_running_total += E^2
 
-            # If collecting neighbouring energy deltas at this temperature then measure and store them
-            if collecting_neighbour_energy_deltas && insorted(T, neighbour_energy_deltas_sample_temperatures)
-                if verbose_annealing
-                    println("Collecting neighbour energy deltas at T = $T")
-                end
-                neighbour_energy_deltas_by_temperature[indexin(T,neighbour_energy_deltas_sample_temperatures), (sample_index-1)*number_of_neighbours+1:sample_index*number_of_neighbours] .= neighbour_energy_deltas(cube, false)
+            if creating_energy_histogram && insorted(T, energy_histogram_sample_temperatures)
+                energy_samples_by_temperature[indexin(T,energy_histogram_sample_temperatures), sample_index] .= E
             end
+
+            if collecting_neighbour_energy_deltas && insorted(T, neighbour_energy_deltas_sample_temperatures)
+                # If neighbour_per_configuration_sample_size=0 (default) then just collect all neighbours, otherwise collect a random sample of neighbours
+                if neighbours_per_configuration_sample_size==0
+                    neighbour_energy_deltas_by_temperature[indexin(T,neighbour_energy_deltas_sample_temperatures), (sample_index-1)*number_of_neighbours+1:sample_index*number_of_neighbours] .= all_neighbour_energy_deltas(cube, collecting_swap_move_neighbours)
+                else
+                    neighbour_energy_deltas_by_temperature[indexin(T,neighbour_energy_deltas_sample_temperatures), (sample_index-1)*neighbours_per_configuration_sample_size+1:sample_index*neighbours_per_configuration_sample_size] .= sample_neighbour_energy_deltas(cube, collecting_swap_move_neighbours, neighbours_per_configuration_sample_size)
+                end
+            end
+ 
         end
 
         E_average_by_temperature[temperature_index] = E_running_total/average_sample_size
@@ -158,17 +203,9 @@ include("../core/monte_carlo.jl")
     # Return results as dictionary
     if collecting_neighbour_energy_deltas
         return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature, neighbour_energy_deltas_by_temperature
+    elseif creating_energy_histogram
+        return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature, energy_samples_by_temperature
     else
         return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature 
     end
 end
-
-
-
-
-
-
-
-
-
-

@@ -1,9 +1,5 @@
 # Now:
-- Restore bias to 0.35 and subsystem calculation or neraby to speed up if needed
-- is statsbase needed swap moves?
-
-- Make neighbour_energy_deltas function part for swap moves
-- Automate running distribution and saving histograms
+- Check breaking out of for loop working
 
 # Soon:
 - Add order parameter measurements to relaxed_anneal and history_anneal
@@ -16,6 +12,7 @@
 # -----
 
 # Later:
+- Clean up acceptable_neighbours_graph_plotter code to be less duplicated
 - Ask ChatGPT to make code from GitHub more efficient. Use ProfileView again too.
 - Optimise p_parity_exchange_swap for speed and effecacy, also ratio of 3-cycles to orientation rotations
 - Add ensemble processes
