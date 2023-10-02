@@ -8,7 +8,7 @@ function acceptable_neighbours_graph_plotter(graph_save_name::String, data_simul
     ### ORIGINAL DATA
 
     # Read data from file 
-    data_matrix = readdlm(joinpath("tools/acceptable_neighbours_graph_plotter/",data_simulation_name_to_use), ',', Any, '\n', skipstart=2)
+    data_matrix = readdlm(joinpath("results/tools/acceptable_neighbours_graph_plotter/",data_simulation_name_to_use), ',', Any, '\n', skipstart=2)
     neighbour_energy_deltas_sample_temperatures = convert(Vector{Float64},data_matrix[:,1])
 
 
@@ -60,7 +60,7 @@ function acceptable_neighbours_graph_plotter(graph_save_name::String, data_simul
     if comparison_data_simulation_name_to_use != ""
 
         # Read data from file 
-        data_matrix = readdlm(joinpath("tools/acceptable_neighbours_graph_plotter/",comparison_data_simulation_name_to_use), ',', Any, '\n', skipstart=2)
+        data_matrix = readdlm(joinpath("results/tools/acceptable_neighbours_graph_plotter/",comparison_data_simulation_name_to_use), ',', Any, '\n', skipstart=2)
         comparison_neighbour_energy_deltas_sample_temperatures = convert(Vector{Float64},data_matrix[:,1])
 
 
@@ -151,8 +151,8 @@ function acceptable_neighbours_graph_plotter(graph_save_name::String, data_simul
    
    
     # Plot Data
-    plot!(graph, neighbour_energy_deltas_sample_temperatures, one_in_hundred_acceptable_neighbour_proportions_by_temperature, label="1/100 Energy (Slice Rotations)", color=:orange)
-    plot!(graph, neighbour_energy_deltas_sample_temperatures, one_in_thousand_acceptable_neighbour_proportions_by_temperature, label="1/1000 Energy (Slice Rotations)", color=:red)
+    plot!(graph, neighbour_energy_deltas_sample_temperatures, one_in_hundred_acceptable_neighbour_proportions_by_temperature, label="1/100 Energy (6 Swap Moves)", color=:orange)
+    plot!(graph, neighbour_energy_deltas_sample_temperatures, one_in_thousand_acceptable_neighbour_proportions_by_temperature, label="1/1000 Energy (6 Swap Move)", color=:red)
 
 
 
@@ -207,9 +207,9 @@ function acceptable_neighbours_graph_plotter(graph_save_name::String, data_simul
 
 
         # Plot Graph
-        plot!(graph, comparison_neighbour_energy_deltas_sample_temperatures, comparison_one_in_hundred_acceptable_neighbour_proportions_by_temperature, label="1/100 Energy (Swap Moves)", color=:green)
-        plot!(graph, comparison_neighbour_energy_deltas_sample_temperatures, comparison_one_in_thousand_acceptable_neighbour_proportions_by_temperature, label="1/1000 Energy (Swap Moves)", color=:blue)
-        
+        plot!(graph, comparison_neighbour_energy_deltas_sample_temperatures, comparison_one_in_hundred_acceptable_neighbour_proportions_by_temperature, label="1/100 Energy (1 Swap Move)", color=:green)
+        plot!(graph, comparison_neighbour_energy_deltas_sample_temperatures, comparison_one_in_thousand_acceptable_neighbour_proportions_by_temperature, label="1/1000 Energy (1 Swap Move)", color=:blue)
+            
     end
 
 
@@ -219,11 +219,17 @@ function acceptable_neighbours_graph_plotter(graph_save_name::String, data_simul
     ### FLIP GRAPH
     xflip!(graph)
 
+    ### ADJUST LEGEND
+    graph = plot!(legend=:bottomleft, legendfontsize=15)
+
     ### SAVE GRAPH
-    savefig(graph, "tools/acceptable_neighbours_graph_plotter/$(graph_save_name).png")
+    savefig(graph, "results/tools/acceptable_neighbours_graph_plotter/$(graph_save_name).png")
 
 
     printstyled("Original Data 1/1000 Proportions: $(reverse(one_in_thousand_acceptable_neighbour_proportions_by_temperature))"; color=:light_blue)
-    printstyled("Comparision Data 1/1000 Proportions: $(reverse(comparison_one_in_thousand_acceptable_neighbour_proportions_by_temperature))"; color=:light_red)
+    if comparison_data_simulation_name_to_use != ""
+        printstyled("Comparison Data 1/1000 Proportions: $(reverse(comparison_one_in_thousand_acceptable_neighbour_proportions_by_temperature))"; color=:light_red)
+    end
 
+    display(graph)
 end

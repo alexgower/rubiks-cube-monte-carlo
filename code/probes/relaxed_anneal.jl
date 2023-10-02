@@ -6,7 +6,7 @@ include("../core/monte_carlo.jl")
 
 
 
-@inbounds @fastmath function relaxed_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, relaxation_iterations_vector=nothing, average_sample_size::Int64=100, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, mixing_p_swap::Float64=0.0, neighbour_energy_deltas_sample_temperatures::Vector{Float64}=empty([0.0]), collecting_swap_move_neighbours::Bool=false, neighbours_per_configuration_sample_size::Int64=0, energy_histogram_sample_temperatures::Vector{Float64}=empty([0.0]))
+@inbounds @fastmath function relaxed_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, relaxation_iterations_vector=nothing, average_sample_size::Int64=100, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, mixing_p_swap::Float64=0.0, neighbour_energy_deltas_sample_temperatures::Vector{Float64}=empty([0.0]), collecting_swap_move_neighbours::Bool=false, neighbours_per_configuration_sample_size::Int64=0, energy_histogram_sample_temperatures::Vector{Float64}=empty([0.0]), collect_minimum_neighbour_energy_delta_only::Bool=false, extra_swap_moves::Int64=0, extra_slice_rotations::Int64=0)
 
     # Notes ---
 
@@ -16,10 +16,17 @@ include("../core/monte_carlo.jl")
 
 
     # Validation and Initial Set-Up --- 
+    collecting_neighbour_energy_deltas = !isempty(neighbour_energy_deltas_sample_temperatures)
+    creating_energy_histogram = !isempty(energy_histogram_sample_temperatures)
+
 
     # Make sure relaxation_iterations_vector (if provided) has same number of elements as temperature_vector
     if !isnothing(relaxation_iterations_vector) && length(relaxation_iterations_vector) != length(temperature_vector)
         throw(ArgumentError("relaxation_iterations_vector must be same length as temperature_vector"))
+    end
+
+    if collecting_neighbour_energy_deltas && neighbours_per_configuration_sample_size == 0 && (extra_swap_moves != 0 || extra_slice_rotations != 0)
+        throw(ArgumentError("Cannot perform extra swap moves or extra random rotations when collecting ALL neighbours"))
     end
 
     # Create default relaxation_iterations_vector if not provided
@@ -43,8 +50,6 @@ include("../core/monte_carlo.jl")
     # Variables for later
     tau_0 = relaxation_iterations_vector[1]
     tau_1 = relaxation_iterations_vector[end]
-    collecting_neighbour_energy_deltas = !isempty(neighbour_energy_deltas_sample_temperatures)
-    creating_energy_histogram = !isempty(energy_histogram_sample_temperatures)
 
 
     # Mixing Stage ---
@@ -75,14 +80,19 @@ include("../core/monte_carlo.jl")
 
     # If collecting neighbouring energy deltas then create array to store them
     if collecting_neighbour_energy_deltas
-        # If neighbour_per_configuration_sample_size=0 (default) then just collect all neighbours, otherwise collect a random sample of neighbours
-        if neighbours_per_configuration_sample_size==0
-            number_of_neighbours = configuration_network_degree(cube.L, collecting_swap_move_neighbours)
-        else
-            number_of_neighbours = neighbours_per_configuration_sample_size
-        end
+        if !collect_minimum_neighbour_energy_delta_only
+            # If neighbour_per_configuration_sample_size=0 (default) then just collect all neighbours, otherwise collect a random sample of neighbours
+            if neighbours_per_configuration_sample_size==0
+                number_of_neighbours = configuration_network_degree(cube.L, collecting_swap_move_neighbours)
+            else
+                number_of_neighbours = neighbours_per_configuration_sample_size
+            end
         
-        neighbour_energy_deltas_by_temperature = zeros(length(neighbour_energy_deltas_sample_temperatures),average_sample_size*number_of_neighbours)
+            neighbour_energy_deltas_by_temperature = zeros(length(neighbour_energy_deltas_sample_temperatures),average_sample_size*number_of_neighbours)
+
+        else
+            neighbour_energy_deltas_by_temperature = zeros(length(neighbour_energy_deltas_sample_temperatures),1)
+        end
     end
 
     # If creating energy histogram then create array to store it (with length just equal to average_sample_size)
@@ -132,6 +142,10 @@ include("../core/monte_carlo.jl")
         if collecting_neighbour_energy_deltas
             if insorted(T, neighbour_energy_deltas_sample_temperatures) && verbose_annealing
                 printstyled("!!! Collecting neighbour energy deltas at T = $T\n"; color=:red)
+
+                if collect_minimum_neighbour_energy_delta_only
+                    printstyled("!!! Collecting minimum neighbour energy delta only"; color=:red)
+                end
             end
             
             # If completed final neighbour energy deltas then break out of for loop
@@ -166,9 +180,16 @@ include("../core/monte_carlo.jl")
             if collecting_neighbour_energy_deltas && insorted(T, neighbour_energy_deltas_sample_temperatures)
                 # If neighbour_per_configuration_sample_size=0 (default) then just collect all neighbours, otherwise collect a random sample of neighbours
                 if neighbours_per_configuration_sample_size==0
-                    neighbour_energy_deltas_by_temperature[indexin(T,neighbour_energy_deltas_sample_temperatures), (sample_index-1)*number_of_neighbours+1:sample_index*number_of_neighbours] .= all_neighbour_energy_deltas(cube, collecting_swap_move_neighbours)
+                    samples = all_neighbour_energy_deltas(cube, collecting_swap_move_neighbours)
                 else
-                    neighbour_energy_deltas_by_temperature[indexin(T,neighbour_energy_deltas_sample_temperatures), (sample_index-1)*neighbours_per_configuration_sample_size+1:sample_index*neighbours_per_configuration_sample_size] .= sample_neighbour_energy_deltas(cube, collecting_swap_move_neighbours, neighbours_per_configuration_sample_size)
+                    samples = sample_neighbour_energy_deltas(cube, collecting_swap_move_neighbours, neighbours_per_configuration_sample_size; extra_swap_moves=extra_swap_moves, extra_slice_rotations=extra_slice_rotations)
+                end
+
+                # If collecting minimum neighbour energy delta only then just store minimum
+                if !collect_minimum_neighbour_energy_delta_only
+                    neighbour_energy_deltas_by_temperature[indexin(T,neighbour_energy_deltas_sample_temperatures), (sample_index-1)*number_of_neighbours+1:sample_index*number_of_neighbours] .= samples
+                else
+                    neighbour_energy_deltas_by_temperature[indexin(T,neighbour_energy_deltas_sample_temperatures), (sample_index-1)+1:sample_index] .=  minimum(samples) 
                 end
             end
  

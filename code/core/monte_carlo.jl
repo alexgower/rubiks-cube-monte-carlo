@@ -2,7 +2,7 @@ include("rubiks_cube.jl")
 include("swap_moves.jl")
 
 
-function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!::Function, beta::Float64; verbose::Bool)
+function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!::Function, beta::Float64; verbose::Bool=false)
     # Perform Metropolis algorithm Monte Carlo Step on cube and candidate generated configurations at given beta
     # i.e. here we either reverse the candidate_generating_function's action on the cube (i.e. reject candidate configuration) or not
 
@@ -16,6 +16,15 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
     # Generate candidate configuration and calculate it's energy
     # This function just returns 'candidate_reversing_information' after modifying cube so we know how to reverse modification
     candidate_reversing_information = candidate_generating_function!(cube)
+    
+    # TODO remove
+    extra_rotations = 5
+    # extra_reversing_information = Array{Tuple{Int64, Int64, Int64}}(undef, extra_rotations)
+    extra_reversing_information = Array{Any}(undef, 5)
+    for i in 1:extra_rotations
+        extra_reversing_information[i] = random_swap_move!(cube)
+    end
+
     candidate_energy = energy(cube)
 
     if verbose
@@ -41,12 +50,6 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
 
     alpha = exp(beta * (current_energy - candidate_energy))
 
-    # alpha = alpha < 0.001 ? 0.005 : alpha # TODO REMOVE
-    # heaviside(x) = x > 0 ? 1 : 0 # TODO REMOVE
-    # epsilon = 2.0 # TODO REMOVE
-    # alpha = exp(beta * ((current_energy - candidate_energy)- epsilon*sign(current_energy - candidate_energy)*heaviside(abs(current_energy - candidate_energy)-epsilon))) # TODO REMOVE
-
-
     if rand() <=  alpha # If the acceptance probability alpha is larger than u then we accept the new state i.e do not reverse it
 
         if verbose
@@ -60,6 +63,12 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
         # Also return accepted_candidates_increase = 1
         return 1
     else
+
+        # TODO remove
+        for i in extra_rotations:-1:1
+            random_swap_move!(cube;reverse=true,candidate_reversing_information=extra_reversing_information[i])
+        end
+
         # Otherwise we reject the candidate configuration and revert it to the original configuraiton
         candidate_generating_function!(cube;reverse=true,candidate_reversing_information=candidate_reversing_information)
 

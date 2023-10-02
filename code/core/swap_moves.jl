@@ -843,7 +843,7 @@ end
 
 
 
-function sample_neighbour_energy_deltas(cube::RubiksCube, including_swap_moves::Bool, neighbour_sample_size::Int64)
+function sample_neighbour_energy_deltas(cube::RubiksCube, including_swap_moves::Bool, neighbour_sample_size::Int64; extra_slice_rotations::Int64=0, extra_swap_moves::Int64=0)
     neighbour_energy_deltas = zeros(neighbour_sample_size)
 
     current_energy = energy(cube)
@@ -856,7 +856,33 @@ function sample_neighbour_energy_deltas(cube::RubiksCube, including_swap_moves::
 
     for neighbour_index in 1:neighbour_sample_size
         neighbour_reversing_information = neighbour_generating_function!(cube)
+
+        # Add extra random rotations
+        extra_slice_rotations_reversing_information = Array{Tuple{Int64, Int64, Int64}}(undef, extra_slice_rotations)
+        for extra_random_rotation_index in 1:extra_slice_rotations
+           extra_slice_rotations_reversing_information[extra_random_rotation_index] = random_rotate!(cube)
+        end
+
+        # Add extra swap moves
+        extra_swap_moves_reversing_information = Array{Any}(undef, extra_swap_moves)
+        for extra_swap_move_index in 1:extra_swap_moves
+           extra_swap_moves_reversing_information[extra_swap_move_index] = random_swap_move!(cube)
+        end
+
+        # Calculate delta energy
         neighbour_energy_deltas[neighbour_index] = energy(cube) - current_energy
+
+
+        # Reverse extra swap moves
+        for extra_swap_move in reverse(extra_swap_moves_reversing_information)
+            random_swap_move!(cube; reverse=true, candidate_reversing_information=extra_swap_move)
+        end
+
+        # Reverse extra random rotations
+        for extra_random_rotation in reverse(extra_slice_rotations_reversing_information)
+            random_rotate!(cube; reverse=true, candidate_reversing_information=extra_random_rotation)
+        end
+
 
         # printstyled("Energy Delta: $(neighbour_energy_deltas[neighbour_index])\n", color=:green)
         neighbour_generating_function!(cube;reverse=true,candidate_reversing_information=neighbour_reversing_information)
