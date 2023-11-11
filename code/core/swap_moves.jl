@@ -672,223 +672,246 @@ end
 
 # ----- Neighbours -----
 
-function add_opposite_orientation_rotation_neighbour_energy_deltas!(cube::RubiksCube, opposite_orientation_rotation_neighbour_energy_deltas)
+# --- ALL NEIGHBOURS ---
+
+# - All Swap Move Neighbours -
+
+# function add_opposite_orientation_rotation_neighbour_energy_deltas!(cube::RubiksCube, opposite_orientation_rotation_neighbour_energy_deltas)
     
-    current_cube_energy = energy(cube)
-    neighbour_index = 1
+#     current_cube_energy = energy(cube)
+#     neighbour_index = 1
 
-    # Determine which rotable subsystems are present in the cube
-    if isodd(cube.L)
-        cubelet_subsystem_labels = ["sigma_", "tau_"]
-    else
-        cubelet_subsystem_labels = ["sigma_"]
-    end
+#     # Determine which rotable subsystems are present in the cube
+#     if isodd(cube.L)
+#         cubelet_subsystem_labels = ["sigma_", "tau_"]
+#     else
+#         cubelet_subsystem_labels = ["sigma_"]
+#     end
 
-    # For every rotable subsystem
-    for cubelet_subsystem_label in cubelet_subsystem_labels
+#     # For every rotable subsystem
+#     for cubelet_subsystem_label in cubelet_subsystem_labels
 
-        number_of_cubelets_in_subsystem = get_number_of_cubelets_in_subsystem(cubelet_subsystem_label)
+#         number_of_cubelets_in_subsystem = get_number_of_cubelets_in_subsystem(cubelet_subsystem_label)
 
-        # For every pair of cubelets in the subsystem
-        # We should be thinking in terms of permutations as order matters as cubelets are rotated in opposite directions
-        all_random_cubelet_indices_combinations = permutations(1:number_of_cubelets_in_subsystem, 2)
+#         # For every pair of cubelets in the subsystem
+#         # We should be thinking in terms of permutations as order matters as cubelets are rotated in opposite directions
+#         all_random_cubelet_indices_combinations = permutations(1:number_of_cubelets_in_subsystem, 2)
 
-        for random_cubelet_indices_combination in all_random_cubelet_indices_combinations
+#         for random_cubelet_indices_combination in all_random_cubelet_indices_combinations
             
-            # Do opposite orientation rotation to neighbouring configuration and add delta energy
-            opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[2])
-            opposite_orientation_rotation_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
-            neighbour_index += 1
+#             # Do opposite orientation rotation to neighbouring configuration and add delta energy
+#             opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[2])
+#             opposite_orientation_rotation_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
+#             neighbour_index += 1
 
-            # Reverse the opposite orientation rotationrotation
-            # (Just reverse cubelet_index order so previously anticlockwise rotated cubelet is rotated clockwise by same amount and vice versa)
-            opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[2], random_cubelet_indices_combination[1])
-        end
+#             # Reverse the opposite orientation rotationrotation
+#             # (Just reverse cubelet_index order so previously anticlockwise rotated cubelet is rotated clockwise by same amount and vice versa)
+#             opposite_rotate_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[2], random_cubelet_indices_combination[1])
+#         end
 
-    end
-end
+#     end
+# end
 
 
 
-function add_three_cycle_swap_move_neighbour_energy_deltas!(cube::RubiksCube, three_cycle_swap_move_neighbour_energy_deltas)
+# function add_three_cycle_swap_move_neighbour_energy_deltas!(cube::RubiksCube, three_cycle_swap_move_neighbour_energy_deltas)
     
-    current_cube_energy = energy(cube)
-    neighbour_index = 1
+#     current_cube_energy = energy(cube)
+#     neighbour_index = 1
 
-    # For all subsystems in the cube
-    for cubelet_subsystem_label in cube.cubelet_subsystems_labels
+#     # For all subsystems in the cube
+#     for cubelet_subsystem_label in cube.cubelet_subsystems_labels
 
-        number_of_cubelets_in_subsystem = get_number_of_cubelets_in_subsystem(cubelet_subsystem_label)
+#         number_of_cubelets_in_subsystem = get_number_of_cubelets_in_subsystem(cubelet_subsystem_label)
 
-        # For every combination of three cubelets in the subsystem 
-        # We do parity even/odd version implemenation of 3-cycle later on - which ultimately are equivalent to clockwise v anticlockwise 3-cycles)
-        all_random_cubelet_indices_combinations = combinations(1:number_of_cubelets_in_subsystem, 3)
+#         # For every combination of three cubelets in the subsystem 
+#         # We do parity even/odd version implemenation of 3-cycle later on - which ultimately are equivalent to clockwise v anticlockwise 3-cycles)
+#         all_random_cubelet_indices_combinations = combinations(1:number_of_cubelets_in_subsystem, 3)
 
-        for random_cubelet_indices_combination in all_random_cubelet_indices_combinations
+#         for random_cubelet_indices_combination in all_random_cubelet_indices_combinations
 
-            # We first find the delta energy from doing the parity even version of the 3-cycle
-            three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[2], random_cubelet_indices_combination[3])
-            three_cycle_swap_move_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
-            neighbour_index += 1
+#             # We first find the delta energy from doing the parity even version of the 3-cycle
+#             three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[2], random_cubelet_indices_combination[3])
+#             three_cycle_swap_move_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
+#             neighbour_index += 1
 
-            # Reverse the three cycele
-            # Now just want 3-cycle in opposite direction therefore just define the cubelets in an odd signature order e.g. [1,3,2]
-            # i.e. before we did [1,2,3] ---> [3,1,2]
-            # and now we are saying [(1),(3),(2)] = [3,2,1] --> [1,3,2] = [(2),(1),(3)]
-            three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[3], random_cubelet_indices_combination[2])
-
-
-            # We now find the delta energy from doing the parity odd version of the 3-cycle
-            three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[3], random_cubelet_indices_combination[2])
-            three_cycle_swap_move_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
-            neighbour_index += 1
-
-            # Reverse the three cycele
-            three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[2], random_cubelet_indices_combination[3])
-
-        end
-    end
-end
+#             # Reverse the three cycele
+#             # Now just want 3-cycle in opposite direction therefore just define the cubelets in an odd signature order e.g. [1,3,2]
+#             # i.e. before we did [1,2,3] ---> [3,1,2]
+#             # and now we are saying [(1),(3),(2)] = [3,2,1] --> [1,3,2] = [(2),(1),(3)]
+#             three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[3], random_cubelet_indices_combination[2])
 
 
+#             # We now find the delta energy from doing the parity odd version of the 3-cycle
+#             three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[3], random_cubelet_indices_combination[2])
+#             three_cycle_swap_move_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
+#             neighbour_index += 1
 
-function add_coupled_subsystem_two_cycle_swap_move_neighbour_energy_deltas!(cube::RubiksCube, coupled_subsystem_two_cycle_swap_move_neighbour_energy_deltas)
+#             # Reverse the three cycele
+#             three_cycle_cubelets!(cube, cubelet_subsystem_label, random_cubelet_indices_combination[1], random_cubelet_indices_combination[2], random_cubelet_indices_combination[3])
+
+#         end
+#     end
+# end
+
+
+
+# function add_coupled_subsystem_two_cycle_swap_move_neighbour_energy_deltas!(cube::RubiksCube, coupled_subsystem_two_cycle_swap_move_neighbour_energy_deltas)
     
-    current_cube_energy = energy(cube)
-    neighbour_index = 1
+#     current_cube_energy = energy(cube)
+#     neighbour_index = 1
 
-    # The number of subclasses of coupled subsystem two cycle swap moves is equivalent to the number of ways of assining +1/-1 to {sigma, {theta_k}}
-    # (as by knowing the parity changes of these, we can uniquely determine the required parity changes of others)
-    # Note that theta_k has k run in 1:ceil(Int, (cube.L-3)/2)
-    number_of_coupled_subsystem_two_cycle_subclasses = 2^(1+ceil(Int, (cube.L-3)/2))
-
-
-    # Now we generate a set of true/false values (equivalently a bitstring of 1s and 0s) for every one of these subclass cases
-    # (but trim so only (1+ceil(Int, (cube.L-3)/2)) bits)
-    # We also start from 1 not 0 as we don't want to consider the case where all are false (as this is equivalent to no coupled subsystem two cycle swap move)
-    all_coupled_subsystem_two_cycle_subclass_sigma_and_theta_k_parity_changes = [reverse(reverse(bitstring(a))[1:(1+ceil(Int, (cube.L-3)/2))]) for a in 1:number_of_coupled_subsystem_two_cycle_subclasses-1]
-
-    # For every subclass of coupled subsystem two cycle swap move:
-    for subclass in all_coupled_subsystem_two_cycle_subclass_sigma_and_theta_k_parity_changes
-
-        # We first get the list of ALL subsystems that must be two cycled in order to respect the fundamental constraints of the cube
-        two_cycle_sigma = parse(Bool,subclass[1])
-        two_cycle_theta_ks = isempty(subclass[2:end]) ? [] : parse.(Bool, split(subclass[2:end],""))
-
-        subsystems_to_two_cycle::Vector{String} = get_coupled_subsystems_to_two_cycle(cube,two_cycle_sigma, two_cycle_theta_ks)
-
-        # First we must create COMBINATION OF COMBINATIONS of cubelets to two cycle (as the two cycling of cubelets in different subsystems is coupled)
-        combination_of_combinations_of_cubelets_to_two_cycle = [collect(combinations(1:get_number_of_cubelets_in_subsystem(subsystem_name),2)) for subsystem_name in subsystems_to_two_cycle]
-
-        # We use ... operator to 'splat'
-        all_coupled_two_cycles_in_subclass = Iterators.product(combination_of_combinations_of_cubelets_to_two_cycle...)
-
-        for coupled_two_cycle in all_coupled_two_cycles_in_subclass
-
-            # For every combination of combination, complete all of the coupled two cycles at same time
-            for (subsystem_index, subsystem_name) in pairs(subsystems_to_two_cycle)
-                two_cycle_cubelets!(cube, subsystem_name, coupled_two_cycle[subsystem_index][1], coupled_two_cycle[subsystem_index][2])
-            end
-
-            # Then find the delta energy from doing the coupled two cycle
-            coupled_subsystem_two_cycle_swap_move_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
-            neighbour_index += 1
-
-            # Reverse all the two cycles
-            # (Just undo by doing another 2_cycle on the same cubelets)
-            for (subsystem_index, subsystem_name) in pairs(subsystems_to_two_cycle)
-                two_cycle_cubelets!(cube, subsystem_name, coupled_two_cycle[subsystem_index][1], coupled_two_cycle[subsystem_index][2])
-            end
-
-        end
-
-    end
-
-end
+#     # The number of subclasses of coupled subsystem two cycle swap moves is equivalent to the number of ways of assining +1/-1 to {sigma, {theta_k}}
+#     # (as by knowing the parity changes of these, we can uniquely determine the required parity changes of others)
+#     # Note that theta_k has k run in 1:ceil(Int, (cube.L-3)/2)
+#     number_of_coupled_subsystem_two_cycle_subclasses = 2^(1+ceil(Int, (cube.L-3)/2))
 
 
+#     # Now we generate a set of true/false values (equivalently a bitstring of 1s and 0s) for every one of these subclass cases
+#     # (but trim so only (1+ceil(Int, (cube.L-3)/2)) bits)
+#     # We also start from 1 not 0 as we don't want to consider the case where all are false (as this is equivalent to no coupled subsystem two cycle swap move)
+#     all_coupled_subsystem_two_cycle_subclass_sigma_and_theta_k_parity_changes = [reverse(reverse(bitstring(a))[1:(1+ceil(Int, (cube.L-3)/2))]) for a in 1:number_of_coupled_subsystem_two_cycle_subclasses-1]
 
-function all_swap_move_neighbour_energy_deltas!(cube::RubiksCube, neighbour_energy_deltas)
+#     # For every subclass of coupled subsystem two cycle swap move:
+#     for subclass in all_coupled_subsystem_two_cycle_subclass_sigma_and_theta_k_parity_changes
 
-    # Firstly add opposite orientation rotation neighbour delta energies
-    @views add_opposite_orientation_rotation_neighbour_energy_deltas!(cube, neighbour_energy_deltas[1:number_of_opposite_orientation_rotation_swap_moves(cube)])
+#         # We first get the list of ALL subsystems that must be two cycled in order to respect the fundamental constraints of the cube
+#         two_cycle_sigma = parse(Bool,subclass[1])
+#         two_cycle_theta_ks = isempty(subclass[2:end]) ? [] : parse.(Bool, split(subclass[2:end],""))
 
-    # Next add three cycle swap move neighbour delta energies
-    @views add_three_cycle_swap_move_neighbour_energy_deltas!(cube, neighbour_energy_deltas[(number_of_opposite_orientation_rotation_swap_moves(cube)+1):(number_of_opposite_orientation_rotation_swap_moves(cube)+number_of_three_cycle_swap_moves(cube))])
+#         subsystems_to_two_cycle::Vector{String} = get_coupled_subsystems_to_two_cycle(cube,two_cycle_sigma, two_cycle_theta_ks)
 
-    # Finally add coupled subsystem two cycle swap move neighbour delta energies
-    @views add_coupled_subsystem_two_cycle_swap_move_neighbour_energy_deltas!(cube, neighbour_energy_deltas[(number_of_opposite_orientation_rotation_swap_moves(cube)+number_of_three_cycle_swap_moves(cube)+1):end])
+#         # First we must create COMBINATION OF COMBINATIONS of cubelets to two cycle (as the two cycling of cubelets in different subsystems is coupled)
+#         combination_of_combinations_of_cubelets_to_two_cycle = [collect(combinations(1:get_number_of_cubelets_in_subsystem(subsystem_name),2)) for subsystem_name in subsystems_to_two_cycle]
 
-end
+#         # We use ... operator to 'splat'
+#         all_coupled_two_cycles_in_subclass = Iterators.product(combination_of_combinations_of_cubelets_to_two_cycle...)
+
+#         for coupled_two_cycle in all_coupled_two_cycles_in_subclass
+
+#             # For every combination of combination, complete all of the coupled two cycles at same time
+#             for (subsystem_index, subsystem_name) in pairs(subsystems_to_two_cycle)
+#                 two_cycle_cubelets!(cube, subsystem_name, coupled_two_cycle[subsystem_index][1], coupled_two_cycle[subsystem_index][2])
+#             end
+
+#             # Then find the delta energy from doing the coupled two cycle
+#             coupled_subsystem_two_cycle_swap_move_neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
+#             neighbour_index += 1
+
+#             # Reverse all the two cycles
+#             # (Just undo by doing another 2_cycle on the same cubelets)
+#             for (subsystem_index, subsystem_name) in pairs(subsystems_to_two_cycle)
+#                 two_cycle_cubelets!(cube, subsystem_name, coupled_two_cycle[subsystem_index][1], coupled_two_cycle[subsystem_index][2])
+#             end
+
+#         end
+
+#     end
+
+# end
 
 
 
-function all_neighbour_energy_deltas(cube::RubiksCube, including_swap_moves::Bool)
+# function all_swap_move_neighbour_energy_deltas!(cube::RubiksCube, neighbour_energies; recursive_additional_neighbour_steps::Int64=0, neighbour_index::Int64=1, excluded_slice_rotation=(0,0,0))
+
+#     # Firstly add opposite orientation rotation neighbour delta energies
+#     @views add_opposite_orientation_rotation_neighbour_energy_deltas!(cube, neighbour_energies[1:number_of_opposite_orientation_rotation_swap_moves(cube)])
+
+#     # Next add three cycle swap move neighbour delta energies
+#     @views add_three_cycle_swap_move_neighbour_energy_deltas!(cube, neighbour_energies[(number_of_opposite_orientation_rotation_swap_moves(cube)+1):(number_of_opposite_orientation_rotation_swap_moves(cube)+number_of_three_cycle_swap_moves(cube))])
+
+#     # Finally add coupled subsystem two cycle swap move neighbour delta energies
+#     @views add_coupled_subsystem_two_cycle_swap_move_neighbour_energy_deltas!(cube, neighbour_energies[(number_of_opposite_orientation_rotation_swap_moves(cube)+number_of_three_cycle_swap_moves(cube)+1):end])
+
+# end
 
 
-    neighbour_energy_deltas = zeros(configuration_network_degree(cube.L, including_swap_moves))
+# - All Neighbours Function -
+
+function all_neighbour_energies(cube::RubiksCube, including_swap_moves::Bool; keep_energy_deltas_only::Bool=false, neighbour_moves_away::Int64=1)
+
+    initial_energy = energy(cube)
+
+    # Make empty array of neighbour energy deltas for neighbours that are neighbour_moves_away away, i.e. exluding any immediate 'backward steps'
+    # For Z = degree of network, this is equal to Z*(Z-1)^(neighbour_moves_away-1) since we have Z choices for the first move, and then Z-1 choices for each subsequent move
+    Z = configuration_network_degree(cube.L, including_swap_moves)
+    neighbour_energies = zeros(Z*(Z-1)^(neighbour_moves_away-1))
 
     if including_swap_moves
-        @views all_swap_move_neighbour_energy_deltas!(cube, neighbour_energy_deltas[:])
+        throw("Recursive all_swap_move_neighbour_energies function not implemented yet")
+        # @views all_swap_move_neighbour_energy_deltas!(cube, neighbour_energies[:]) # TODO turn into recursive too and energies not deltas
     else
-        @views all_slice_rotation_neighbour_energy_deltas!(cube, neighbour_energy_deltas[:])
+        @views all_slice_rotation_neighbour_energies!(cube, neighbour_energies[:]; recursive_additional_neighbour_steps=neighbour_moves_away, excluded_slice_rotation=(0,0,0))
     end
 
-
-    return neighbour_energy_deltas
-
+    if keep_energy_deltas_only
+        neighbour_energy_deltas = neighbour_energies .- initial_energy
+        return neighbour_energy_deltas
+    else
+        neighbour_initial_and_final_energies = [(initial_energy, neighbour_energies[neighbour_index]) for neighbour_index in eachindex(neighbour_energies)]
+        return neighbour_initial_and_final_energies
+    end
 end
 
 
 
+# --- RANDOM NEIGHBOURS ---
+
+function sample_neighbour_energies(cube::RubiksCube, including_swap_moves::Bool, neighbour_sample_size::Int64; keep_energy_deltas_only::Bool=false, neighbour_moves_away::Int64=1, deep_copy_method::Bool=true)
+    
+    initial_energy = energy(cube)
+    neighbour_generating_function! = including_swap_moves ? random_swap_move! : random_rotate!
+
+    # Make empty array of neighbour energies
+    neighbour_energies = zeros(neighbour_sample_size)
+
+    ### DEEP COPY METHOD ###
+    if deep_copy_method
+
+        for neighbour_index in 1:neighbour_sample_size
+            copied_cube = deepcopy(cube)
+
+            for neighbour_step in 1:neighbour_moves_away
+                neighbour_generating_function!(copied_cube)
+            end
+
+            neighbour_energies[neighbour_index] = energy(copied_cube)
+        end
+    ### ###
 
 
-function sample_neighbour_energy_deltas(cube::RubiksCube, including_swap_moves::Bool, neighbour_sample_size::Int64; extra_slice_rotations::Int64=0, extra_swap_moves::Int64=0)
-    neighbour_energy_deltas = zeros(neighbour_sample_size)
-
-    current_energy = energy(cube)
-
-    if including_swap_moves
-        neighbour_generating_function! = random_swap_move!
+    ### REVERSING METHOD ###
     else
-        neighbour_generating_function! = random_rotate!
+        all_steps_neighbour_reversing_information = including_swap_moves ? Array{Any}(undef, neighbour_sample_size) : Array{Tuple{Int64, Int64, Int64}}(undef, neighbour_sample_size)
+
+
+        for neighbour_index in 1:neighbour_sample_size
+
+            # Do all neighbour moves
+            for neighbour_step in 1:neighbour_moves_away
+                all_steps_neighbour_reversing_information[neighbour_step] = neighbour_generating_function!(cube)
+            end
+
+            neighbour_energies[neighbour_index] = energy(copied_cube)
+
+
+            # Reverse all neighbour moves
+            for reverse_neighbour_step in reverse(all_steps_neighbour_reversing_information)
+                neighbour_generating_function!(cube; reverse=true, candidate_reversing_information=reverse_neighbour_step)
+            end
+
+        end
     end
+    ### ###
 
-    for neighbour_index in 1:neighbour_sample_size
-        neighbour_reversing_information = neighbour_generating_function!(cube)
-
-        # Add extra random rotations
-        extra_slice_rotations_reversing_information = Array{Tuple{Int64, Int64, Int64}}(undef, extra_slice_rotations)
-        for extra_random_rotation_index in 1:extra_slice_rotations
-           extra_slice_rotations_reversing_information[extra_random_rotation_index] = random_rotate!(cube)
-        end
-
-        # Add extra swap moves
-        extra_swap_moves_reversing_information = Array{Any}(undef, extra_swap_moves)
-        for extra_swap_move_index in 1:extra_swap_moves
-           extra_swap_moves_reversing_information[extra_swap_move_index] = random_swap_move!(cube)
-        end
-
-        # Calculate delta energy
-        neighbour_energy_deltas[neighbour_index] = energy(cube) - current_energy
-
-
-        # Reverse extra swap moves
-        for extra_swap_move in reverse(extra_swap_moves_reversing_information)
-            random_swap_move!(cube; reverse=true, candidate_reversing_information=extra_swap_move)
-        end
-
-        # Reverse extra random rotations
-        for extra_random_rotation in reverse(extra_slice_rotations_reversing_information)
-            random_rotate!(cube; reverse=true, candidate_reversing_information=extra_random_rotation)
-        end
-
-
-        # printstyled("Energy Delta: $(neighbour_energy_deltas[neighbour_index])\n", color=:green)
-        neighbour_generating_function!(cube;reverse=true,candidate_reversing_information=neighbour_reversing_information)
+    
+    if keep_energy_deltas_only
+        neighbour_energy_deltas = neighbour_energies .- initial_energy
+        return neighbour_energy_deltas
+    else
+        neighbour_initial_and_final_energies = [(initial_energy, neighbour_energies[neighbour_index]) for neighbour_index in eachindex(neighbour_energies)]
+        return neighbour_initial_and_final_energies
     end
-
-    return neighbour_energy_deltas
 
 end
 

@@ -1,3 +1,6 @@
+using Random
+using LinearAlgebra
+
 # ------ RubiksCube Struct and Configuration ------
 
 mutable struct RubiksCube
@@ -110,11 +113,10 @@ end
 # ------ Energy ------
 
 # Function to get the energy of a RubiksCube 
-function energy(cube::RubiksCube)
-
+function energy(cube::RubiksCube)::Float64
     # Start energy at 0 then count all the bonds (same spin values for nearest neighbours) present on the cube
     # with its current configuration.
-    E = 0
+    E = 0.0
 
     # Sum energy over every face individually (i.e. no couplings around corners/edges)
     for face_number in 1:6
@@ -125,20 +127,6 @@ function energy(cube::RubiksCube)
 
                 # Note can remove up and left nearest neighbour bond checks as will have already been included once 
                 # from another facelet (hence we don't need the factor of 1/2 in energy at the end)
-
-                # # Add up nearest neighbour (if exists) coupling energy (=-1 if same spin as current site, else 0)
-                # if (i-1) >= 1
-                #     if face(cube, face_number)[i-1, j] == face(cube,face_number)[i, j]
-                #         E -= 1
-                #     end
-                # end
-
-                # # Add left nearest neighbour (if exists) coupling energy (=-1 if same spin as current site, else 0)
-                # if (j-1) >= 1
-                #     if face(cube, face_number)[i, j-1] == face(cube, face_number)[i, j]
-                #         E -= 1
-                #     end
-                # end
 
                 # Add down nearest neighbour (if exists) coupling energy (=-1 if same spin as current site, else 0)
                 if (i+1) <= cube.L
@@ -162,7 +150,7 @@ function energy(cube::RubiksCube)
 end
 
 # Function (just for convenience) to get energy of solved configuration of RubiksCube of this size left
-@inline function solved_configuration_energy(cube::RubiksCube)
+@inline function solved_configuration_energy(cube::RubiksCube)::Float64
     return -12*cube.L*(cube.L - 1)
 end
 
@@ -417,24 +405,43 @@ end
 
 
 # ----- Neighbours -----
-function all_slice_rotation_neighbour_energy_deltas!(cube::RubiksCube, neighbour_energy_deltas)
-    current_cube_energy = energy(cube)
-    neighbour_index = 1
 
-    for f in 1:6
-        for l in 0:floor(Int,(cube.L/2)-1)
-            for o in 0:1
-                # Do rotation
-                rotate!(cube, f, l, o)
+function all_slice_rotation_neighbour_energies!(cube::RubiksCube, neighbour_energies; recursive_additional_neighbour_steps::Int64=0, neighbour_index::Int64=1, excluded_slice_rotation=(0,0,0))
 
-                # Calculate energy difference
-                neighbour_energy_deltas[neighbour_index] = energy(cube) - current_cube_energy
+    # Do additional neighbour steps if required
+    if recursive_additional_neighbour_steps > 0
 
-                # Undo rotation and increase neighbour index
-                rotate!(cube, f, l, mod(o+1,2))
-                neighbour_index += 1
+        # For all slice rotation neighbours
+        for f in 1:6
+            for l in 0:floor(Int,(cube.L/2)-1)
+                for o in 0:1
+
+                    # Do not include excluded slice rotation (which will correspond to immediately undo-ing the previous slice rotation when we are in a recursive call)
+                    if (f,l,o) != excluded_slice_rotation
+
+
+                            # Do rotation
+                            rotate!(cube, f, l, o)
+
+                            # Recurse
+                            neighbour_index = all_slice_rotation_neighbour_energies!(deepcopy(cube), neighbour_energies; recursive_additional_neighbour_steps=recursive_additional_neighbour_steps-1, neighbour_index=neighbour_index, excluded_slice_rotation=(f,l,mod(o+1,2)))
+
+                            # Undo rotation
+                            rotate!(cube, f, l, mod(o+1,2))
+
+                    end
+                end
             end
         end
+
+        return neighbour_index
+
+    # Else store energy and increment neighbour index
+    elseif recursive_additional_neighbour_steps==0
+
+        neighbour_energies[neighbour_index] = energy(cube)
+        return neighbour_index + 1
+    
     end
 
 end

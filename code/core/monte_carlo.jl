@@ -16,14 +16,6 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
     # Generate candidate configuration and calculate it's energy
     # This function just returns 'candidate_reversing_information' after modifying cube so we know how to reverse modification
     candidate_reversing_information = candidate_generating_function!(cube)
-    
-    # TODO remove
-    extra_rotations = 5
-    # extra_reversing_information = Array{Tuple{Int64, Int64, Int64}}(undef, extra_rotations)
-    extra_reversing_information = Array{Any}(undef, 5)
-    for i in 1:extra_rotations
-        extra_reversing_information[i] = random_swap_move!(cube)
-    end
 
     candidate_energy = energy(cube)
 
@@ -63,11 +55,6 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
         # Also return accepted_candidates_increase = 1
         return 1
     else
-
-        # TODO remove
-        for i in extra_rotations:-1:1
-            random_swap_move!(cube;reverse=true,candidate_reversing_information=extra_reversing_information[i])
-        end
 
         # Otherwise we reject the candidate configuration and revert it to the original configuraiton
         candidate_generating_function!(cube;reverse=true,candidate_reversing_information=candidate_reversing_information)

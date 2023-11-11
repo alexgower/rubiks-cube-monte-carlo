@@ -37,6 +37,15 @@ using SharedArrays
     # Create a Rubik's cube object and run annealing function on it
     cube = RubiksCube(L)
 
+    # TODO remove if want just emergent disorder
+    facelets = reduce(vcat, [fill(i,L^2) for i in 1:6])
+    shuffle!(facelets)
+    new_faces = reshape(facelets, 6, L, L)
+    for i in 1:6
+        cube.configuration[i][:,:] .= new_faces[i,:,:]
+    end
+
+
     if relaxation_iterations == 0
         temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature, energy_samples_by_temperature = relaxed_anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, mixing_p_swap=mixing_p_swap, energy_histogram_sample_temperatures=energy_histogram_sample_temperatures, average_sample_size=energy_histogram_sample_size)
     else

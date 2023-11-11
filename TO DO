@@ -1,14 +1,10 @@
-# Now:
-- Check breaking out of for loop working
-
 # Soon:
+- Implement recursive ALL neighbour energy function for swap moves too - needed for manual exponential states growth with energy calculation
+- Implement turning off parity swap moves
+
+
 - Add order parameter measurements to relaxed_anneal and history_anneal
 - Add saved error logs to relaxed_anneal and history_anneal
-
-- Do configuration_network_degree function part including swap moves
-- Later do neighbour_energy_deltas function part for swap moves
-
-
 # -----
 
 # Later:

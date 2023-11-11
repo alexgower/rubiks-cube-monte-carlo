@@ -12,7 +12,7 @@ include("../probes/relaxed_anneal.jl")
 
 
 
-@inbounds @fastmath function relaxed_anneal_experiment(simulation_name::String, L::Int64, swap_move_probabilities::Vector{Float64}, T_swap::Float64, T_1::Float64, T_0::Float64, N_T::Int64; verbose_metropolis_swap::Bool=false, normalization::String="solved", relaxation_iterations::Int64=Int(0), mixing_p_swap::Float64=0.0, standard_deviation::Bool=true, bonus_temperatures=[])
+@inbounds @fastmath function relaxed_anneal_experiment(simulation_name::String, L::Int64, swap_move_probabilities::Vector{Float64}, T_swap::Float64, T_1::Float64, T_0::Float64, N_T::Int64; verbose_metropolis_swap::Bool=false, normalization::String="solved", relaxation_iterations::Int64=Int(0), mixing_p_swap::Float64=0.0, bonus_temperatures=[], inherent_disorder::Bool=false)
 
 
     # Cover everything in try/except clause so can print errors to file if running remotely
@@ -21,21 +21,32 @@ include("../probes/relaxed_anneal.jl")
         temperature_vector = [temperature_vector; bonus_temperatures]
         sort!(temperature_vector, rev=true)
         N_T = length(temperature_vector)-1
-        normalised_E_average_by_temperature = []
-        normalised_standard_deviations_by_temperature = []
-        infinite_temperature_normalised_E_average_by_temperature = []
-        infinite_temperature_normalised_standard_deviations_by_temperature = []
+        
+        array_normalised_E_average_by_temperature::Vector{Vector{Float64}} = []
+        array_normalised_standard_deviations_by_temperature::Vector{Vector{Float64}} = []
+        array_specific_heat_capacities_by_temperature::Vector{Vector{Float64}} = []
 
 
         for (index,swap_move_probability) in pairs(swap_move_probabilities)
             simulation_name_to_use = simulation_name * '_' * string(swap_move_probability)
 
-
-
             # Run Rubik's Cube Anneal ----------
 
             # Create a Rubik's cube object and run annealing function on it
             cube = RubiksCube(L)
+
+
+            if inherent_disorder
+                facelets = reduce(vcat, [fill(i,L^2) for i in 1:6])
+                shuffle!(facelets)
+                new_faces = reshape(facelets, 6, L, L)
+                for i in 1:6
+                    cube.configuration[i][:,:] .= new_faces[i,:,:]
+                end
+            end
+
+
+            println("Initial Configuration:", cube.configuration)
 
             if relaxation_iterations == 0
                 temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature = relaxed_anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, mixing_p_swap=mixing_p_swap)
@@ -47,11 +58,12 @@ include("../probes/relaxed_anneal.jl")
             println("Final Configuration:")
             println(cube.configuration)
 
-            push!(normalised_E_average_by_temperature, -E_average_by_temperature ./ solved_configuration_energy(cube))
-            push!(normalised_standard_deviations_by_temperature, sqrt.(E_squared_average_by_temperature .- E_average_by_temperature.^2) ./ solved_configuration_energy(cube))
-            push!(infinite_temperature_normalised_E_average_by_temperature, -E_average_by_temperature ./ infinite_temperature_energy(cube))
-            push!(infinite_temperature_normalised_standard_deviations_by_temperature, sqrt.(E_squared_average_by_temperature .- E_average_by_temperature.^2) ./ infinite_temperature_energy(cube))
+            normalization_energy = normalization=="infinite_temperature" ? infinite_temperature_energy(cube) : solved_configuration_energy(cube)
 
+            push!(array_normalised_E_average_by_temperature, -E_average_by_temperature ./ normalization_energy)
+            push!(array_normalised_standard_deviations_by_temperature, sqrt.(E_squared_average_by_temperature .- E_average_by_temperature.^2) ./ normalization_energy)
+            push!(array_specific_heat_capacities_by_temperature, (E_squared_average_by_temperature .- E_average_by_temperature.^2) ./ temperature_vector.^2)
+            
             # Save Results ----------
             try
 
@@ -59,10 +71,10 @@ include("../probes/relaxed_anneal.jl")
 
                 open(joinpath("results/relaxed_anneal_results",simulation_name_to_use), "w") do simulation_file
                     write(simulation_file, "Simulation:L=$L, P_s=$swap_move_probability, T_swap=$T_swap, T_1=$T_1, T_0=$T_0, N_T=$N_T \n")
-                    write(simulation_file, "Temperature T, <E>(T), <-E/E_0>(T), <E^2>(T), Relaxation Iterations=tau(T), Accepted Candidates A(T), Final Configuration Correlation Function Value \n")
+                    write(simulation_file, "Temperature T, <E>(T), <-E/E_0>(T), <E^2>(T), c(T),  Relaxation Iterations=tau(T), Accepted Candidates A(T), Final Configuration Correlation Function Value \n")
                     
-                    for temperature_index in 1:N_T+1
-                        write(simulation_file, "$(temperature_vector[temperature_index]), $(E_average_by_temperature[temperature_index]), $(normalised_E_average_by_temperature[index][temperature_index]), $(E_squared_average_by_temperature[temperature_index]), $(relaxation_iterations_by_temperature[temperature_index]), $(accepted_candidates_by_temperature[temperature_index]), $(final_configuration_correlation_function_by_temperature[temperature_index]) \n")
+                    for temperature_index in 1:N_T
+                        write(simulation_file, "$(temperature_vector[temperature_index]), $(E_average_by_temperature[temperature_index]), $(array_normalised_E_average_by_temperature[index][temperature_index]), $(E_squared_average_by_temperature[temperature_index]), $(array_specific_heat_capacities_by_temperature[index][temperature_index]), $(relaxation_iterations_by_temperature[temperature_index]), $(accepted_candidates_by_temperature[temperature_index]), $(final_configuration_correlation_function_by_temperature[temperature_index]) \n")
                     end
                 end
 
@@ -77,59 +89,13 @@ include("../probes/relaxed_anneal.jl")
 
         
         try
-            # Create plot ----------
-            
-            if normalization == "solved"
+            relaxed_anneal_graphs_plotter(simulation_name, swap_move_probabilities)
 
-                if standard_deviation
-                    mean_std_graph = plot(temperature_vector, normalised_E_average_by_temperature, yerr=transpose(normalised_standard_deviations_by_temperature), markerstrokecolor=:auto, xlabel="Temperature", ylabel="-Average Energy/Solved Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
-                    hline!(mean_std_graph, [-0.16666666666666666], linestyle=:dash, color=:black, label="")
-                    hline!(mean_std_graph, [-1.0], linestyle=:dash, color=:black, label="")
-                end
-
-                mean_graph = plot(temperature_vector, normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Solved Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
-                hline!(mean_graph, [-0.16666666666666666], linestyle=:dash, color=:black, label="")
-                hline!(mean_graph, [-1.0], linestyle=:dash, color=:black, label="")
-
-            else # normalization == "infinite_temperature" case
-
-                if standard_deviation
-                    mean_std_graph = plot(temperature_vector, infinite_temperature_normalised_E_average_by_temperature, yerr=infinite_temperature_normalised_standard_deviations_by_temperature, markerstrokecolor=:auto, xlabel="Temperature", ylabel="-Average Energy/Infinite Temperature Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
-                    hline!(mean_std_graph, [-1.0], linestyle=:dash, color=:black, label="")
-                    hline!(mean_std_graph, [-6.0], linestyle=:dash, color=:black, label="")
-                    vline!(mean_std_graph, [T_swap], linestyle=:dash, label="Swap Moves Enabled")
-
-                end
-
-
-                mean_graph = plot(temperature_vector, infinite_temperature_normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Infinite Temperature Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
-                hline!(mean_graph, [-1.0], linestyle=:dash, color=:black, label="")
-                hline!(mean_graph, [-6.0], linestyle=:dash, color=:black, label="")
-                vline!(mean_graph, [T_swap], linestyle=:dash, label="Swap Moves Enabled")
-
-
-            end
-
-            # Add other data to mean graph for comparison if exists ----------
-            if isfile(joinpath("results/relaxed_anneal_results","other_data.csv"))
-
-                data_matrix = readdlm(joinpath("results/relaxed_anneal_results","other_data.csv"), ',', Float64, '\n', skipstart=0)
-
-                other_temperature_vector = copy(data_matrix[:,1])
-                other_data = data_matrix[:,2]
-            
-                plot!(graph, other_temperature_vector, other_data, label="Ollie Results", seriestype=:scatter, color="blue", ms=2, ma=0.5)
-
-            end
-
-            # Save graphs ----------
-            savefig(mean_graph, "results//relaxed_anneal_results/$(simulation_name)_mean.png")
-            savefig(mean_std_graph, "results//relaxed_anneal_results/$(simulation_name)_mean_std.png")
 
 
         catch ex
 
-            println("Cannot display or save results")
+            println("There was an error in creating and saving graphs and results")
             showerror(stdout, ex)
 
         end
