@@ -1,8 +1,3 @@
-# Xeon Only ---
-# DEPOT_PATH[1]="/u/rscratch/apg59/.julia"
-# using Pkg
-# Pkg.instantiate()
-
 using Plots
 using DelimitedFiles
 
@@ -12,7 +7,7 @@ include("../probes/relaxed_anneal.jl")
 
 
 
-@inbounds @fastmath function relaxed_anneal_experiment(simulation_name::String, L::Int64, swap_move_probabilities::Vector{Float64}, T_swap::Float64, T_1::Float64, T_0::Float64, N_T::Int64; verbose_metropolis_swap::Bool=false, normalization::String="solved", relaxation_iterations::Int64=Int(0), mixing_p_swap::Float64=0.0, bonus_temperatures=[], inherent_disorder::Bool=false)
+@inbounds @fastmath function relaxed_anneal_experiment(simulation_name::String, L::Int64, swap_move_probabilities::Vector{Float64}, T_swap::Float64, T_1::Float64, T_0::Float64, N_T::Int64; verbose_metropolis_swap::Bool=false, normalization::String="solved", relaxation_iterations::Int64=Int(0), mixing_p_swap::Float64=0.0, bonus_temperatures=[], inherent_disorder::Bool=false, initial_cube_configuration=nothing)
 
 
     # Cover everything in try/except clause so can print errors to file if running remotely
@@ -36,13 +31,17 @@ include("../probes/relaxed_anneal.jl")
             cube = RubiksCube(L)
 
 
-            if inherent_disorder
-                facelets = reduce(vcat, [fill(i,L^2) for i in 1:6])
-                shuffle!(facelets)
-                new_faces = reshape(facelets, 6, L, L)
-                for i in 1:6
-                    cube.configuration[i][:,:] .= new_faces[i,:,:]
+            if isnothing(initial_cube_configuration)
+                if inherent_disorder
+                    facelets = reduce(vcat, [fill(i,L^2) for i in 1:6])
+                    shuffle!(facelets)
+                    new_faces = reshape(facelets, 6, L, L)
+                    for i in 1:6
+                        cube.configuration[i][:,:] .= new_faces[i,:,:]
+                    end
                 end
+            else
+                cube.configuration = initial_cube_configuration
             end
 
 

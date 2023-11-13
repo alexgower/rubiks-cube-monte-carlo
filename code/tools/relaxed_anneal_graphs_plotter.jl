@@ -6,8 +6,6 @@ using CSV
 using DataFrames
 
 
-using GMT
-
 include("../core/rubiks_cube.jl")
 include("../core/swap_moves.jl")
 
@@ -76,10 +74,15 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
     end
 
+    savefig(mean_graph, "results/relaxed_anneal_results/$(simulation_name)_mean.png")
+    savefig(mean_std_graph, "results/relaxed_anneal_results/$(simulation_name)_mean_std.png")
+   
+
     # Create specific heat capacity/temperature plot ----------
     specific_heat_capacity_graph = plot(temperature_vector, array_specific_heat_capacities_by_temperature, xlabel="Temperature", ylabel="Specific Heat Capacity", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
 
-
+    savefig(specific_heat_capacity_graph, "results/relaxed_anneal_results/$(simulation_name)_specific_heat_capacity.png")
+    
 
 
 
@@ -115,9 +118,12 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     entropy_by_temperature_graph = plot(temperatures[2:end], entropy_by_temperature, xlabel="Temperature", ylabel="Entropy", title="Rubik's Cube Anneal, L=$L", label="Equilibrium Entropy", color=:black)
     plot!(entropy_by_temperature_graph, temperatures[2:end], alternative_entropy_by_temperature, label="Alternative Entropy", color=:blue)
 
+    savefig(entropy_by_temperature_graph, "results/relaxed_anneal_results/$(simulation_name)_entropy_temperature.png")
+    
 
 
 
+    ### MESSY ENTROPY ENERGY GRAPH STUFF ###
 
     # Plot entropy against absolute energy
     entropy_by_absolute_energy_graph = plot(absolute_energies_by_temperature[2:end], entropy_by_temperature, xlabel="Average Energy from Solved Configuration Energy", ylabel="Entropy", title="Rubik's Cube Anneal, L=$L"; label="Equilibrium Entropy", color=:black, legend=:topleft)
@@ -149,9 +155,10 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
             # TODO checks
             z_slice = 6*(L-1) 
-            z_swap = 5940848633430244 # for L=7
+            # z_swap = 5940848633430244 # for L=7
             # z_swap = 281635556 # for L=5
-            z = z_slice
+            z_swap = 1e38 # L=8 (so L=9 lower bound)
+            z = z_swap
 
             # Next sum over all E0 with connections from below to this E_1
             proportion_of_E0_connections_to_E1 = normalised_E0_E1_histogram.weights[E0_bin_index, E1_bin_index]
@@ -198,12 +205,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     plot!(alternative_entropy_by_absolute_energy_graph, absolute_energies_by_temperature[2:end], alternative_entropy_of_saddle_configurations_from_even_by_absolute_energies, label="Alternative Saddle Configurations From Even", color=:orange, lw=2)
 
     # Save graphs ----------
-    savefig(mean_graph, "results/relaxed_anneal_results/$(simulation_name)_mean.png")
-    savefig(mean_std_graph, "results/relaxed_anneal_results/$(simulation_name)_mean_std.png")
-    savefig(specific_heat_capacity_graph, "results/relaxed_anneal_results/$(simulation_name)_specific_heat_capacity.png")
-    savefig(entropy_by_temperature_graph, "results/relaxed_anneal_results/$(simulation_name)_entropy_temperature.png")
     savefig(entropy_by_absolute_energy_graph, "results/relaxed_anneal_results/$(simulation_name)_entropy_absolute.png")
-
     savefig(alternative_entropy_by_absolute_energy_graph, "results/relaxed_anneal_results/$(simulation_name)_alternative_entropy_absolute.png")
 end
 

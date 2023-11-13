@@ -2,7 +2,7 @@ using DelimitedFiles
 using Plots
 using StatsBase
 using LaTeXStrings
-using GMT
+# using GMT
 using CSV
 using DataFrames
 
@@ -94,25 +94,25 @@ function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name
 
 
 
-    ### --- GMT 3D HISTOGRAM ---
+    # ### --- GMT 3D HISTOGRAM ---
 
-    # Flatten the histogram data for GMT
-    x = repeat(collect(edges[1][1:end-1]), outer=length(edges[2])-1)
-    y = repeat(collect(edges[2][1:end-1]), inner=length(edges[1])-1)
-    z = normalized_hist_2d.weights[:]
+    # # Flatten the histogram data for GMT
+    # x = repeat(collect(edges[1][1:end-1]), outer=length(edges[2])-1)
+    # y = repeat(collect(edges[2][1:end-1]), inner=length(edges[1])-1)
+    # z = normalized_hist_2d.weights[:]
 
-    ## NOTE THAT WE MAKE A LEFT HANDED SET I.E. DO A (y,x,z) PLOT TO MAKE LIKE CLAUDIO ORIGINAL PLOT
-    # Create a grid from the histogram data
-    grid_data = hcat(y, x, z)
+    # ## NOTE THAT WE MAKE A LEFT HANDED SET I.E. DO A (y,x,z) PLOT TO MAKE LIKE CLAUDIO ORIGINAL PLOT
+    # # Create a grid from the histogram data
+    # grid_data = hcat(y, x, z)
 
-    # Determine the region bounds based on the data
-    region_bounds = (0, -solved_configuration_energy(cube), 0, -solved_configuration_energy(cube))
+    # # Determine the region bounds based on the data
+    # region_bounds = (0, -solved_configuration_energy(cube), 0, -solved_configuration_energy(cube))
 
-    # Create a new grid with the normalized data
-    normalized_grid = xyz2grd(grid_data, region=region_bounds, inc=1)
+    # # Create a new grid with the normalized data
+    # normalized_grid = xyz2grd(grid_data, region=region_bounds, inc=1)
 
-    # Plot the normalized 3D histogram and display it immediately
-    bar3(normalized_grid, view=(190,50), FONT="12p,Times-Roman", FONT_TITLE="10p", MAP_TITLE_OFFSET="0/2c", frame=(xlabel="E@-n@-", ylabel="E@-0@-", zlabel="Frequency", annot=:auto, ticks=:auto, grid=:auto, title= " (E@-0@-, "*"E@-n@-)"* " (n=$n) $connectivity Connectivity Frequency Histogram L=$L"), fill=[0,115,190], lw=0.25, fmt=:png, show=true,  savefig="results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_3D.png")
+    # # Plot the normalized 3D histogram and display it immediately
+    # bar3(normalized_grid, view=(190,50), FONT="12p,Times-Roman", FONT_TITLE="10p", MAP_TITLE_OFFSET="0/2c", frame=(xlabel="E@-n@-", ylabel="E@-0@-", zlabel="Frequency", annot=:auto, ticks=:auto, grid=:auto, title= " (E@-0@-, "*"E@-n@-)"* " (n=$n) $connectivity Connectivity Frequency Histogram L=$L"), fill=[0,115,190], lw=0.25, fmt=:png, show=true,  savefig="results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_3D.png")
 
 
 
