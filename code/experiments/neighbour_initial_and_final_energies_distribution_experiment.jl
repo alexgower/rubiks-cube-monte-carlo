@@ -10,7 +10,7 @@ include("../tools/neighbour_initial_and_final_energies_graphs_plotter.jl")
 
 
 
-@inbounds @fastmath function neighbour_initial_and_final_energies_distribution_experiment(simulation_name::String, L::Int64, swap_move_probability::Float64, N_T::Int64, sample_temperatures::Vector{Float64}; verbose_metropolis_swap::Bool=false, normalization::String="solved", relaxation_iterations::Int64=Int(0), mixing_p_swap::Float64=0.0, collecting_swap_move_neighbours::Bool=false, neighbours_per_configuration_sample_size::Int64=0, average_sample_size_per_temperature::Int64=100, inherent_disorder::Bool=false, neighbour_moves_away::Int64=1; T1::Float64=10.0, T0::Float64=0.09, T_swap::Float64=3.0, temperature_increasing_anneal::Bool=false, initial_cube_configuration=nothing)
+@inbounds @fastmath function neighbour_initial_and_final_energies_distribution_experiment(simulation_name::String, L::Int64, swap_move_probability::Float64, N_T::Int64, sample_temperatures::Vector{Float64}; verbose_metropolis_swap::Bool=false, normalization::String="solved", relaxation_iterations::Int64=Int(0), mixing_p_swap::Float64=0.0, collecting_swap_move_neighbours::Bool=false, neighbours_per_configuration_sample_size::Int64=0, average_sample_size_per_temperature::Int64=100, inherent_disorder::Bool=false, neighbour_moves_away::Int64=1, T_1::Float64=10.0, T_0::Float64=0.09, T_swap::Float64=3.0, temperature_increasing_anneal::Bool=false, initial_cube_configuration=nothing, parallel_anneals::Int64=1)
 
     temperature_vector::Vector{Float64} = [T_1*(T_0/T_1)^(m/N_T) for m in 0:N_T]
     temperature_vector = [temperature_vector; sample_temperatures]
@@ -33,6 +33,7 @@ include("../tools/neighbour_initial_and_final_energies_graphs_plotter.jl")
             end
         end
     else
+        println("Using initial cube configuration")
         cube.configuration = initial_cube_configuration
     end
 

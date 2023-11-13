@@ -41,6 +41,7 @@ include("../probes/relaxed_anneal.jl")
                     end
                 end
             else
+                println("Using initial cube configuration")
                 cube.configuration = initial_cube_configuration
             end
 

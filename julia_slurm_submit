@@ -66,5 +66,5 @@ echo "Time: `date`"
 echo "Running on master node: `hostname`"
 echo "Current directory: `pwd`"
 
-julia job.jl
+julia job_energy_connectivity.jl
 
