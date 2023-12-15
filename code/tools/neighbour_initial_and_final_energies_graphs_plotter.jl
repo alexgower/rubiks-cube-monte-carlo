@@ -25,6 +25,9 @@ function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name
     cube = RubiksCube(L)
     swap_move_probability = 1.0
 
+    # Remove NaNs and overflow # TODO how exist?
+    data_matrix = remove_bad_rows(data_matrix, L)
+
     ### --- HISTOGRAM GENERAL CALCULATIONS ---
 
     # Determine the bin edges based on the data
@@ -181,7 +184,6 @@ function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name
     E0_values = unique(data_matrix[:,1])
     lower_tail_En = zeros(Float64, length(E0_values))
     upper_tail_En = zeros(Float64, length(E0_values))
-    mean_En = zeros(Float64, length(E0_values))
 
     # Iterate through each E0 slice to find the modal En value
     for (i, E0) in pairs(E0_values)
@@ -212,7 +214,7 @@ function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name
     ##  CREATE THE SCATTER PLOT
     mode_graph = Plots.plot(xlabel=L"E_n", ylabel=L"E_0", title=" Reduced "*L"(E_0, E_n) "*" (n=$n) $connectivity Connectivity Info L=$L", legend=:bottomright, legendfont = font(8, "Times"))
     Plots.scatter!(mode_graph, lower_tail_En_below_E0, E_0_values_for_lower_tail_En_below_E0,  label="Minimal Eₙ<E₀ for E₀", color=:red)
-    Plots.scatter!(mode_graph, lower_tail_En_equal_E0, E_0_values_for_lower_tail_En_equal_E0,  label="Minimal Eₙ=E₀ for E₀", color=:black)
+    Plots.scatter!(mode_graph, lower_tail_En_equal_E0, E_0_values_for_lower_tail_En_equal_E0,  label="Minimal Eₙ=E₀ for E₀", color=RGB(0.6, 1.0, 0.6))
     Plots.scatter!(mode_graph, lower_tail_En_above_E0, E_0_values_for_lower_tail_En_above_E0,  label="Minimal Eₙ>E₀ for E₀", color=:orange)
     Plots.scatter!(mode_graph, modal_En, modal_E0_values, label="Modal Eₙ for E₀", color=:blue)
 
@@ -251,4 +253,11 @@ function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name
     display(mode_graph)
 
 
+end
+
+function remove_bad_rows(data::Array{Float64,2}, L::Int64)
+    # Find rows without NaN or negative values or above solved configuration energy in the first two columns or above solved configuration energy
+    non_bad_rows = .!isnan.(data[:, 1]) .& .!isnan.(data[:, 2]) .& (data[:, 1] .>= 0) .& (data[:, 2] .>= 0) .& (data[:, 1] .<= -solved_configuration_energy(RubiksCube(L))) .& (data[:, 2] .<= -solved_configuration_energy(RubiksCube(L)))
+    # Return the data without rows containing NaN
+    return data[non_bad_rows, :]
 end

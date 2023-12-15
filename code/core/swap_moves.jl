@@ -543,10 +543,11 @@ end
 
 function number_of_opposite_orientation_rotation_swap_moves(cube::RubiksCube)
     
-    number_of_opposite_orientation_rotation_swap_moves::UInt128 = 0
+    number_of_opposite_orientation_rotation_swap_moves::BigInt = BigInt(0)
 
     if cube.L == 1
-        return 0
+        return BigInt(0)
+
     end
 
     # Note for opposite orientation rotations we SHOULD be thinking in terms of permutations as order matters as each cubelet is rotated in opposite direction
@@ -568,7 +569,8 @@ end
 
 function number_of_three_cycle_swap_moves(cube::RubiksCube)
     
-    number_of_three_cycle_swap_moves::UInt128 = 0
+    number_of_three_cycle_swap_moves::BigInt = BigInt(0)
+
 
     for cubelet_subsystem_label in cube.cubelet_subsystems_labels
 
@@ -596,9 +598,10 @@ function number_of_coupled_subsystem_two_cycle_swap_moves(cube::RubiksCube)
     end
 
 
-    number_of_coupled_subsystem_two_cycle_swap_moves::UInt128 = 0
+    number_of_coupled_subsystem_two_cycle_swap_moves::BigInt = BigInt(0)
 
-    # The number of subclasses of coupled subsystem two cycle swap moves is equivalent to the number of ways of assining +1/-1 to {sigma, {theta_k}}
+
+    # The number of subclasses of coupled subsystem two cycle swap moves is equivalent to the number of ways of assigning +1/-1 to {sigma, {theta_k}}
     # (as by knowing the parity changes of these, we can uniquely determine the required parity changes of others)
     # Note that theta_k has k run in 1:ceil(Int, (cube.L-3)/2)
     number_of_coupled_subsystem_two_cycle_subclasses = 2^(1+ceil(Int, (cube.L-3)/2))
@@ -620,7 +623,7 @@ function number_of_coupled_subsystem_two_cycle_swap_moves(cube::RubiksCube)
         # SUBTLE POINT: 
         # THE NUMBER OF DISTINCT MOVES OF 2-CYCLING CUBELETS in subsystems X,Y,Z is |X|C2 * |Y|C2 * |Z|C2 NOT THEIR SUM BECAUSE THEY ARE COUPLED
 
-        subclass_product = 1
+        subclass_product::BigInt = BigInt(1)
 
         # For every subsystem that must be two cycled calculate and MULTIPLY numbers of COMBINATIONS of 2 cubelets from number of cubelets in subsystem
         for subsystem_to_two_cycle in subsystems_to_two_cycle
@@ -641,15 +644,17 @@ function number_of_coupled_subsystem_two_cycle_swap_moves(cube::RubiksCube)
 end
 
 
-function total_number_of_swap_moves(cube::RubiksCube)
+function total_number_of_swap_moves(cube::RubiksCube; include_coupled_subsystem_two_cycle_swap_moves::Bool=true)
 
-    total_number_of_swap_moves::UInt128 = 0
+    total_number_of_swap_moves::BigInt = BigInt(0)
 
     total_number_of_swap_moves += number_of_opposite_orientation_rotation_swap_moves(cube)
 
     total_number_of_swap_moves += number_of_three_cycle_swap_moves(cube)
 
-    total_number_of_swap_moves += number_of_coupled_subsystem_two_cycle_swap_moves(cube)
+    if include_coupled_subsystem_two_cycle_swap_moves
+        total_number_of_swap_moves += number_of_coupled_subsystem_two_cycle_swap_moves(cube)
+    end
 
     return total_number_of_swap_moves
 

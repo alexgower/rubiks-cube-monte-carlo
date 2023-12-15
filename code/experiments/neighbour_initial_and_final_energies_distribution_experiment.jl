@@ -42,7 +42,10 @@ include("../tools/neighbour_initial_and_final_energies_graphs_plotter.jl")
 
         samples_per_temperature_per_anneal = Int(ceil(average_sample_size_per_temperature/parallel_anneals))
 
-        neighbour_initial_and_final_energies = SharedArray{Float64,1}(length(sample_temperatures)*neighbours_per_configuration_sample_size*samples_per_temperature_per_anneal*parallel_anneals)
+        Z = configuration_network_degree(cube.L, collecting_swap_move_neighbours)
+        number_of_neighbours = neighbours_per_configuration_sample_size==0 ? Z*(Z-1)^(neighbour_moves_away-1) : neighbours_per_configuration_sample_size
+
+        neighbour_initial_and_final_energies = SharedArray{Tuple{Float64,Float64},1}(length(sample_temperatures)*number_of_neighbours*samples_per_temperature_per_anneal*parallel_anneals)
 
 
         @sync @distributed for trial in 1:parallel_anneals
@@ -90,7 +93,7 @@ include("../tools/neighbour_initial_and_final_energies_graphs_plotter.jl")
 
     ### --- Save the results ---
     try
-        touch(joinpath("results/neighbour_initial_and_final_energies_distribution_results",data_simulation_name_to_use*"_raw_energy_connections"))
+        touch(joinpath("results/neighbour_initial_and_final_energies_distribution_results",data_simulation_name_to_use))
 
         open(joinpath("results/neighbour_initial_and_final_energies_distribution_results",data_simulation_name_to_use), "w") do simulation_file
             write(simulation_file, "Simulation:L=$L, P_s=$swap_move_probability, T_swap=$T_swap, T_1=$T_1, T_0=$T_0, N_T=$N_T, Average Sample Size = $(average_sample_size_per_temperature), Neighbours Per Configuration Sample Size=$(neighbours_per_configuration_sample_size), Collecting Swap Move Neighbours = $(collecting_swap_move_neighbours) \n")
