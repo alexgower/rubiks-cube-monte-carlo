@@ -75,6 +75,10 @@ include("../probes/relaxed_anneal.jl")
                     for temperature_index in 1:N_T
                         write(simulation_file, "$(temperature_vector[temperature_index]), $(E_average_by_temperature[temperature_index]), $(array_normalised_E_average_by_temperature[index][temperature_index]), $(E_squared_average_by_temperature[temperature_index]), $(array_specific_heat_capacities_by_temperature[index][temperature_index]), $(relaxation_iterations_by_temperature[temperature_index]), $(accepted_candidates_by_temperature[temperature_index]), $(final_configuration_correlation_function_by_temperature[temperature_index]) \n")
                     end
+
+                    write(simulation_file, "\n")
+                    write(simulation_file, "# Final Configuration: \n")
+                    write(simulation_file, "# $(cube.configuration) \n")
                 end
 
             catch ex

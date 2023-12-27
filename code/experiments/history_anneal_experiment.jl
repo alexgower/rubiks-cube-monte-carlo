@@ -54,6 +54,10 @@ include("../probes/history_anneal.jl")
                     for temperature_index in 1:N_T+1
                         write(simulation_file, "$(temperature_vector[temperature_index]), $(E_by_temperature[temperature_index]) \n")
                     end
+
+                    write(simulation_file, "\n")
+                    write(simulation_file, "# Final Configuration: \n")
+                    write(simulation_file, "# $(cube.configuration) \n")
                 end
 
             catch ex

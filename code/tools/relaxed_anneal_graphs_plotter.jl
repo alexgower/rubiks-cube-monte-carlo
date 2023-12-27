@@ -65,7 +65,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     ##### ----- IMPORT RELAXED ANNEAL DATA -----
 
     ### --- SET UP DEFAULT PARAMETERS ---
-    header_line = readlines(joinpath("results/relaxed_anneal_results/"*simulation_name*"_1.0"))[1]
+    header_line = readlines(joinpath("results/relaxed_anneal_results/"*simulation_name*"_"*string(swap_move_probabilities[end])))[1]
     match_obj = match(r"L=(\d+)", header_line)
     L = parse(Int, match_obj.captures[1])
     cube = RubiksCube(L)
@@ -79,7 +79,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
         simulation_name_to_use = simulation_name * '_' * string(swap_move_probability)
 
         ## -- READ IN THE DATA --
-        data_matrix = readdlm(joinpath("results/relaxed_anneal_results",simulation_name_to_use), ',', Float64, '\n', skipstart=2)
+        data_matrix = readdlm(joinpath("results/relaxed_anneal_results",simulation_name_to_use), ',', Float64, '\n', skipstart=2, comments=true, comment_char='#')
 
         temperature_vector = copy(data_matrix[:,1])
         E_average_by_temperature = copy(data_matrix[:,2]) 

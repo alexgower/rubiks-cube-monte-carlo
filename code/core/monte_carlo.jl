@@ -39,7 +39,11 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
         println("Alpha: $(exp(beta * (current_energy - candidate_energy)))")
     end
 
-
+    # Bypass probability stuff if beta=0
+    if beta == 0.0
+        return 1
+    end
+    
     alpha = exp(beta * (current_energy - candidate_energy))
 
     if rand() <=  alpha # If the acceptance probability alpha is larger than u then we accept the new state i.e do not reverse it
