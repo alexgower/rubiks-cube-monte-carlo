@@ -2,7 +2,7 @@ include("rubiks_cube.jl")
 include("swap_moves.jl")
 
 
-function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!::Function, beta::Float64; verbose::Bool=false)
+function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!::Function, beta::Float64; verbose::Bool=false, energy_cap::Float64=0.0)
     # Perform Metropolis algorithm Monte Carlo Step on cube and candidate generated configurations at given beta
     # i.e. here we either reverse the candidate_generating_function's action on the cube (i.e. reject candidate configuration) or not
 
@@ -37,6 +37,20 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
         println("Current Energy: $current_energy")
         println("Candidate Energy: $candidate_energy")
         println("Alpha: $(exp(beta * (current_energy - candidate_energy)))")
+    end
+
+    # If energy cap is set (i.e. nonzero) then we only accept candidate configurations with energy below the energy cap 
+    # So immediately reject candidate configuration if it's energy is above the energy cap
+    if energy_cap != 0.0 && candidate_energy > energy_cap
+        if verbose
+            printstyled("Candidate Energy Above Energy Cap \n"; color=:red)
+        end
+
+        # Reverse candidate configuration
+        candidate_generating_function!(cube;reverse=true,candidate_reversing_information=candidate_reversing_information)
+
+        # Also return accepted_candidates_increase = 0
+        return 0
     end
 
     # Bypass probability stuff if beta=0

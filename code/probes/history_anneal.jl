@@ -27,7 +27,7 @@ function history_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; 
 
     # Annealing Stage ----
 
-    # Create arrays to store parameters for each temeprature
+    # Create arrays to store parameters for each temperature
     E_by_temperature = zeros(length(temperature_vector))
     
     # Cool Rubik's cube from T_1 to T_0 by temperatures described in the temperature vector
