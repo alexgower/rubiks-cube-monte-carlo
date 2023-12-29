@@ -103,6 +103,9 @@ function configuration_correlation_function(cube::RubiksCube, reference_cube::Ru
         end
     end
 
+    # If cube is odd then we subtract 6 from the number of facelets as the central facelets are fixed
+    isodd(cube.L) ? number_facelets -= 6 : nothing
+
     return (1/number_facelets)*unnormalised_configuration_correlation_function
 end
 

@@ -97,14 +97,14 @@ include("../probes/capped_anneal.jl")
 
             savefig(graph, "results/capped_anneal_results/$simulation_name.png")
 
-            display(graph)
+            # display(graph)
 
             # Create configuration correlation function plot ----------
             graph = plot([i for i in 1:length(temperature_vector)], correlation_function_by_temperature_step, xlabel="Time Step", ylabel="Configuration Correlation Function", title="Rubik's Cube Capped Anneal, L=$L, N_T=$N_T", label="Configuration Correlation Function")
 
             savefig(graph, "results/capped_anneal_results/$(simulation_name)_correlation_function.png")
 
-            display(graph)
+            # display(graph)
 
 
 
