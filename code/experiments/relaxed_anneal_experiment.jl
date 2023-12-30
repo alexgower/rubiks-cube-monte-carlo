@@ -2,7 +2,7 @@ using Plots
 using DelimitedFiles
 
 include("../probes/relaxed_anneal.jl")
-
+include("../tools/relaxed_anneal_graphs_plotter.jl")
 
 
 
