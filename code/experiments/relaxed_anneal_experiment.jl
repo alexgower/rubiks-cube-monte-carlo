@@ -92,7 +92,7 @@ include("../tools/relaxed_anneal_graphs_plotter.jl")
 
         
         try
-            relaxed_anneal_graphs_plotter(simulation_name, swap_move_probabilities)
+            relaxed_anneal_graphs_plotter(simulation_name, swap_move_probabilities; inherent_disorder=inherent_disorder)
 
 
 

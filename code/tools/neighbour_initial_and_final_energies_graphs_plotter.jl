@@ -11,7 +11,7 @@ using ColorTypes, ColorSchemes
 
 include("../core/rubiks_cube.jl")
 
-function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name_to_use::String, neighbour_moves_away::Int64, connectivity::String="Slice")
+function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name_to_use::String, connectivity::String="Slice"; neighbour_moves_away::Int64=1, E_c::Float64=0.0)
 
     n = neighbour_moves_away
 
@@ -145,7 +145,7 @@ function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name
 
     ## NOTE THAT WE AGAIN PLOT E_n ON THE X-AXIS FOR CONSISTENCY
     graph = histogram2d(data_matrix[:,2], data_matrix[:,1], color=:bluesreds, show_empty_bins=false,
-    normalize=:pdf, bins=(bin_edges_y, bin_edges_x), weights=biases, xlabel=L"E_n", ylabel=L"E_0", title=L"(E_0, E_n) " * " (n=$n) $connectivity Connectivity Frequency Histogram, L=$L", xlims=(0, -solved_configuration_energy(cube)), ylims=(0, -solved_configuration_energy(cube)), zlabel="Frequency")
+    normalize=:pdf, bins=(bin_edges_y, bin_edges_x), weights=biases, xlabel=L"E_n", ylabel=L"E_0", title=L"(E_0, E_1) " * " $connectivity Connectivity, L=$L", xlims=(0, -solved_configuration_energy(cube)), ylims=(0, -solved_configuration_energy(cube)), zlabel="Frequency")
 
 
 
@@ -228,8 +228,8 @@ function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name
 
     # Add E_c lines to graphs (average energy at onset of transition i.e. E(T_c^+))
     # E_c = 95.0 # Emergent Disorder
-    E_c = 120.0 # Inherent Disorder
-    if min_value < E_c < max_value
+    # E_c = 120.0 # Inherent Disorder L=5
+    if E_c != 0.0
         vline!(graph, [E_c], line=:dash, color=:purple, lw=1, label="~ E(T*)")
         vline!(mode_graph, [E_c], line=:dash, color=:purple, lw=1, label="~ E(T*)")
         hline!(graph, [E_c], line=:dash, color=:purple, lw=1, label="")
@@ -257,7 +257,7 @@ end
 
 function remove_bad_rows(data::Array{Float64,2}, L::Int64)
     # Find rows without NaN or negative values or above solved configuration energy in the first two columns or above solved configuration energy
-    non_bad_rows = .!isnan.(data[:, 1]) .& .!isnan.(data[:, 2]) .& (data[:, 1] .>= 0) .& (data[:, 2] .>= 0) .& (data[:, 1] .<= -solved_configuration_energy(RubiksCube(L))) .& (data[:, 2] .<= -solved_configuration_energy(RubiksCube(L)))
+    non_bad_rows = .!isnan.(data[:, 1]) .& .!isnan.(data[:, 2]) .& (data[:, 1] .>= 0) .& (data[:, 2] .>= 0) .& (data[:, 1] .< -solved_configuration_energy(RubiksCube(L))) .& (data[:, 2] .< -solved_configuration_energy(RubiksCube(L)))
     # Return the data without rows containing NaN
     return data[non_bad_rows, :]
 end

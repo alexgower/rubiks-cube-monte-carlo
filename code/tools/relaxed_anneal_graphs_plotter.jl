@@ -60,7 +60,7 @@ function window_average(array::Array{Float64, 1}, window_size::Int)
 end
 
 
-function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probabilities::Vector{Float64}; normalization::String="solved", smooth_window::Int64=1)
+function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probabilities::Vector{Float64}; inherent_disorder::Bool=false, smooth_window::Int64=1, T_on::Float64=0.0, T_off::Float64=0.0, E_star::Float64=0.0)
 
     ##### ----- IMPORT RELAXED ANNEAL DATA -----
 
@@ -109,21 +109,42 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
 
     ### --- PLOT RELAXED ANNEAL GRAPHS ---
-    normalization_string = normalization=="solved" ? "Solved" : "Infinite Temperature"
+    normalization_string = "Solved"
             
     mean_graph = plot(temperature_vector, array_normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Solved Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
     mean_std_graph = plot(temperature_vector, array_normalised_E_average_by_temperature, yerr=transpose(array_normalised_standard_deviations_by_temperature), markerstrokecolor=:auto, xlabel="Temperature", ylabel="-Average Energy/"*normalization_string*" Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
 
-    hline!(mean_std_graph, [-1.0], linestyle=:dash, color=:black, label="")
-    hline!(mean_graph, [-1.0], linestyle=:dash, color=:black, label="")
-
-    if normalization == "solved"
-        hline!(mean_std_graph, [-0.16666666666666666], linestyle=:dash, color=:black, label="")
-        hline!(mean_graph, [-0.16666666666666666], linestyle=:dash, color=:black, label="")
-    else # normalization == "infinite_temperature" case
-        hline!(mean_std_graph, [-6.0], linestyle=:dash, color=:black, label="")
-        hline!(mean_graph, [-6.0], linestyle=:dash, color=:black, label="")
+    if !inherent_disorder
+        hline!(mean_std_graph, [-1.0], linestyle=:dash, color=:black, label="")
+        hline!(mean_graph, [-1.0], linestyle=:dash, color=:black, label="")
     end
+
+    if T_on != 0.0
+        vline!(mean_std_graph, [T_on], linestyle=:dot, color=:orange, label="")
+        vline!(mean_graph, [T_on], linestyle=:dot, color=:orange, label="")
+        annotate!(mean_std_graph, [(T_on+0.2, ylims(mean_std_graph)[1]-0.025, Plots.text(L"T^*_{on}", 8, :black))])
+        annotate!(mean_graph, [(T_on+0.2, ylims(mean_graph)[1]-0.025, Plots.text(L"T^*_{on}", 8, :black))])
+    end
+    
+    if T_off != 0.0
+        vline!(mean_std_graph, [T_off], linestyle=:dot, color=:red, label="")
+        vline!(mean_graph, [T_off], linestyle=:dot, color=:red, label="")
+        annotate!(mean_std_graph, [(T_off-0.2, ylims(mean_std_graph)[1]-0.025, Plots.text(L"T^*_{off}", 8, :black))])
+        annotate!(mean_graph, [(T_off-0.2, ylims(mean_graph)[1]-0.025, Plots.text(L"T^*_{off}", 8, :black))])
+    end
+    
+    if E_star != 0.0
+        hline!(mean_std_graph, [E_star], linestyle=:dot, color=:green, label="")
+        hline!(mean_graph, [E_star], linestyle=:dot, color=:green, label="")
+        annotate!(mean_std_graph, [(xlims(mean_std_graph)[1]+0.25, E_star+0.02, Plots.text(L"E^*", 8, :black))])
+        annotate!(mean_graph, [(xlims(mean_graph)[1]+0.25, E_star+0.02, Plots.text(L"E^*", 8, :black))])
+    end
+
+
+
+    # Plot infinite temperature energy
+    hline!(mean_std_graph, [-0.16666666666666666], linestyle=:dash, color=:black, label="")
+    hline!(mean_graph, [-0.16666666666666666], linestyle=:dash, color=:black, label="")
 
     savefig(mean_graph, "results/relaxed_anneal_results/$(simulation_name)_mean.png")
     savefig(mean_graph, "results/relaxed_anneal_results/$(simulation_name)_mean.svg")

@@ -115,6 +115,6 @@ include("../tools/neighbour_initial_and_final_energies_graphs_plotter.jl")
 
     ### --- Create and Display the Graphs ---
     connectivity = collecting_swap_move_neighbours ? "Swap" : "Slice"
-    neighbour_initial_and_final_energies_graph_plotter(data_simulation_name_to_use, neighbour_moves_away, connectivity)
+    neighbour_initial_and_final_energies_graph_plotter(data_simulation_name_to_use, connectivity; neighbour_moves_away=neighbour_moves_away)
 
 end
