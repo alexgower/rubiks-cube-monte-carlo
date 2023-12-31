@@ -90,7 +90,7 @@ include("../probes/capped_anneal.jl")
 
             # Create energy plot ----------
 
-            graph = plot([i for i in 1:length(temperature_vector)], E_by_temperature_step, xlabel="Time Step", ylabel="Energy", title="Rubik's Cube Capped Anneal, L=$L, N_T=$N_T", label="Energy")
+            graph = plot([i for i in 1:length(temperature_vector)], E_by_temperature_step./solved_configuration_energy(cube), xlabel="Time Step", ylabel="Energy w.r.t Solved Energy", title="Rubik's Cube Capped Anneal, L=$L, N_T=$N_T", label="Energy")
 
             hline!(graph, [energy_floor], linestyle=:dash, color=:green, label="Energy Floor")
             hline!(graph, [energy_cap], linestyle=:dash, color=:blue, label="Energy Cap")
