@@ -144,8 +144,8 @@ function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name
 
 
     ## NOTE THAT WE AGAIN PLOT E_n ON THE X-AXIS FOR CONSISTENCY
-    graph = histogram2d(data_matrix[:,2], data_matrix[:,1], color=:bluesreds, show_empty_bins=false,
-    normalize=:pdf, bins=(bin_edges_y, bin_edges_x), weights=biases, xlabel=L"E_n", ylabel=L"E_0", title=L"(E_0, E_1) " * " $connectivity Connectivity, L=$L", xlims=(0, -solved_configuration_energy(cube)), ylims=(0, -solved_configuration_energy(cube)), zlabel="Frequency")
+    graph = histogram2d(data_matrix[:,2]./-solved_configuration_energy(cube), data_matrix[:,1]./-solved_configuration_energy(cube), color=:bluesreds, show_empty_bins=false,
+    normalize=:pdf, bins=(bin_edges_y, bin_edges_x), weights=biases, xlabel=L"E_n", ylabel=L"E_0", title=L"(E_0, E_1) " * " $connectivity Connectivity, L=$L", xlims=(0, -solved_configuration_energy(cube)), ylims=(0, -1), zlabel="Frequency")
 
 
 
@@ -223,8 +223,8 @@ function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name
     # Add E_0 = E_n lines to graphs
     min_value = minimum([minimum(data_matrix[:,1]), minimum(data_matrix[:,2])])
     max_value = maximum([maximum(data_matrix[:,1]), maximum(data_matrix[:,2])])
-    Plots.plot!(graph, [0, max_value], [0, max_value], line=:dash, color=:orange, lw=2, label="E₀=Eₙ")
-    Plots.plot!(mode_graph, [0, max_value], [0, max_value], line=:dash, color=:orange, lw=2, label="E₀=Eₙ")
+    Plots.plot!(graph, [0, max_value./solved_configuration_energy(cube)], [0, max_value./solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E₀=Eₙ")
+    Plots.plot!(mode_graph, [0, max_value./solved_configuration_energy(cube)], [0, max_value./solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E₀=Eₙ")
 
     # Add E_c lines to graphs (average energy at onset of transition i.e. E(T_c^+))
     # E_c = 95.0 # Emergent Disorder
