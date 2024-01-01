@@ -1,0 +1,1337 @@
+Changed directory to /home/apg59/rubiks-cube-monte-carlo.
+
+JobID: 39771735
+======
+Time: Sun Dec 31 16:18:44 GMT 2023
+Running on master node: cpu-p-346
+Current directory: /home/apg59/rubiks-cube-monte-carlo
+      From worker 3:	  Activating project at `~/rubiks-cube-monte-carlo`
+      From worker 4:	  Activating project at `~/rubiks-cube-monte-carlo`
+      From worker 2:	  Activating project at `~/rubiks-cube-monte-carlo`
+      From worker 2:	Initial Configuration:[[4 2 1 3 3 2 6 6 6 6 5; 3 3 3 5 5 5 2 4 6 1 6; 3 4 3 6 6 4 6 5 1 6 4; 4 1 2 2 1 2 4 1 2 1 1; 1 5 4 2 5 6 5 4 3 6 3; 6 6 5 2 4 5 4 1 3 6 4; 4 5 2 6 3 2 4 6 6 5 1; 4 6 5 6 6 6 6 5 5 6 4; 5 3 6 1 2 5 4 3 6 5 5; 5 2 6 2 4 6 4 1 6 3 2; 4 3 4 3 3 6 2 3 1 5 1], [4 6 2 4 3 6 1 1 2 2 6; 6 5 4 1 6 2 2 6 4 1 4; 4 1 5 6 1 4 2 2 1 6 6; 6 6 4 6 5 2 6 1 2 5 1; 1 3 2 2 4 1 3 2 4 2 6; 2 4 1 5 2 5 1 2 6 2 1; 2 3 2 4 3 4 4 2 5 6 6; 5 1 4 5 1 3 1 3 5 1 2; 6 3 5 5 4 5 3 5 3 6 4; 3 2 5 6 5 1 6 6 1 3 1; 1 1 5 3 5 6 2 3 1 5 1], [4 1 3 6 1 3 5 2 5 3 6; 1 3 5 2 5 1 3 6 1 2 1; 2 6 5 4 2 2 2 2 6 1 1; 5 1 6 3 2 3 5 3 4 1 5; 6 4 4 5 6 1 5 3 5 4 4; 6 4 1 4 3 5 3 2 1 2 3; 6 3 5 5 3 5 1 3 3 4 5; 2 1 5 5 6 1 6 1 5 4 3; 3 6 5 5 2 4 5 5 3 6 4; 4 5 3 2 2 3 1 4 3 5 4; 2 3 3 1 5 3 6 6 2 6 4], [5 1 3 1 1 4 2 1 3 3 2; 2 1 4 2 4 3 4 3 4 5 2; 1 4 2 2 3 2 1 2 4 6 1; 3 4 3 3 6 3 1 6 3 6 6; 5 3 5 2 4 2 3 1 1 5 4; 3 2 3 3 4 5 1 4 2 2 5; 4 2 6 6 4 3 4 6 4 3 1; 6 3 1 5 5 5 6 2 6 4 5; 3 4 3 3 6 1 1 5 2 2 2; 5 2 4 4 3 2 3 3 1 3 3; 2 3 4 2 2 3 1 2 2 2 2], [4 6 4 2 3 4 6 6 5 2 4; 1 2 4 6 5 6 3 3 3 6 3; 5 4 4 5 3 1 1 4 2 6 3; 1 6 5 2 3 6 2 4 2 6 6; 5 3 2 6 6 1 6 2 6 4 5; 5 6 2 6 4 5 6 5 6 5 1; 4 5 3 2 1 1 6 4 1 1 1; 5 6 3 3 2 3 1 3 6 2 3; 2 3 6 1 4 4 5 4 3 6 3; 3 1 2 4 2 5 6 4 1 6 6; 1 2 3 2 4 6 1 1 5 3 6], [1 1 1 1 5 2 6 1 5 3 5; 4 3 2 2 5 5 4 3 3 4 3; 4 4 1 5 2 3 5 5 2 5 5; 2 6 2 6 2 1 6 1 3 1 2; 3 5 3 5 4 2 6 4 4 4 4; 1 1 1 5 2 5 4 3 1 4 2; 4 4 2 4 1 4 1 1 2 6 5; 2 1 1 4 1 5 1 4 6 2 5; 5 5 1 4 5 5 4 1 5 1 5; 4 4 3 1 2 6 4 3 3 2 4; 2 1 5 6 5 1 6 5 3 4 4]]
+      From worker 2:	New Cube With P_swap = 0.0 below T_swap = 10.0 
+      From worker 2:	Mixed cube
+      From worker 2:	Cube Energy/Infinite Temperature Energy: 1.0272727272727273
+      From worker 2:	Currently at Temperature:  10.0 [1/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -227.89000000000001
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1726439393939394
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 163665
+      From worker 2:	Acceptance Rate: 81.8320908395458 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18888888888888888
+      From worker 2:	Currently at Temperature:  9.623506263980886 [2/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -232.58
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1761969696969697
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 161767
+      From worker 2:	Acceptance Rate: 80.88309558452208 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2111111111111111
+      From worker 2:	Currently at Temperature:  9.261187281287935 [3/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -230.98000000000002
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1749848484848485
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 160262
+      From worker 2:	Acceptance Rate: 80.13059934700327 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18333333333333335
+      From worker 2:	Currently at Temperature:  8.912509381337456 [4/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -227.48000000000002
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17233333333333334
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 158768
+      From worker 2:	Acceptance Rate: 79.38360308198459 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18611111111111112
+      From worker 2:	Currently at Temperature:  8.576958985908941 [5/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -228.08
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1727878787878788
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 157181
+      From worker 2:	Acceptance Rate: 78.59010704946475 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.17777777777777778
+      From worker 2:	Currently at Temperature:  8.254041852680183 [6/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -233.20000000000002
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17666666666666667
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 155939
+      From worker 2:	Acceptance Rate: 77.96911015444923 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19166666666666668
+      From worker 2:	Currently at Temperature:  7.943282347242815 [7/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -232.77
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1763409090909091
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 154364
+      From worker 2:	Acceptance Rate: 77.18161409192955 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18194444444444446
+      From worker 2:	Currently at Temperature:  7.6442227425260025 [8/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -232.61
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17621969696969697
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 152493
+      From worker 2:	Acceptance Rate: 76.24611876940615 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18888888888888888
+      From worker 2:	Currently at Temperature:  7.356422544596413 [9/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -235.42000000000002
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17834848484848487
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 150197
+      From worker 2:	Acceptance Rate: 75.09812450937746 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.20833333333333334
+      From worker 2:	Currently at Temperature:  7.079457843841379 [10/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -232.49
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17612878787878788
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 148075
+      From worker 2:	Acceptance Rate: 74.03712981435093 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.1902777777777778
+      From worker 2:	Currently at Temperature:  6.812920690579613 [11/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -232.20000000000002
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17590909090909093
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 146517
+      From worker 2:	Acceptance Rate: 73.25813370933146 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2111111111111111
+      From worker 2:	Currently at Temperature:  6.5564184941797885 [12/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -240.17000000000002
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18194696969696972
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 196375
+      From worker 2:	Accepted Candidates: 142416
+      From worker 2:	Acceptance Rate: 72.52246976448122 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13472222222222222
+      From worker 2:	Currently at Temperature:  6.3095734448019325 [13/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -238.45000000000002
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1806439393939394
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 142356
+      From worker 2:	Acceptance Rate: 71.17764411177944 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.21805555555555556
+      From worker 2:	Currently at Temperature:  6.072021956909886 [14/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -238.1
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18037878787878786
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 139852
+      From worker 2:	Acceptance Rate: 69.92565037174815 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.1902777777777778
+      From worker 2:	Currently at Temperature:  5.843414133735177 [15/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -239.51
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1814469696969697
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 40039
+      From worker 2:	Accepted Candidates: 27661
+      From worker 2:	Acceptance Rate: 69.0851419865631 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13472222222222222
+      From worker 2:	Currently at Temperature:  5.623413251903491 [16/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -243.04
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1841212121212121
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 135609
+      From worker 2:	Acceptance Rate: 67.8041609791951 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.17222222222222222
+      From worker 2:	Currently at Temperature:  5.411695265464637 [17/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -238.87
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1809621212121212
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 132723
+      From worker 2:	Acceptance Rate: 66.36116819415903 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19583333333333333
+      From worker 2:	Currently at Temperature:  5.207948328595464 [18/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -247.68
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18763636363636363
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 130711
+      From worker 2:	Acceptance Rate: 65.35517322413388 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2138888888888889
+      From worker 2:	Currently at Temperature:  5.011872336272722 [19/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -247.14000000000001
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18722727272727274
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 128378
+      From worker 2:	Acceptance Rate: 64.18867905660471 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19583333333333333
+      From worker 2:	Currently at Temperature:  4.823178482239307 [20/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -245.82
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1862272727272727
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 140733
+      From worker 2:	Accepted Candidates: 88147
+      From worker 2:	Acceptance Rate: 62.6342080393369 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13472222222222222
+      From worker 2:	Currently at Temperature:  4.641588833612779 [21/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -243.69
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18461363636363637
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 122136
+      From worker 2:	Acceptance Rate: 61.067694661526694 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19722222222222224
+      From worker 2:	Currently at Temperature:  4.466835921509632 [22/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -246.88
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18703030303030302
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 120210
+      From worker 2:	Acceptance Rate: 60.10469947650262 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.20694444444444446
+      From worker 2:	Currently at Temperature:  4.298662347082277 [23/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -255.59
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19362878787878787
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 115973
+      From worker 2:	Acceptance Rate: 57.98621006894965 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.20694444444444446
+      From worker 2:	Currently at Temperature:  4.136820402388507 [24/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -253.62
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19213636363636363
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 113273
+      From worker 2:	Acceptance Rate: 56.636216818915905 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18472222222222223
+      From worker 2:	Currently at Temperature:  3.981071705534972 [25/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -256.86
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1945909090909091
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 110554
+      From worker 2:	Acceptance Rate: 55.276723616381915 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.22361111111111112
+      From worker 2:	Currently at Temperature:  3.8311868495572874 [26/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -251.68
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19066666666666668
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 107139
+      From worker 2:	Acceptance Rate: 53.56923215383923 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19444444444444445
+      From worker 2:	Currently at Temperature:  3.6869450645195756 [27/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -259.06
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19625757575757577
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 104877
+      From worker 2:	Acceptance Rate: 52.43823780881095 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2111111111111111
+      From worker 2:	Currently at Temperature:  3.548133892335754 [28/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -263.07
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19929545454545455
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 52443
+      From worker 2:	Accepted Candidates: 26778
+      From worker 2:	Acceptance Rate: 51.06115210800297 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13472222222222222
+      From worker 2:	Currently at Temperature:  3.414548873833602 [29/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -266.84000000000003
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.20215151515151517
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 97004
+      From worker 2:	Acceptance Rate: 48.501757491212544 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.17222222222222222
+      From worker 2:	Currently at Temperature:  3.285993247600655 [30/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -267.15
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.20238636363636361
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 93504
+      From worker 2:	Acceptance Rate: 46.751766241168795 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.22361111111111112
+      From worker 2:	Currently at Temperature:  3.1622776601683795 [31/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -269.33
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.20403787878787877
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 90808
+      From worker 2:	Acceptance Rate: 45.40377298113509 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19444444444444445
+      From worker 2:	Currently at Temperature:  3.0432198871077216 [32/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -267.07
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.20232575757575758
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 86258
+      From worker 2:	Acceptance Rate: 43.12878435607822 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2013888888888889
+      From worker 2:	Currently at Temperature:  2.9286445646252366 [33/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -273.16
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.20693939393939395
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 83376
+      From worker 2:	Acceptance Rate: 41.6877915610422 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.21666666666666667
+      From worker 2:	Currently at Temperature:  2.8183829312644537 [34/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -276.8
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.20969696969696972
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 79378
+      From worker 2:	Accepted Candidates: 31297
+      From worker 2:	Acceptance Rate: 39.42780115397213 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13472222222222222
+      From worker 2:	Currently at Temperature:  2.7122725793320286 [35/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -274.44
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.2079090909090909
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 75668
+      From worker 2:	Acceptance Rate: 37.83381083094584 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18611111111111112
+      From worker 2:	Currently at Temperature:  2.6101572156825363 [36/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -289.05
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.21897727272727274
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 72101
+      From worker 2:	Acceptance Rate: 36.05031974840126 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19444444444444445
+      From worker 2:	Currently at Temperature:  2.51188643150958 [37/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -284.92
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.21584848484848487
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 67509
+      From worker 2:	Acceptance Rate: 33.75433122834386 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.22361111111111112
+      From worker 2:	Currently at Temperature:  2.4173154808041035 [38/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -284.90000000000003
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.21583333333333335
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 106660
+      From worker 2:	Accepted Candidates: 33808
+      From worker 2:	Acceptance Rate: 31.696981061316333 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13472222222222222
+      From worker 2:	Currently at Temperature:  2.3263050671536263 [39/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -283.19
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.21453787878787878
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 59073
+      From worker 2:	Acceptance Rate: 29.536352318238407 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.1736111111111111
+      From worker 2:	Currently at Temperature:  2.2387211385683394 [40/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -293.44
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.2223030303030303
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 55275
+      From worker 2:	Acceptance Rate: 27.637361813190935 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19722222222222224
+      From worker 2:	Currently at Temperature:  2.154434690031884 [41/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -295.67
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.22399242424242424
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 52351
+      From worker 2:	Acceptance Rate: 26.175369123154383 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.1763888888888889
+      From worker 2:	Currently at Temperature:  2.073321573485955 [42/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -296.51
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.22462878787878787
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 22836
+      From worker 2:	Accepted Candidates: 5702
+      From worker 2:	Acceptance Rate: 24.969346645647224 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13333333333333333
+      From worker 2:	Currently at Temperature:  1.9952623149688797 [43/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -305.2
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.2312121212121212
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 43808
+      From worker 2:	Acceptance Rate: 21.9038904805476 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19861111111111113
+      From worker 2:	Currently at Temperature:  1.9201419386388017 [44/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -309.74
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.23465151515151517
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 40743
+      From worker 2:	Acceptance Rate: 20.371398143009284 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19861111111111113
+      From worker 2:	Currently at Temperature:  1.8478497974222914 [45/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -313.96
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.23784848484848484
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 36586
+      From worker 2:	Acceptance Rate: 18.29290853545732 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.20277777777777778
+      From worker 2:	Currently at Temperature:  1.7782794100389228 [46/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -326.40000000000003
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.2472727272727273
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 33469
+      From worker 2:	Acceptance Rate: 16.73441632791836 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.21944444444444444
+      From worker 2:	Currently at Temperature:  1.7113283041617806 [47/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -320.49
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.24279545454545456
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 30628
+      From worker 2:	Acceptance Rate: 15.313923430382848 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.1875
+      From worker 2:	Currently at Temperature:  1.6468978654828685 [48/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -326.37
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.24725
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 26671
+      From worker 2:	Acceptance Rate: 13.335433322833385 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19722222222222224
+      From worker 2:	Currently at Temperature:  1.5848931924611134 [49/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -330.67
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.25050757575757576
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 23496
+      From worker 2:	Acceptance Rate: 11.747941260293699 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.225
+      From worker 2:	Currently at Temperature:  1.525222956539019 [50/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -338.38
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.2563484848484848
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 20606
+      From worker 2:	Acceptance Rate: 10.302948485257573 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.20555555555555557
+      From worker 2:	Currently at Temperature:  1.4677992676220695 [51/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -342.82
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.2597121212121212
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 16410
+      From worker 2:	Acceptance Rate: 8.204958975205123 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.20277777777777778
+      From worker 2:	Currently at Temperature:  1.4125375446227544 [52/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -341.77
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.25891666666666663
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 14470
+      From worker 2:	Acceptance Rate: 7.234963825180874 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.20833333333333334
+      From worker 2:	Currently at Temperature:  1.3593563908785256 [53/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -383.44
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.29048484848484846
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 10818
+      From worker 2:	Acceptance Rate: 5.408972955135225 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18611111111111112
+      From worker 2:	Currently at Temperature:  1.3081774742601944 [54/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -361.58
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.2739242424242424
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 11693
+      From worker 2:	Acceptance Rate: 5.846470767646162 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19861111111111113
+      From worker 2:	Currently at Temperature:  1.2589254117941673 [55/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -378.56
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.2867878787878788
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 9869
+      From worker 2:	Acceptance Rate: 4.934475327623362 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.17222222222222222
+      From worker 2:	Currently at Temperature:  1.2115276586285886 [56/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -379.75
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.28768939393939397
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 39800
+      From worker 2:	Accepted Candidates: 1046
+      From worker 2:	Acceptance Rate: 2.628140703517588 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13333333333333333
+      From worker 2:	Currently at Temperature:  1.1659144011798317 [57/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -378.6
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.28681818181818186
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 5805
+      From worker 2:	Acceptance Rate: 2.9024854875725623 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2152777777777778
+      From worker 2:	Currently at Temperature:  1.1220184543019636 [58/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -424.83
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.32184090909090907
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 6121
+      From worker 2:	Acceptance Rate: 3.0604846975765123 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19722222222222224
+      From worker 2:	Currently at Temperature:  1.0797751623277096 [59/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -422.73
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.32025000000000003
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 4570
+      From worker 2:	Acceptance Rate: 2.284988575057125 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.22361111111111112
+      From worker 2:	Currently at Temperature:  1.0391223038351693 [60/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -422.84000000000003
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.32033333333333336
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 4337
+      From worker 2:	Acceptance Rate: 2.168489157554212 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2013888888888889
+      From worker 2:	Currently at Temperature:  1.0 [61/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -441.73
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3346439393939394
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2942
+      From worker 2:	Acceptance Rate: 1.4709926450367747 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.3138888888888889
+      From worker 2:	Currently at Temperature:  0.9623506263980887 [62/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -457.46000000000004
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.34656060606060607
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2823
+      From worker 2:	Acceptance Rate: 1.4114929425352873 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2263888888888889
+      From worker 2:	Currently at Temperature:  0.9261187281287933 [63/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -466.23
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3532045454545455
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 802
+      From worker 2:	Acceptance Rate: 0.400997995010025 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.3875
+      From worker 2:	Currently at Temperature:  0.8912509381337455 [64/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -470.87
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.35671969696969696
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1617
+      From worker 2:	Acceptance Rate: 0.8084959575202124 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.4291666666666667
+      From worker 2:	Currently at Temperature:  0.8576958985908942 [65/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -502.54
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3807121212121212
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 906
+      From worker 2:	Acceptance Rate: 0.45299773501132495 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.5513888888888889
+      From worker 2:	Currently at Temperature:  0.8254041852680185 [66/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -513.24
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.38881818181818184
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1644
+      From worker 2:	Acceptance Rate: 0.8219958900205498 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8055555555555556
+      From worker 2:	Currently at Temperature:  0.7943282347242814 [67/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.15
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3895075757575757
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1632
+      From worker 2:	Acceptance Rate: 0.8159959200203999 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.7625000000000001
+      From worker 2:	Currently at Temperature:  0.7644222742526002 [68/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.32
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.38963636363636367
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2396
+      From worker 2:	Acceptance Rate: 1.1979940100299498 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.7356422544596414 [69/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.51
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.38978030303030303
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2351
+      From worker 2:	Acceptance Rate: 1.1754941225293873 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8097222222222222
+      From worker 2:	Currently at Temperature:  0.707945784384138 [70/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.5600000000001
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.38981818181818184
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2238
+      From worker 2:	Acceptance Rate: 1.1189944050279748 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.6812920690579611 [71/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.5
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.38977272727272727
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2129
+      From worker 2:	Acceptance Rate: 1.0644946775266124 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8097222222222222
+      From worker 2:	Currently at Temperature:  0.6556418494179789 [72/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.66
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.38989393939393935
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2147
+      From worker 2:	Acceptance Rate: 1.0734946325268373 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8097222222222222
+      From worker 2:	Currently at Temperature:  0.6309573444801932 [73/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.5600000000001
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.38981818181818184
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2046
+      From worker 2:	Acceptance Rate: 1.0229948850255748 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.6072021956909888 [74/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.66
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.38989393939393935
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1982
+      From worker 2:	Acceptance Rate: 0.9909950450247749 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.5843414133735175 [75/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.78
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3899848484848485
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1826
+      From worker 2:	Acceptance Rate: 0.9129954350228249 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.5623413251903491 [76/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.72
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.389939393939394
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1718
+      From worker 2:	Acceptance Rate: 0.8589957050214749 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.5411695265464638 [77/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.67
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3899015151515151
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1651
+      From worker 2:	Acceptance Rate: 0.8254958725206374 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8097222222222222
+      From worker 2:	Currently at Temperature:  0.5207948328595462 [78/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.67
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3899015151515151
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1562
+      From worker 2:	Acceptance Rate: 0.7809960950195249 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.5011872336272722 [79/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.74
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.38995454545454544
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1415
+      From worker 2:	Acceptance Rate: 0.7074964625176874 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8097222222222222
+      From worker 2:	Currently at Temperature:  0.4823178482239307 [80/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.76
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.38996969696969697
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1332
+      From worker 2:	Acceptance Rate: 0.66599667001665 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.464158883361278 [81/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.85
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3900378787878788
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1220
+      From worker 2:	Acceptance Rate: 0.6099969500152499 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.4466835921509631 [82/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.82
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39001515151515154
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1224
+      From worker 2:	Acceptance Rate: 0.6119969400152999 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.42986623470822766 [83/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.86
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39004545454545453
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1047
+      From worker 2:	Acceptance Rate: 0.5234973825130874 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8097222222222222
+      From worker 2:	Currently at Temperature:  0.41368204023885075 [84/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.9
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3900757575757576
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 1002
+      From worker 2:	Acceptance Rate: 0.5009974950125249 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.3981071705534973 [85/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.87
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3900530303030303
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 884
+      From worker 2:	Acceptance Rate: 0.44199779001104994 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.38311868495572876 [86/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.92
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39009090909090904
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 856
+      From worker 2:	Acceptance Rate: 0.42799786001069995 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.36869450645195756 [87/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.87
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3900530303030303
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 777
+      From worker 2:	Acceptance Rate: 0.38849805750971245 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8097222222222222
+      From worker 2:	Currently at Temperature:  0.3548133892335755 [88/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.92
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39009090909090904
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 714
+      From worker 2:	Acceptance Rate: 0.356998215008925 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.3414548873833603 [89/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.9
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3900757575757576
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 645
+      From worker 2:	Acceptance Rate: 0.3224983875080625 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8097222222222222
+      From worker 2:	Currently at Temperature:  0.3285993247600654 [90/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.88
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39006060606060605
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 590
+      From worker 2:	Acceptance Rate: 0.29499852500737495 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.3162277660168379 [91/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.92
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39009090909090904
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 534
+      From worker 2:	Acceptance Rate: 0.26699866500667496 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.3043219887107722 [92/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.92
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39009090909090904
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 478
+      From worker 2:	Acceptance Rate: 0.23899880500597498 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.29286445646252357 [93/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.96
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39012121212121215
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 440
+      From worker 2:	Acceptance Rate: 0.21999890000549996 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.28183829312644537 [94/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.9300000000001
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3900984848484849
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 342
+      From worker 2:	Acceptance Rate: 0.170999145004275 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.27122725793320285 [95/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.97
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3901287878787879
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 332
+      From worker 2:	Acceptance Rate: 0.16599917000415 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.2610157215682537 [96/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.92
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39009090909090904
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 302
+      From worker 2:	Acceptance Rate: 0.15099924500377498 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.25118864315095796 [97/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.95
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3901136363636364
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 211
+      From worker 2:	Acceptance Rate: 0.10549947250263748 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8097222222222222
+      From worker 2:	Currently at Temperature:  0.2417315480804104 [98/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.97
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3901287878787879
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 218
+      From worker 2:	Acceptance Rate: 0.10899945500272498 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.23263050671536264 [99/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.99
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3901439393939394
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 194
+      From worker 2:	Acceptance Rate: 0.09699951500242499 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.22387211385683398 [100/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.98
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39013636363636367
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 146
+      From worker 2:	Acceptance Rate: 0.07299963500182499 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.21544346900318834 [101/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.98
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39013636363636367
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 125
+      From worker 2:	Acceptance Rate: 0.06249968750156249 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.8097222222222222
+      From worker 2:	Currently at Temperature:  0.2073321573485955 [102/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 94
+      From worker 2:	Acceptance Rate: 0.046999765001174997 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.19952623149688797 [103/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 80
+      From worker 2:	Acceptance Rate: 0.039999800000999994 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.19201419386388024 [104/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 78
+      From worker 2:	Acceptance Rate: 0.038999805000974996 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.18478497974222907 [105/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.99
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3901439393939394
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 32
+      From worker 2:	Acceptance Rate: 0.015999920000399997 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.1778279410038923 [106/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 50
+      From worker 2:	Acceptance Rate: 0.024999875000624998 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.1711328304161781 [107/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 42
+      From worker 2:	Acceptance Rate: 0.020999895000524998 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.1646897865482868 [108/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 38
+      From worker 2:	Acceptance Rate: 0.018999905000474996 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.15848931924611134 [109/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.99
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.3901439393939394
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 18
+      From worker 2:	Acceptance Rate: 0.008999955000225 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.1525222956539019 [110/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -514.98
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39013636363636367
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 16
+      From worker 2:	Acceptance Rate: 0.007999960000199998 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.14677992676220697 [111/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 18
+      From worker 2:	Acceptance Rate: 0.008999955000225 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.1412537544622754 [112/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 10
+      From worker 2:	Acceptance Rate: 0.004999975000124999 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.13593563908785256 [113/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 14
+      From worker 2:	Acceptance Rate: 0.006999965000174999 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.13081774742601943 [114/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 6
+      From worker 2:	Acceptance Rate: 0.0029999850000749996 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.12589254117941676 [115/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 4
+      From worker 2:	Acceptance Rate: 0.0019999900000499996 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.12115276586285882 [116/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2
+      From worker 2:	Acceptance Rate: 0.0009999950000249998 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.11659144011798317 [117/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2
+      From worker 2:	Acceptance Rate: 0.0009999950000249998 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.11220184543019636 [118/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 2
+      From worker 2:	Acceptance Rate: 0.0009999950000249998 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.10797751623277099 [119/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 0
+      From worker 2:	Acceptance Rate: 0.0 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.10391223038351691 [120/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 0
+      From worker 2:	Acceptance Rate: 0.0 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Currently at Temperature:  0.1 [121/121] (P_swap=0.0, T_swap=10.0, L=11)
+      From worker 2:	Average Energy: -515.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.39015151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 0
+      From worker 2:	Acceptance Rate: 0.0 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 1.0
+      From worker 2:	Final Configuration:
+      From worker 2:	[[4 4 1 1 1 5 5 3 3 3 1; 6 2 1 1 5 5 5 3 1 3 3; 1 1 1 5 2 6 5 2 2 3 3; 1 1 1 6 1 3 2 5 2 1 2; 1 4 4 6 3 1 3 5 1 1 4; 5 5 4 6 3 5 6 1 1 1 1; 3 5 5 6 6 4 3 3 4 3 1; 2 5 5 3 6 3 3 3 4 1 1; 2 6 3 3 3 3 3 5 5 3 2; 4 6 4 3 3 3 5 5 2 2 1; 4 4 4 3 6 3 5 5 1 5 5], [4 5 5 6 4 4 5 3 4 3 6; 3 5 3 3 6 4 4 2 2 2 6; 6 6 6 3 4 4 2 5 1 4 2; 2 2 6 3 4 2 2 4 4 2 5; 5 2 6 1 6 2 3 6 4 4 4; 3 2 2 5 5 5 3 3 3 2 4; 5 5 5 4 5 3 3 5 3 3 5; 6 6 5 5 5 1 3 1 1 1 5; 6 6 6 5 6 1 2 1 1 4 5; 3 2 5 6 6 4 4 1 6 2 2; 2 2 5 1 3 6 6 1 3 2 2], [1 1 1 1 4 3 2 4 4 6 4; 1 1 1 1 4 5 2 6 5 5 5; 3 6 5 5 5 1 1 5 5 5 5; 3 6 5 2 2 2 1 6 5 6 6; 3 3 2 2 4 1 1 2 4 4 1; 6 6 2 2 4 5 1 5 2 4 3; 6 6 2 2 4 2 1 5 2 4 4; 6 6 2 4 6 3 1 3 4 4 6; 6 6 2 2 2 1 3 3 4 4 4; 3 3 6 6 2 6 3 3 4 4 4; 2 3 5 6 6 6 3 4 4 4 4], [4 3 3 2 2 6 6 6 5 2 4; 3 4 4 1 3 3 3 6 4 1 1; 4 6 6 1 2 3 2 2 2 3 5; 2 4 2 1 2 3 2 2 2 6 6; 2 5 2 6 5 4 4 4 4 5 6; 2 2 2 3 4 5 2 4 4 6 2; 4 4 2 2 4 2 5 5 4 2 6; 5 1 4 3 4 4 5 5 5 6 6; 1 1 4 4 4 4 3 3 3 3 2; 1 1 4 4 4 2 3 3 3 3 1; 1 1 3 3 5 6 2 2 4 5 2], [1 1 1 1 3 3 1 2 5 2 6; 1 1 1 1 4 6 4 4 2 2 6; 5 1 1 1 1 5 4 6 2 5 5; 1 4 5 1 1 2 4 2 2 2 3; 1 2 5 1 4 1 4 6 6 6 6; 1 5 5 5 4 5 4 6 1 1 1; 3 4 5 1 1 1 6 6 1 1 1; 3 4 5 5 6 5 6 6 3 1 1; 3 6 5 5 5 5 1 6 3 3 5; 2 5 4 2 5 6 6 6 3 3 3; 5 3 5 5 5 6 1 1 1 3 1], [2 6 3 5 1 1 1 5 3 3 5; 2 6 6 1 5 1 3 3 3 3 6; 2 6 6 4 3 5 5 5 3 3 3; 2 6 6 1 6 2 2 3 3 6 3; 5 5 1 2 1 4 4 4 6 5 4; 2 2 1 1 2 5 1 5 1 2 2; 4 2 3 1 6 6 6 1 2 3 5; 4 4 4 4 6 6 6 6 2 2 2; 2 4 3 6 6 6 6 6 5 6 4; 2 3 4 4 6 6 2 2 5 5 6; 6 4 3 4 6 4 2 2 2 4 4]]
+      From worker 2:	Initial Configuration:[[4 4 1 1 1 5 5 3 3 3 1; 6 2 1 1 5 5 5 3 1 3 3; 1 1 1 5 2 6 5 2 2 3 3; 1 1 1 6 1 3 2 5 2 1 2; 1 4 4 6 3 1 3 5 1 1 4; 5 5 4 6 3 5 6 1 1 1 1; 3 5 5 6 6 4 3 3 4 3 1; 2 5 5 3 6 3 3 3 4 1 1; 2 6 3 3 3 3 3 5 5 3 2; 4 6 4 3 3 3 5 5 2 2 1; 4 4 4 3 6 3 5 5 1 5 5], [4 5 5 6 4 4 5 3 4 3 6; 3 5 3 3 6 4 4 2 2 2 6; 6 6 6 3 4 4 2 5 1 4 2; 2 2 6 3 4 2 2 4 4 2 5; 5 2 6 1 6 2 3 6 4 4 4; 3 2 2 5 5 5 3 3 3 2 4; 5 5 5 4 5 3 3 5 3 3 5; 6 6 5 5 5 1 3 1 1 1 5; 6 6 6 5 6 1 2 1 1 4 5; 3 2 5 6 6 4 4 1 6 2 2; 2 2 5 1 3 6 6 1 3 2 2], [1 1 1 1 4 3 2 4 4 6 4; 1 1 1 1 4 5 2 6 5 5 5; 3 6 5 5 5 1 1 5 5 5 5; 3 6 5 2 2 2 1 6 5 6 6; 3 3 2 2 4 1 1 2 4 4 1; 6 6 2 2 4 5 1 5 2 4 3; 6 6 2 2 4 2 1 5 2 4 4; 6 6 2 4 6 3 1 3 4 4 6; 6 6 2 2 2 1 3 3 4 4 4; 3 3 6 6 2 6 3 3 4 4 4; 2 3 5 6 6 6 3 4 4 4 4], [4 3 3 2 2 6 6 6 5 2 4; 3 4 4 1 3 3 3 6 4 1 1; 4 6 6 1 2 3 2 2 2 3 5; 2 4 2 1 2 3 2 2 2 6 6; 2 5 2 6 5 4 4 4 4 5 6; 2 2 2 3 4 5 2 4 4 6 2; 4 4 2 2 4 2 5 5 4 2 6; 5 1 4 3 4 4 5 5 5 6 6; 1 1 4 4 4 4 3 3 3 3 2; 1 1 4 4 4 2 3 3 3 3 1; 1 1 3 3 5 6 2 2 4 5 2], [1 1 1 1 3 3 1 2 5 2 6; 1 1 1 1 4 6 4 4 2 2 6; 5 1 1 1 1 5 4 6 2 5 5; 1 4 5 1 1 2 4 2 2 2 3; 1 2 5 1 4 1 4 6 6 6 6; 1 5 5 5 4 5 4 6 1 1 1; 3 4 5 1 1 1 6 6 1 1 1; 3 4 5 5 6 5 6 6 3 1 1; 3 6 5 5 5 5 1 6 3 3 5; 2 5 4 2 5 6 6 6 3 3 3; 5 3 5 5 5 6 1 1 1 3 1], [2 6 3 5 1 1 1 5 3 3 5; 2 6 6 1 5 1 3 3 3 3 6; 2 6 6 4 3 5 5 5 3 3 3; 2 6 6 1 6 2 2 3 3 6 3; 5 5 1 2 1 4 4 4 6 5 4; 2 2 1 1 2 5 1 5 1 2 2; 4 2 3 1 6 6 6 1 2 3 5; 4 4 4 4 6 6 6 6 2 2 2; 2 4 3 6 6 6 6 6 5 6 4; 2 3 4 4 6 6 2 2 5 5 6; 6 4 3 4 6 4 2 2 2 4 4]]
+      From worker 2:	New Cube With P_swap = 1.0 below T_swap = 10.0 
+      From worker 2:	Mixed cube
+      From worker 2:	Cube Energy/Infinite Temperature Energy: 1.009090909090909
+      From worker 2:	Currently at Temperature:  10.0 [1/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -228.49
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17309848484848486
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 175877
+      From worker 2:	Acceptance Rate: 87.93806030969846 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.16944444444444445
+      From worker 2:	Currently at Temperature:  9.623506263980886 [2/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -228.11
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17281060606060608
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 174746
+      From worker 2:	Acceptance Rate: 87.37256313718431 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.225
+      From worker 2:	Currently at Temperature:  9.261187281287935 [3/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -229.72
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17403030303030304
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 173436
+      From worker 2:	Acceptance Rate: 86.71756641216794 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18472222222222223
+      From worker 2:	Currently at Temperature:  8.912509381337456 [4/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -229.4
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1737878787878788
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 20851
+      From worker 2:	Accepted Candidates: 17953
+      From worker 2:	Acceptance Rate: 86.10138602465109 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13333333333333333
+      From worker 2:	Currently at Temperature:  8.576958985908941 [5/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -230.56
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17466666666666666
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 171453
+      From worker 2:	Acceptance Rate: 85.72607136964315 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.1875
+      From worker 2:	Currently at Temperature:  8.254041852680183 [6/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -232.07
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17581060606060606
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 170245
+      From worker 2:	Acceptance Rate: 85.12207438962805 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.17222222222222222
+      From worker 2:	Currently at Temperature:  7.943282347242815 [7/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -230.87
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17490151515151514
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 169272
+      From worker 2:	Acceptance Rate: 84.6355768221159 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19444444444444445
+      From worker 2:	Currently at Temperature:  7.6442227425260025 [8/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -232.36
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17603030303030304
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 168176
+      From worker 2:	Acceptance Rate: 84.08757956210219 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18333333333333335
+      From worker 2:	Currently at Temperature:  7.356422544596413 [9/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -232.62
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17622727272727273
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 166692
+      From worker 2:	Acceptance Rate: 83.34558327208364 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.17777777777777778
+      From worker 2:	Currently at Temperature:  7.079457843841379 [10/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -235.49
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.17840151515151517
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 165603
+      From worker 2:	Acceptance Rate: 82.80108599457003 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.17916666666666667
+      From worker 2:	Currently at Temperature:  6.812920690579613 [11/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -238.27
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18050757575757576
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 163824
+      From worker 2:	Acceptance Rate: 81.9115904420478 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2
+      From worker 2:	Currently at Temperature:  6.5564184941797885 [12/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -238.31
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1805378787878788
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 162665
+      From worker 2:	Acceptance Rate: 81.3320933395333 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.20694444444444446
+      From worker 2:	Currently at Temperature:  6.3095734448019325 [13/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -239.21
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18121969696969698
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 161321
+      From worker 2:	Acceptance Rate: 80.6600966995165 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.1902777777777778
+      From worker 2:	Currently at Temperature:  6.072021956909886 [14/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -238.66
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1808030303030303
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 76413
+      From worker 2:	Accepted Candidates: 61264
+      From worker 2:	Acceptance Rate: 80.1748393597948 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13333333333333333
+      From worker 2:	Currently at Temperature:  5.843414133735177 [15/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -240.43
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18214393939393939
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 158217
+      From worker 2:	Acceptance Rate: 79.1081044594777 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.20277777777777778
+      From worker 2:	Currently at Temperature:  5.623413251903491 [16/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -241.24
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18275757575757576
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 156510
+      From worker 2:	Acceptance Rate: 78.25460872695636 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.17777777777777778
+      From worker 2:	Currently at Temperature:  5.411695265464637 [17/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -241.65
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18306818181818182
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 154931
+      From worker 2:	Acceptance Rate: 77.46511267443663 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2013888888888889
+      From worker 2:	Currently at Temperature:  5.207948328595464 [18/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -246.05
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18640151515151515
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 152794
+      From worker 2:	Acceptance Rate: 76.39661801690991 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18888888888888888
+      From worker 2:	Currently at Temperature:  5.011872336272722 [19/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -246.46
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18671212121212122
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 151491
+      From worker 2:	Acceptance Rate: 75.74512127439363 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19583333333333333
+      From worker 2:	Currently at Temperature:  4.823178482239307 [20/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -248.08
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.18793939393939396
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 149874
+      From worker 2:	Acceptance Rate: 74.93662531687342 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.22222222222222224
+      From worker 2:	Currently at Temperature:  4.641588833612779 [21/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -248.59
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1883257575757576
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 129402
+      From worker 2:	Accepted Candidates: 95544
+      From worker 2:	Acceptance Rate: 73.8350257337599 %
+      From worker 2:	Relaxation Converged?: true
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.13472222222222222
+      From worker 2:	Currently at Temperature:  4.466835921509632 [22/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -252.45000000000002
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19125
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 146187
+      From worker 2:	Acceptance Rate: 73.09313453432733 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2138888888888889
+      From worker 2:	Currently at Temperature:  4.298662347082277 [23/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -252.0
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19090909090909092
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 143090
+      From worker 2:	Acceptance Rate: 71.54464227678862 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.15972222222222224
+      From worker 2:	Currently at Temperature:  4.136820402388507 [24/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -255.68
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.1936969696969697
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 141130
+      From worker 2:	Acceptance Rate: 70.56464717676411 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18055555555555555
+      From worker 2:	Currently at Temperature:  3.981071705534972 [25/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -255.39000000000001
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19347727272727275
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 139619
+      From worker 2:	Acceptance Rate: 69.80915095424523 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.1902777777777778
+      From worker 2:	Currently at Temperature:  3.8311868495572874 [26/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -258.22
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19562121212121214
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 137471
+      From worker 2:	Acceptance Rate: 68.73515632421838 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19861111111111113
+      From worker 2:	Currently at Temperature:  3.6869450645195756 [27/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -260.83
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19759848484848483
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 135362
+      From worker 2:	Acceptance Rate: 67.68066159669202 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19444444444444445
+      From worker 2:	Currently at Temperature:  3.548133892335754 [28/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -257.57
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19512878787878787
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 132316
+      From worker 2:	Acceptance Rate: 66.15766921165394 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18055555555555555
+      From worker 2:	Currently at Temperature:  3.414548873833602 [29/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -261.56
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.19815151515151516
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 130447
+      From worker 2:	Acceptance Rate: 65.22317388413057 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2013888888888889
+      From worker 2:	Currently at Temperature:  3.285993247600655 [30/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -264.5
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.20037878787878788
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 128221
+      From worker 2:	Acceptance Rate: 64.11017944910276 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.21666666666666667
+      From worker 2:	Currently at Temperature:  3.1622776601683795 [31/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -267.96
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.20299999999999999
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 124555
+      From worker 2:	Acceptance Rate: 62.27718861405693 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.16666666666666669
+      From worker 2:	Currently at Temperature:  3.0432198871077216 [32/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -271.59000000000003
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.20575000000000002
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 122133
+      From worker 2:	Acceptance Rate: 61.06619466902666 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2
+      From worker 2:	Currently at Temperature:  2.9286445646252366 [33/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -272.29
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.20628030303030304
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 119634
+      From worker 2:	Acceptance Rate: 59.81670091649542 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.18888888888888888
+      From worker 2:	Currently at Temperature:  2.8183829312644537 [34/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -279.94
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.21207575757575758
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 116878
+      From worker 2:	Acceptance Rate: 58.43870780646097 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.19444444444444445
+      From worker 2:	Currently at Temperature:  2.7122725793320286 [35/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -278.47
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.21096212121212124
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 114910
+      From worker 2:	Acceptance Rate: 57.45471272643637 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2138888888888889
+      From worker 2:	Currently at Temperature:  2.6101572156825363 [36/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -281.21
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.21303787878787878
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 111723
+      From worker 2:	Acceptance Rate: 55.86122069389653 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.2152777777777778
+      From worker 2:	Currently at Temperature:  2.51188643150958 [37/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -283.14
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.2145
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 108665
+      From worker 2:	Acceptance Rate: 54.33222833885831 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.20972222222222223
+      From worker 2:	Currently at Temperature:  2.4173154808041035 [38/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -288.99
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.2189318181818182
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 105666
+      From worker 2:	Acceptance Rate: 52.83273583632082 %
+      From worker 2:	Relaxation Converged?: false
+      From worker 2:	Final Configuration Correlation Function (for t=2*tau): 0.1875
+      From worker 2:	Currently at Temperature:  2.3263050671536263 [39/121] (P_swap=1.0, T_swap=10.0, L=11)
+      From worker 2:	Using swap moves at this temperature
+      From worker 2:	Average Energy: -290.91
+      From worker 2:	-Average Energy/Solved Configuration Energy: -0.22038636363636366
+      From worker 2:	Relaxation Iterations to e^-2 Correlation Function: 200001
+      From worker 2:	Accepted Candidates: 102929
+slurmstepd: error: *** JOB 39771735 ON cpu-p-346 CANCELLED AT 2024-01-01T04:18:47 DUE TO TIME LIMIT ***

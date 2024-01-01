@@ -11,7 +11,7 @@ using ColorTypes, ColorSchemes
 
 include("../core/rubiks_cube.jl")
 
-function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name_to_use::String, connectivity::String="Slice"; neighbour_moves_away::Int64=1, E_c::Float64=0.0)
+function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_name_to_use::String, connectivity::String="Slice"; neighbour_moves_away::Int64=1, E_c::Float64=0.0)
 
     n = neighbour_moves_away
 
@@ -223,8 +223,8 @@ function neighbour_initial_and_final_energies_graph_plotter(data_simulation_name
     # Add E_0 = E_n lines to graphs
     min_value = minimum([minimum(data_matrix[:,1]), minimum(data_matrix[:,2])])
     max_value = maximum([maximum(data_matrix[:,1]), maximum(data_matrix[:,2])])
-    Plots.plot!(graph, [0, max_value./solved_configuration_energy(cube)], [0, max_value./solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E₀=Eₙ")
-    Plots.plot!(mode_graph, [0, max_value./solved_configuration_energy(cube)], [0, max_value./solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E₀=Eₙ")
+    Plots.plot!(graph, [min_value./solved_configuration_energy(cube), max_value./solved_configuration_energy(cube)], [0, max_value./solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E₀=Eₙ")
+    Plots.plot!(mode_graph, [min_value./solved_configuration_energy(cube), max_value./solved_configuration_energy(cube)], [0, max_value./solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E₀=Eₙ")
 
     # Add E_c lines to graphs (average energy at onset of transition i.e. E(T_c^+))
     # E_c = 95.0 # Emergent Disorder
