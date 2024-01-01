@@ -15,11 +15,11 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
 
     n = neighbour_moves_away
 
-    ### --- READ IN THE DATA ---
+    ### -- READ IN THE DATA --
     header_line = readlines(joinpath("results/neighbour_initial_and_final_energies_distribution_results",data_simulation_name_to_use))[1]
     data_matrix = readdlm(joinpath("results/neighbour_initial_and_final_energies_distribution_results",data_simulation_name_to_use), ',', Float64, '\n', skipstart=2)
 
-    ### --- SET UP DEFAULT PARAMETERS ---
+    ### -- SET UP DEFAULT PARAMETERS --
     match_obj = match(r"L=(\d+)", header_line)
     L = parse(Int, match_obj.captures[1])
     cube = RubiksCube(L)
@@ -28,7 +28,7 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
     # Remove NaNs and overflow # TODO how exist?
     data_matrix = remove_bad_rows(data_matrix, L)
 
-    ### --- HISTOGRAM GENERAL CALCULATIONS ---
+    ### -- HISTOGRAM GENERAL CALCULATIONS --
 
     # Determine the bin edges based on the data
     edges = (0:1:Int(-solved_configuration_energy(cube)), 0:1:Int(-solved_configuration_energy(cube)))
@@ -60,7 +60,7 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
 
 
 
-    ### --- SAVE HISTOGRAM DATA ---
+    ### -- SAVE HISTOGRAM DATA --
 
     # Flatten the histogram weights
     # Assume hist_2d is your histogram object
@@ -97,7 +97,7 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
 
 
 
-    # ### --- GMT 3D HISTOGRAM ---
+    # ### -- GMT 3D HISTOGRAM --
 
     # # Flatten the histogram data for GMT
     # x = repeat(collect(edges[1][1:end-1]), outer=length(edges[2])-1)
@@ -119,7 +119,7 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
 
 
 
-    ### --- Plots.jl 2D HISTOGRAM ---
+    ### -- Plots.jl 2D HISTOGRAM --
 
     # Create the plot using histogram2d
     bin_edges_x = 0:1:-solved_configuration_energy(cube)
@@ -145,11 +145,11 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
 
     ## NOTE THAT WE AGAIN PLOT E_n ON THE X-AXIS FOR CONSISTENCY
     graph = histogram2d(data_matrix[:,2]./-solved_configuration_energy(cube), data_matrix[:,1]./-solved_configuration_energy(cube), color=:bluesreds, show_empty_bins=false,
-    normalize=:pdf, bins=(bin_edges_y, bin_edges_x), weights=biases, xlabel=L"E_n", ylabel=L"E_0", title=L"(E_0, E_1) " * " $connectivity Connectivity, L=$L", xlims=(0, -solved_configuration_energy(cube)), ylims=(0, -1), zlabel="Frequency")
+    normalize=:pdf, bins=(bin_edges_y, bin_edges_x), weights=biases, xlabel=L"E^{(1)}", ylabel=L"E^{(0)}", title="L=$L $connectivity Cube Energy Connectivity", xlims=(0, 1), ylims=(0, 1), zlabel="Frequency")
 
 
 
-    ### --- Scatter Plot of Modal E_n for each E_0 ---
+    ### -- Scatter Plot of Modal E_n for each E_0 --
 
     ## GET MODAL POINTS
 
@@ -212,19 +212,19 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
     E_0_values_for_lower_tail_En_above_E0 = E0_values[lower_tail_En .> E0_values]
 
     ##  CREATE THE SCATTER PLOT
-    mode_graph = Plots.plot(xlabel=L"E_n", ylabel=L"E_0", title=" Reduced "*L"(E_0, E_n) "*" (n=$n) $connectivity Connectivity Info L=$L", legend=:bottomright, legendfont = font(8, "Times"))
-    Plots.scatter!(mode_graph, lower_tail_En_below_E0, E_0_values_for_lower_tail_En_below_E0,  label="Minimal Eₙ<E₀ for E₀", color=:red)
-    Plots.scatter!(mode_graph, lower_tail_En_equal_E0, E_0_values_for_lower_tail_En_equal_E0,  label="Minimal Eₙ=E₀ for E₀", color=RGB(0.6, 1.0, 0.6))
-    Plots.scatter!(mode_graph, lower_tail_En_above_E0, E_0_values_for_lower_tail_En_above_E0,  label="Minimal Eₙ>E₀ for E₀", color=:orange)
-    Plots.scatter!(mode_graph, modal_En, modal_E0_values, label="Modal Eₙ for E₀", color=:blue)
+    mode_graph = Plots.plot(xlabel=L"E^{(1)}", ylabel=L"E^{(0)}", title="L=$L $connectivity Cube Energy Connectivity", legend=:bottomright, legendfont = font(8, "Times"))
+    Plots.scatter!(mode_graph, lower_tail_En_below_E0./-solved_configuration_energy(cube), E_0_values_for_lower_tail_En_below_E0./-solved_configuration_energy(cube),  label="Minimal E⁽¹⁾<E⁽⁰⁾ for E⁽⁰⁾", color=:red)
+    Plots.scatter!(mode_graph, lower_tail_En_equal_E0./-solved_configuration_energy(cube), E_0_values_for_lower_tail_En_equal_E0./-solved_configuration_energy(cube),  label="Minimal E⁽¹⁾=E⁽⁰⁾ for E⁽⁰⁾", color=RGB(0.6, 1.0, 0.6))
+    Plots.scatter!(mode_graph, lower_tail_En_above_E0./-solved_configuration_energy(cube), E_0_values_for_lower_tail_En_above_E0./-solved_configuration_energy(cube),  label="Minimal E⁽¹⁾>E⁽⁰⁾ for E⁽⁰⁾", color=:orange)
+    Plots.scatter!(mode_graph, modal_En./-solved_configuration_energy(cube), modal_E0_values./-solved_configuration_energy(cube), label="Modal E⁽¹⁾ for E⁽⁰⁾", color=:blue)
 
 
 
     # Add E_0 = E_n lines to graphs
     min_value = minimum([minimum(data_matrix[:,1]), minimum(data_matrix[:,2])])
     max_value = maximum([maximum(data_matrix[:,1]), maximum(data_matrix[:,2])])
-    Plots.plot!(graph, [min_value./solved_configuration_energy(cube), max_value./solved_configuration_energy(cube)], [0, max_value./solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E₀=Eₙ")
-    Plots.plot!(mode_graph, [min_value./solved_configuration_energy(cube), max_value./solved_configuration_energy(cube)], [0, max_value./solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E₀=Eₙ")
+    Plots.plot!(graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E⁽⁰⁾=E⁽¹⁾")
+    Plots.plot!(mode_graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E⁽⁰⁾=E⁽¹⁾")
 
     # Add E_c lines to graphs (average energy at onset of transition i.e. E(T_c^+))
     # E_c = 95.0 # Emergent Disorder
@@ -236,7 +236,7 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
         hline!(mode_graph, [E_c], line=:dash, color=:purple, lw=1, label="")
     end
 
-    ### --- Save and display the graphs ---
+    ### -- Save and display the graphs --
     
     savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D.svg")
     savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D.png")
@@ -247,7 +247,7 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
     display(mode_graph)
 
     # and maximal graph tools
-    Plots.scatter!(mode_graph, upper_tail_En, E0_values,  label="Maximum Eₙ for E₀", color=:green)
+    Plots.scatter!(mode_graph, upper_tail_En./-solved_configuration_energy(cube), E0_values./-solved_configuration_energy(cube),  label="Maximum E⁽¹⁾ for E⁽⁰⁾", color=:green)
     savefig(mode_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D_mode_maximal.svg")
     savefig(mode_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D_mode_maximal.png")
     display(mode_graph)
