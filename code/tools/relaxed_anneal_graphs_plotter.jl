@@ -60,7 +60,7 @@ function window_average(array::Array{Float64, 1}, window_size::Int)
 end
 
 
-function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probabilities::Vector{Float64}; inherent_disorder::Bool=false, smooth_window::Int64=1, T_on::Float64=0.0, T_off::Float64=0.0, E_star::Float64=0.0)
+function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probabilities::Vector{Float64}; inherent_disorder::Bool=false, smooth_window::Int64=1, T_on::Float64=0.0, T_off::Float64=0.0)
 
     ##### ----- IMPORT RELAXED ANNEAL DATA -----
 
@@ -104,13 +104,21 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     temperatures = reverse(temperature_vector)
     N_T = length(temperature_vector)-1
     swap_move_one_probabilty_index = findfirst(swap_move_probabilities .== 1.0)
+    swap_move_zero_probabilty_index = findfirst(swap_move_probabilities .== 0.0)
 
 
 
+    ### --- PLOT RELAXED ANNEAL GRAPHS ---  
+    array_renormalised_E_average_by_temperature::Vector{Vector{Float64}} = []
+    for vector in array_normalised_E_average_by_temperature
+        push!(array_renormalised_E_average_by_temperature, vector .+ 1.0)
+    end
 
-    ### --- PLOT RELAXED ANNEAL GRAPHS ---            
-    mean_graph = plot(temperature_vector, array_normalised_E_average_by_temperature, xlabel="Temperature", ylabel="-Average Energy/Solved Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
-    mean_std_graph = plot(temperature_vector, array_normalised_E_average_by_temperature, yerr=transpose(array_normalised_standard_deviations_by_temperature), markerstrokecolor=:auto, xlabel="Temperature", ylabel="-Average Energy/ Solved Energy", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
+    E_star = array_renormalised_E_average_by_temperature[swap_move_zero_probabilty_index][end]
+
+    mean_graph = plot(temperature_vector, array_renormalised_E_average_by_temperature, xlabel="Temperature", ylabel="Average Energy, E", title="L=$L Rubik's Cube Anneal", labels=reshape(["Slice Rotation Cube", "Swap Move Cube"], 1, length(swap_move_probabilities)))
+    mean_std_graph = plot(temperature_vector, array_renormalised_E_average_by_temperature, yerr=transpose(array_normalised_standard_deviations_by_temperature), markerstrokecolor=:auto, xlabel="Temperature", ylabel="Energy, E", title="L=$L Rubik's Cube Anneal", labels=reshape(["Slice Rotation Cube", "Swap Move Cube"], 1, length(swap_move_probabilities)))
+    # mean_std_graph = plot(temperature_vector, array_renormalised_E_average_by_temperature, yerr=transpose(array_normalised_standard_deviations_by_temperature), markerstrokecolor=:auto, xlabel="Temperature", ylabel="-Average Energy/ Solved Energy", title="L=$L Rubik's Cube Anneal", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
 
     if !inherent_disorder
         hline!(mean_std_graph, [-1.0], linestyle=:dash, color=:black, label="")
@@ -141,8 +149,8 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
 
     # Plot infinite temperature energy
-    hline!(mean_std_graph, [-0.16666666666666666], linestyle=:dash, color=:black, label="")
-    hline!(mean_graph, [-0.16666666666666666], linestyle=:dash, color=:black, label="")
+    # hline!(mean_std_graph, [0.16666666666666666], linestyle=:dash, color=:black, label="")
+    # hline!(mean_graph, [0.16666666666666666], linestyle=:dash, color=:black, label="")
 
     savefig(mean_graph, "results/relaxed_anneal_results/$(simulation_name)_mean.png")
     savefig(mean_graph, "results/relaxed_anneal_results/$(simulation_name)_mean.svg")
@@ -155,13 +163,13 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
 
     ### --- PLOT SPECIFIC HEAT CAPACITY GRAPH ---
-    specific_heat_capacity_graph = plot(temperature_vector, array_specific_heat_capacities_by_temperature, xlabel="Temperature", ylabel="Specific Heat Capacity", title="Rubik's Cube Anneal, L=$L", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
+    specific_heat_capacity_graph = plot(temperature_vector, array_specific_heat_capacities_by_temperature, xlabel="Temperature", ylabel="Specific Heat Capacity", title="L=$L Rubik's Cube Anneal", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
     savefig(specific_heat_capacity_graph, "results/relaxed_anneal_results/$(simulation_name)_specific_heat_capacity.png")
     savefig(specific_heat_capacity_graph, "results/relaxed_anneal_results/$(simulation_name)_specific_heat_capacity.svg")
 
 
     ### --- PLOT SPECIFIC HEAT CAPACITY DIVDED BY TEMPERATURE GRAPH ---
-    heat_capacity_divided_by_temperature_graph = plot(temperatures, array_specific_heat_capacities_by_temperature[swap_move_one_probabilty_index] ./ temperatures, xlabel="Temperature", ylabel="Heat Capacity/Temperature", title="Rubik's Cube Anneal, L=$L", label="Heat Capacity", color=:black)
+    heat_capacity_divided_by_temperature_graph = plot(temperatures, array_specific_heat_capacities_by_temperature[swap_move_one_probabilty_index] ./ temperatures, xlabel="Temperature", ylabel="Heat Capacity/Temperature", title="L=$L Rubik's Cube Anneal", label="Heat Capacity", color=:black)
     savefig(heat_capacity_divided_by_temperature_graph, "results/relaxed_anneal_results/$(simulation_name)_heat_capacity_divided_by_temperature.png")
     savefig(heat_capacity_divided_by_temperature_graph, "results/relaxed_anneal_results/$(simulation_name)_heat_capacity_divided_by_temperature.svg")
 
@@ -193,7 +201,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
         alternative_entropy_by_temperature[temperature_index] = alternative_entropy_by_temperature[temperature_index-1] + 0.5 * (absolute_energies_by_temperature[temperature_index] - absolute_energies_by_temperature[temperature_index-1]) * (1/temperatures[temperature_index] + 1/temperatures[temperature_index-1])
     end
 
-    entropy_by_temperature_graph = plot(temperatures, entropy_by_temperature, xlabel="Temperature", ylabel="Entropy", title="Rubik's Cube Anneal, L=$L", label="Entropy", color=:black)
+    entropy_by_temperature_graph = plot(temperatures, entropy_by_temperature, xlabel="Temperature", ylabel="Entropy, S", title="L=$L Rubik's Cube Anneal", label="Entropy", color=:black)
     plot!(entropy_by_temperature_graph, temperatures, alternative_entropy_by_temperature, label="Alternative Entropy", color=:blue)
 
 
@@ -261,9 +269,9 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     z_slice = isodd(L) ? 6*(L-1) : 6*L
     z_swap::BigInt = total_number_of_swap_moves(cube)
 
-    saddle_connectivity_graph = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), this_entropy_by_temperature, xlabel=L"Average Energy w.r.t Solved Energy", ylabel="Entropy", title="Number of Saddle Connectivities, L=$L"; label="Total Configuration Entropy", color=:black, legend=:topleft)
-    saddle_configuration_graph = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), this_entropy_by_temperature, xlabel="Average Energy w.r.t Solved Energy", ylabel="Entropy", title="Number of Saddle Configurations, L=$L"; label="Total Configuration Entropy", color=:black, legend=:topleft)
-    minima_configuration_graph = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), this_entropy_by_temperature, xlabel="Average Energy w.r.t Solved Energy", ylabel="Entropy", title="Number of Minima Configurations, L=$L"; label="Total Configuration Entropy", color=:black, legend=:topleft)
+    saddle_connectivity_graph = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), this_entropy_by_temperature, xlabel=L"Energy, E", ylabel="ln(N(E))", title="Number of Saddle Connectivities"; label="Total Configurations, ln(N(E))", color=:black, legend=:topleft)
+    saddle_configuration_graph = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), this_entropy_by_temperature, xlabel="Energy, E", ylabel="ln(N(E))", title="Number of Saddle Configurations"; label="Total Configurations, ln(N(E))", color=:black, legend=:topleft)
+    minima_configuration_graph = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), this_entropy_by_temperature, xlabel="Energy, E", ylabel="ln(N(E))", title="Number of Minima Configurations"; label="Total Configurations, ln(N(E))", color=:black, legend=:topleft)
 
 
     # Add analytic model lines
@@ -344,16 +352,20 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
     ## -- PRINT RAW DATA RESULTS -- 
     for i in 1:length(downwards_swap_connections_from_below_by_absolute_energies)
-        println("Swap Downward Connections at $(absolute_energies_by_temperature[i]): ", downwards_swap_connections_from_below_by_absolute_energies[i])
-        println("Total Swap Connections at $(absolute_energies_by_temperature[i]): ", exp(this_entropy_by_temperature[i])*z_swap)
-        println("--")
-        println("Slice Saddle Configurations at $(absolute_energies_by_temperature[i]): ", downwards_slice_connections_from_below_by_absolute_energies[i])
-        println("Total Slice Connections at $(absolute_energies_by_temperature[i]): ", exp(this_entropy_by_temperature[i])*z_slice)
-        println("--")
-        println("Swap Saddle Configurations at $(absolute_energies_by_temperature[i]): ", number_swap_saddle_configurations_from_below_by_absolute_energies[i])
-        println("Slice Saddle Configurations at $(absolute_energies_by_temperature[i]): ", number_slice_saddle_configurations_from_below_by_absolute_energies[i])
-        println("Swap Minima Configurations at $(absolute_energies_by_temperature[i]): ", number_swap_minima_configurations_from_below_by_absolute_energies[i])
-        println("Slice Minima Configurations at $(absolute_energies_by_temperature[i]): ", number_slice_minima_configurations_from_below_by_absolute_energies[i])
+        # println("Swap Downward Connections at $(absolute_energies_by_temperature[i]): ", downwards_swap_connections_from_below_by_absolute_energies[i])
+        # println("Total Swap Connections at $(absolute_energies_by_temperature[i]): ", exp(this_entropy_by_temperature[i])*z_swap)
+        # println("--")
+        # println("Slice Saddle Configurations at $(absolute_energies_by_temperature[i]): ", downwards_slice_connections_from_below_by_absolute_energies[i])
+        # println("Total Slice Connections at $(absolute_energies_by_temperature[i]): ", exp(this_entropy_by_temperature[i])*z_slice)
+        # println("--")
+        println("FROM EVEN - Swap Saddle Configurations at $(absolute_energies_by_temperature[i]): ", number_swap_saddle_configurations_from_even_by_absolute_energies[i])
+        println("FROM EVEN - Slice Saddle Configurations at $(absolute_energies_by_temperature[i]): ", number_slice_saddle_configurations_from_even_by_absolute_energies[i])
+        println("FROM EVEN - Swap Minima Configurations at $(absolute_energies_by_temperature[i]): ", number_swap_minima_configurations_from_even_by_absolute_energies[i])
+        println("FROM EVEN - Slice Minima Configurations at $(absolute_energies_by_temperature[i]): ", number_slice_minima_configurations_from_even_by_absolute_energies[i])
+        println("FROM BELOW - Swap Saddle Configurations at $(absolute_energies_by_temperature[i]): ", number_swap_saddle_configurations_from_below_by_absolute_energies[i])
+        println("FROM BELOW - Slice Saddle Configurations at $(absolute_energies_by_temperature[i]): ", number_slice_saddle_configurations_from_below_by_absolute_energies[i])
+        println("FROM BELOW - Swap Minima Configurations at $(absolute_energies_by_temperature[i]): ", number_swap_minima_configurations_from_below_by_absolute_energies[i])
+        println("FROM BELOW - Slice Minima Configurations at $(absolute_energies_by_temperature[i]): ", number_slice_minima_configurations_from_below_by_absolute_energies[i])
         println("Total Configurations at $(absolute_energies_by_temperature[i]): ", exp(this_entropy_by_temperature[i]))
         println("")
     end
@@ -386,8 +398,8 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
 
     # Number of Saddle Configurations Graph
-    plot!(saddle_configuration_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), log.(number_swap_saddle_configurations_from_below_by_absolute_energies), label="Swap Saddle Configurations", color=:blue, lw=1)
-    plot!(saddle_configuration_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), log.(number_slice_saddle_configurations_from_below_by_absolute_energies), label="Slice Saddle Configurations", color=:red, lw=1)
+    plot!(saddle_configuration_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), log.(number_swap_saddle_configurations_from_below_by_absolute_energies), label="Swap Saddle Configurations, ln(N⁻(E))", color=:blue, lw=1)
+    plot!(saddle_configuration_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), log.(number_slice_saddle_configurations_from_below_by_absolute_energies), label="Slice Saddle Configurations, ln(N⁻(E))", color=:red, lw=1)
 
     savefig(saddle_configuration_graph, "results/relaxed_anneal_results/$(simulation_name)_saddle_configurations.png")
     savefig(saddle_configuration_graph, "results/relaxed_anneal_results/$(simulation_name)_saddle_configurations.svg")
@@ -399,6 +411,18 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     savefig(saddle_configuration_graph, "results/relaxed_anneal_results/$(simulation_name)_saddle_configurations_even_too.png")
     savefig(saddle_configuration_graph, "results/relaxed_anneal_results/$(simulation_name)_saddle_configurations_even_too.svg")
 
+    # Saddle Proportion Graph
+    saddle_proportion_graph = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), -log.(number_swap_saddle_configurations_from_even_by_absolute_energies) + this_entropy_by_temperature, xlabel="Energy, E", ylabel="Saddle Negative Log Liklihood, "*L"-\ln(\mathcal{N}^{-}/\mathcal{N})", title="Saddle Proportions for L=$L Cube"; label="Swap Move Cube", color=:blue, legend=:topright)
+    plot!(saddle_proportion_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), -log.(number_slice_saddle_configurations_from_even_by_absolute_energies) + this_entropy_by_temperature, label="Slice Rotation Cube", color=:red)
+    
+    if E_star != 0.0
+        vline!(saddle_proportion_graph, [E_star], linestyle=:dot, color=:green, label="")
+        annotate!(saddle_proportion_graph, [(E_star+0.01, ylims(saddle_proportion_graph)[1]-0.05, Plots.text(L"E^*", 8, :black))])
+    end
+
+    savefig(saddle_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_saddle_proportion.png")
+    savefig(saddle_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_saddle_proportion.svg")
+
 
 
 
@@ -406,8 +430,8 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     # Number of Minima Configurations Graph
     swap_minima_configuration_entropy_from_below_by_absolute_energies = [x==0 ? 0 : log(x) for x in number_swap_minima_configurations_from_below_by_absolute_energies]
     slice_minima_configuration_entropy_from_below_by_absolute_energies = [x==0 ? 0 : log(x) for x in number_slice_minima_configurations_from_below_by_absolute_energies]
-    plot!(minima_configuration_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), swap_minima_configuration_entropy_from_below_by_absolute_energies, label="Swap Minima Configurations", color=:blue, lw=1)
-    plot!(minima_configuration_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), slice_minima_configuration_entropy_from_below_by_absolute_energies, label="Slice Minima Configurations", color=:red, lw=1)
+    plot!(minima_configuration_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), swap_minima_configuration_entropy_from_below_by_absolute_energies, label="Swap Minima Configurations, ln(N⁺(E))", color=:blue, lw=1)
+    plot!(minima_configuration_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), slice_minima_configuration_entropy_from_below_by_absolute_energies, label="Slice Minima Configurations, ln(N⁺(E))", color=:red, lw=1)
 
     savefig(minima_configuration_graph, "results/relaxed_anneal_results/$(simulation_name)_minima_configurations.png")
     savefig(minima_configuration_graph, "results/relaxed_anneal_results/$(simulation_name)_minima_configurations.svg")
@@ -424,14 +448,14 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
     # Downwards Connections Proportions Graph
     println("Downwards Swap Connections Proportion From Below: ", downwards_swap_connections_proportion_from_below_by_absolute_energies)
-    downwards_connections_proportion_graph = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), downwards_swap_connections_proportion_from_below_by_absolute_energies, xlabel="Average Energy w.r.t Solved Energy", ylabel="Proportion of Downward Connections", title="Proportion of Downward Connections, L=$L"; label="Swap Connections", color=:blue, legend=:topleft)
+    downwards_connections_proportion_graph = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), downwards_swap_connections_proportion_from_below_by_absolute_energies, xlabel="Energy, E", ylabel="Proportion of Downward Connections", title="Proportion of Downward Connections"; label="Swap Connections", color=:blue, legend=:topleft)
     plot!(downwards_connections_proportion_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), downwards_slice_connections_proportion_from_below_by_absolute_energies, label="Slice Connections", color=:red, legend=:topleft)
 
     savefig(downwards_connections_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_downwards_connections_proportion.png")
     savefig(downwards_connections_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_downwards_connections_proportion.svg")
 
     # Downwards Connections Proportions using Even Connections Graph
-    downwards_connections_proportion_graph_from_even = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), downwards_swap_connections_proportion_from_even_by_absolute_energies, xlabel="Average Energy w.r.t Solved Energy", ylabel="Proportion of Downward Connections", title="Proportion of Downward Connections, L=$L"; label="Swap Connections", color=:green, lw=1)
+    downwards_connections_proportion_graph_from_even = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), downwards_swap_connections_proportion_from_even_by_absolute_energies, xlabel="Energy, E", ylabel="Proportion of Downward Connections", title="Proportion of Downward Connections"; label="Swap Connections", color=:green, lw=1)
     plot!(downwards_connections_proportion_graph_from_even, absolute_energies_by_temperature./-solved_configuration_energy(cube), downwards_slice_connections_proportion_from_even_by_absolute_energies, label="Slice Connections", color=:orange, lw=1)
 
     # Plot in another colour just the places where the slice downwards connection proportion is zero

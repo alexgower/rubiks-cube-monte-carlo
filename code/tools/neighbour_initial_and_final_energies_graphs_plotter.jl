@@ -1,8 +1,8 @@
 using DelimitedFiles
 using Plots
+
 using StatsBase
 using LaTeXStrings
-# using GMT
 using CSV
 using DataFrames
 
@@ -11,7 +11,7 @@ using ColorTypes, ColorSchemes
 
 include("../core/rubiks_cube.jl")
 
-function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_name_to_use::String, connectivity::String="Slice"; neighbour_moves_away::Int64=1, E_c::Float64=0.0)
+function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_name_to_use::String, connectivity::String="Slice"; neighbour_moves_away::Int64=1)
 
     n = neighbour_moves_away
 
@@ -23,7 +23,6 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
     match_obj = match(r"L=(\d+)", header_line)
     L = parse(Int, match_obj.captures[1])
     cube = RubiksCube(L)
-    swap_move_probability = 1.0
 
     # Remove NaNs and overflow # TODO how exist?
     data_matrix = remove_bad_rows(data_matrix, L)
@@ -119,7 +118,17 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
 
 
 
-    ### -- Plots.jl 2D HISTOGRAM --
+
+
+
+
+
+
+
+    min_value = minimum([minimum(data_matrix[:,1]), minimum(data_matrix[:,2])])
+    max_value = maximum([maximum(data_matrix[:,1]), maximum(data_matrix[:,2])])
+
+    ### -- Plots. jl 2D HISTOGRAM --
 
     # Create the plot using histogram2d
     bin_edges_x = 0:1:-solved_configuration_energy(cube)
@@ -143,9 +152,8 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
     end
 
 
-    ## NOTE THAT WE AGAIN PLOT E_n ON THE X-AXIS FOR CONSISTENCY
-    graph = histogram2d(data_matrix[:,2]./-solved_configuration_energy(cube), data_matrix[:,1]./-solved_configuration_energy(cube), color=:bluesreds, show_empty_bins=false,
-    normalize=:pdf, bins=(bin_edges_y, bin_edges_x), weights=biases, xlabel=L"E^{(1)}", ylabel=L"E^{(0)}", title="L=$L $connectivity Cube Energy Connectivity", xlims=(0, 1), ylims=(0, 1), zlabel="Frequency")
+    graph = histogram2d(data_matrix[:,1]./-solved_configuration_energy(cube), data_matrix[:,2]./-solved_configuration_energy(cube), color=:bluesreds, show_empty_bins=false,
+    normalize=:pdf, bins=(bin_edges_x./-solved_configuration_energy(cube), bin_edges_y./-solved_configuration_energy(cube)), weights=biases, ylabel="Neighbour Configuration Energy, "*L"E^{(1)}", xlabel="Initial Configuration Energy, "*L"E^{(0)}", title="L=$L $connectivity Cube Energy Connectivity", xlims=(min_value./-solved_configuration_energy(cube), max_value./-solved_configuration_energy(cube)), ylims=(min_value./-solved_configuration_energy(cube), max_value./-solved_configuration_energy(cube)), colorbar_title="Sampled Frequency")
 
 
 
@@ -212,50 +220,41 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
     E_0_values_for_lower_tail_En_above_E0 = E0_values[lower_tail_En .> E0_values]
 
     ##  CREATE THE SCATTER PLOT
-    mode_graph = Plots.plot(xlabel=L"E^{(1)}", ylabel=L"E^{(0)}", title="L=$L $connectivity Cube Energy Connectivity", legend=:bottomright, legendfont = font(8, "Times"))
-    Plots.scatter!(mode_graph, lower_tail_En_below_E0./-solved_configuration_energy(cube), E_0_values_for_lower_tail_En_below_E0./-solved_configuration_energy(cube),  label="Minimal E⁽¹⁾<E⁽⁰⁾ for E⁽⁰⁾", color=:red)
-    Plots.scatter!(mode_graph, lower_tail_En_equal_E0./-solved_configuration_energy(cube), E_0_values_for_lower_tail_En_equal_E0./-solved_configuration_energy(cube),  label="Minimal E⁽¹⁾=E⁽⁰⁾ for E⁽⁰⁾", color=RGB(0.6, 1.0, 0.6))
-    Plots.scatter!(mode_graph, lower_tail_En_above_E0./-solved_configuration_energy(cube), E_0_values_for_lower_tail_En_above_E0./-solved_configuration_energy(cube),  label="Minimal E⁽¹⁾>E⁽⁰⁾ for E⁽⁰⁾", color=:orange)
-    Plots.scatter!(mode_graph, modal_En./-solved_configuration_energy(cube), modal_E0_values./-solved_configuration_energy(cube), label="Modal E⁽¹⁾ for E⁽⁰⁾", color=:blue)
+    mode_graph = plot(ylabel="Neighbour Configuration Energy, "*L"E^{(1)}", xlabel="Initial Configuration Energy, "*L"E^{(0)}", title="L=$L $connectivity Cube Energy Connectivity", legend=:bottomright, legendfont = font(8, "Times"))
+    scatter!(mode_graph, E_0_values_for_lower_tail_En_below_E0./-solved_configuration_energy(cube), lower_tail_En_below_E0./-solved_configuration_energy(cube), label="Minimal E⁽¹⁾<E⁽⁰⁾ for E⁽⁰⁾", color=:red)
+    scatter!(mode_graph, E_0_values_for_lower_tail_En_equal_E0./-solved_configuration_energy(cube), lower_tail_En_equal_E0./-solved_configuration_energy(cube),  label="Minimal E⁽¹⁾=E⁽⁰⁾ for E⁽⁰⁾", color=RGB(0.6, 1.0, 0.6))
+    scatter!(mode_graph, E_0_values_for_lower_tail_En_above_E0./-solved_configuration_energy(cube), lower_tail_En_above_E0./-solved_configuration_energy(cube), label="Minimal E⁽¹⁾>E⁽⁰⁾ for E⁽⁰⁾", color=:orange)
+    scatter!(mode_graph, modal_E0_values./-solved_configuration_energy(cube), modal_En./-solved_configuration_energy(cube), label="Modal E⁽¹⁾ for E⁽⁰⁾", color=:blue)
 
 
 
     # Add E_0 = E_n lines to graphs
-    min_value = minimum([minimum(data_matrix[:,1]), minimum(data_matrix[:,2])])
-    max_value = maximum([maximum(data_matrix[:,1]), maximum(data_matrix[:,2])])
-    Plots.plot!(graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E⁽⁰⁾=E⁽¹⁾")
-    Plots.plot!(mode_graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E⁽⁰⁾=E⁽¹⁾")
+    plot!(graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E⁽⁰⁾=E⁽¹⁾")
+    plot!(mode_graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E⁽⁰⁾=E⁽¹⁾")
 
-    # Add E_c lines to graphs (average energy at onset of transition i.e. E(T_c^+))
-    # E_c = 95.0 # Emergent Disorder
-    # E_c = 120.0 # Inherent Disorder L=5
-    if E_c != 0.0
-        vline!(graph, [E_c], line=:dash, color=:purple, lw=1, label="~ E(T*)")
-        vline!(mode_graph, [E_c], line=:dash, color=:purple, lw=1, label="~ E(T*)")
-        hline!(graph, [E_c], line=:dash, color=:purple, lw=1, label="")
-        hline!(mode_graph, [E_c], line=:dash, color=:purple, lw=1, label="")
-    end
 
     ### -- Save and display the graphs --
-    
+    println("Saving graphs...")
     savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D.svg")
     savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D.png")
     display(graph)
+    println("Saved histogram")
 
     savefig(mode_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D_mode.svg")
     savefig(mode_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D_mode.png")
     display(mode_graph)
 
-    # and maximal graph tools
-    Plots.scatter!(mode_graph, upper_tail_En./-solved_configuration_energy(cube), E0_values./-solved_configuration_energy(cube),  label="Maximum E⁽¹⁾ for E⁽⁰⁾", color=:green)
+    # # and maximal graph tools
+    scatter!(mode_graph, E0_values./-solved_configuration_energy(cube), upper_tail_En./-solved_configuration_energy(cube),  label="Maximum E⁽¹⁾ for E⁽⁰⁾", color=:green)
     savefig(mode_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D_mode_maximal.svg")
     savefig(mode_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D_mode_maximal.png")
     display(mode_graph)
+    println("Saved everything")
 
 
 end
 
-function remove_bad_rows(data::Array{Float64,2}, L::Int64)
+function remove_bad_rows(data::Array{Float64,2}, L::Int64)::Array{Float64,2}
     # Find rows without NaN or negative values or above solved configuration energy in the first two columns or above solved configuration energy
     non_bad_rows = .!isnan.(data[:, 1]) .& .!isnan.(data[:, 2]) .& (data[:, 1] .>= 0) .& (data[:, 2] .>= 0) .& (data[:, 1] .< -solved_configuration_energy(RubiksCube(L))) .& (data[:, 2] .< -solved_configuration_energy(RubiksCube(L)))
     # Return the data without rows containing NaN
