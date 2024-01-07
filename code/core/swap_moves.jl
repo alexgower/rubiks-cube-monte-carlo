@@ -317,7 +317,7 @@ end
 end
 
 
-@inline function random_coupled_subsystem_two_cycle(cube::RubiksCube; reverse::Bool=false, candidate_reversing_information=nothing)    
+@inline function random_coupled_subsystem_two_cycle!(cube::RubiksCube; reverse::Bool=false, candidate_reversing_information=nothing)    
     
     if !reverse
         # Conducts many simultaneous P2_{X,(a,b)} i.e. 2-cycle in cubelet subsystem X of cubelets in positions 1<-->2 
@@ -489,7 +489,7 @@ end
         if rand() < (number_of_coupled_subsystem_two_cycle_swap_moves(cube)/total_number_of_swap_moves(cube)) + bias_of_coupled_subsystem_two_cycles_over_three_cycles_or_opposite_orientation_rotations
             # Parity sector exchange case
 
-            candidate_reversing_information = random_coupled_subsystem_two_cycle(cube)
+            candidate_reversing_information = random_coupled_subsystem_two_cycle!(cube)
 
         else
             # Not parity sector exchange case
@@ -529,7 +529,7 @@ end
         
         else  # Parity exchange sector swap case
 
-            random_coupled_subsystem_two_cycle(cube; reverse=true, candidate_reversing_information=candidate_reversing_information)
+            random_coupled_subsystem_two_cycle!(cube; reverse=true, candidate_reversing_information=candidate_reversing_information)
 
         end
 

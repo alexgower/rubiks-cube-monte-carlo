@@ -5,6 +5,8 @@ using StatsBase
 using CSV
 using DataFrames
 
+using Plots.PlotMeasures
+
 
 include("../core/rubiks_cube.jl")
 include("../core/swap_moves.jl")
@@ -71,6 +73,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     cube = RubiksCube(L)
 
     temperature_vector::Vector{Float64} = []
+    slice_rotation_temperature_vector::Vector{Float64} = []
     array_normalised_E_average_by_temperature::Vector{Vector{Float64}} = []
     array_normalised_standard_deviations_by_temperature::Vector{Vector{Float64}} = []
     array_specific_heat_capacities_by_temperature::Vector{Vector{Float64}} = []
@@ -81,7 +84,13 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
         ## -- READ IN THE DATA --
         data_matrix = readdlm(joinpath("results/relaxed_anneal_results",simulation_name_to_use), ',', Float64, '\n', skipstart=2, comments=true, comment_char='#')
 
-        temperature_vector = copy(data_matrix[:,1])
+        this_temperature_vector = copy(data_matrix[:,1])
+        if swap_move_probability == 1.0
+            temperature_vector = this_temperature_vector
+        elseif swap_move_probability == 0.0
+            slice_rotation_temperature_vector = this_temperature_vector
+        end
+
         E_average_by_temperature = copy(data_matrix[:,2]) 
         E_squared_average_by_temperature = copy(data_matrix[:,4]) 
 
@@ -95,7 +104,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
         ## -- CALCULATE DESIRED QUANTITIES --
         push!(array_normalised_E_average_by_temperature, -E_average_by_temperature ./ normalization_energy)
         push!(array_normalised_standard_deviations_by_temperature, sqrt.(E_squared_average_by_temperature .- E_average_by_temperature.^2) ./ normalization_energy)
-        push!(array_specific_heat_capacities_by_temperature, (E_squared_average_by_temperature .- E_average_by_temperature.^2) ./ temperature_vector.^2)
+        push!(array_specific_heat_capacities_by_temperature, (E_squared_average_by_temperature .- E_average_by_temperature.^2) ./ this_temperature_vector.^2)
 
     end
 
@@ -117,9 +126,14 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     E_star = array_renormalised_E_average_by_temperature[swap_move_zero_probabilty_index][end]
     println("E_star = ", E_star)
 
-    mean_graph = plot(temperature_vector, array_renormalised_E_average_by_temperature, xlabel="Temperature", ylabel="Average Energy, E", title="L=$L Rubik's Cube Anneal", labels=reshape(["Slice Rotation Cube", "Swap Move Cube"], 1, length(swap_move_probabilities)))
-    mean_std_graph = plot(temperature_vector, array_renormalised_E_average_by_temperature, yerr=transpose(array_normalised_standard_deviations_by_temperature), markerstrokecolor=:auto, xlabel="Temperature", ylabel="Energy, E", title="L=$L Rubik's Cube Anneal", labels=reshape(["Slice Rotation Cube", "Swap Move Cube"], 1, length(swap_move_probabilities)))
-    # mean_std_graph = plot(temperature_vector, array_renormalised_E_average_by_temperature, yerr=transpose(array_normalised_standard_deviations_by_temperature), markerstrokecolor=:auto, xlabel="Temperature", ylabel="-Average Energy/ Solved Energy", title="L=$L Rubik's Cube Anneal", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
+    # mean_graph = plot(temperature_vector, array_renormalised_E_average_by_temperature, xlabel="Temperature", ylabel="Average Energy, E", title="L=$L Rubik's Cube Anneal", labels=reshape(["Slice Rotation Cube", "Swap Move Cube"], 1, length(swap_move_probabilities)))
+    mean_graph = plot(temperature_vector, array_renormalised_E_average_by_temperature[swap_move_one_probabilty_index], xlabel="Temperature", ylabel="Average Energy, E", title="L=$L Rubik's Cube Anneal", label="Swap Move Cube", color=:blue, margin=3mm)
+    plot!(mean_graph, slice_rotation_temperature_vector, array_renormalised_E_average_by_temperature[swap_move_zero_probabilty_index], label="Slice Rotation Cube", color=:red)
+
+    
+    # mean_std_graph = plot(temperature_vector, array_renormalised_E_average_by_temperature, yerr=transpose(array_normalised_standard_deviations_by_temperature), markerstrokecolor=:auto, xlabel="Temperature", ylabel="Energy, E", title="L=$L Rubik's Cube Anneal", labels=reshape(["Slice Rotation Cube", "Swap Move Cube"], 1, length(swap_move_probabilities)))
+    mean_std_graph = plot(temperature_vector, array_renormalised_E_average_by_temperature[swap_move_one_probabilty_index], yerr=transpose(array_normalised_standard_deviations_by_temperature[swap_move_one_probabilty_index]), xlabel="Temperature", ylabel="Energy, E", title="L=$L Rubik's Cube Anneal", label="Swap Move Cube", color=:blue)
+    plot!(mean_std_graph, slice_rotation_temperature_vector, array_renormalised_E_average_by_temperature[swap_move_zero_probabilty_index], yerr=transpose(array_normalised_standard_deviations_by_temperature[swap_move_zero_probabilty_index]), label="Slice Rotation Cube", color=:red)
 
     if !inherent_disorder
         hline!(mean_std_graph, [-1.0], linestyle=:dash, color=:black, label="")
@@ -164,7 +178,8 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
 
     ### --- PLOT SPECIFIC HEAT CAPACITY GRAPH ---
-    specific_heat_capacity_graph = plot(temperature_vector, array_specific_heat_capacities_by_temperature, xlabel="Temperature", ylabel="Specific Heat Capacity", title="L=$L Rubik's Cube Anneal", labels=reshape(["P_swap = $swap_move_probability" for swap_move_probability in swap_move_probabilities],1,length(swap_move_probabilities)))
+    specific_heat_capacity_graph = plot(temperature_vector, array_specific_heat_capacities_by_temperature[swap_move_one_probabilty_index], xlabel="Temperature", ylabel="Specific Heat Capacity", title="L=$L Rubik's Cube Anneal", label="Swap Move Cube", color=:blue)
+    plot!(specific_heat_capacity_graph, slice_rotation_temperature_vector, array_specific_heat_capacities_by_temperature[swap_move_zero_probabilty_index], label="Slice Rotation Cube", color=:red)    
     savefig(specific_heat_capacity_graph, "results/relaxed_anneal_results/$(simulation_name)_specific_heat_capacity.png")
     savefig(specific_heat_capacity_graph, "results/relaxed_anneal_results/$(simulation_name)_specific_heat_capacity.svg")
 
@@ -405,7 +420,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
     if E_star != 0.0
         vline!(saddle_configuration_graph, [E_star], linestyle=:dot, color=:green, label="")
-        annotate!(saddle_configuration_graph, [(E_star-0.01, ylims(saddle_configuration_graph)[1]-20, Plots.text(L"E^*", 8, :black))])
+        annotate!(saddle_configuration_graph, [(E_star+0.02, ylims(saddle_configuration_graph)[1]+40, Plots.text(L"E^*", 8, :black))])
     end
 
     savefig(saddle_configuration_graph, "results/relaxed_anneal_results/$(simulation_name)_saddle_configurations.png")
@@ -419,12 +434,24 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     savefig(saddle_configuration_graph, "results/relaxed_anneal_results/$(simulation_name)_saddle_configurations_even_too.svg")
 
     # Number of Saddle Configurations From Even + Total Configurations Graph
-    plot!(saddle_configuration_from_even_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), [isinf(log(x)) ? 0.0 : log(x) for x in number_swap_saddle_configurations_from_even_by_absolute_energies], label="Swap Saddle Configurations, ln(N⁻(E))", color=:blue, lw=1)
-    plot!(saddle_configuration_from_even_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), [isinf(log(x)) ? 0.0 : log(x) for x in number_slice_saddle_configurations_from_even_by_absolute_energies], label="Slice Saddle Configurations, ln(N⁻(E))", color=:red, lw=1)
+    log_number_swap_saddle_configurations_from_even_by_absolute_energies = [isinf(log(x)) ? 0.0 : log(x) for x in number_swap_saddle_configurations_from_even_by_absolute_energies]
+    log_number_slice_saddle_configurations_from_even_by_absolute_energies = [isinf(log(x)) ? 0.0 : log(x) for x in number_slice_saddle_configurations_from_even_by_absolute_energies]
+
+    # Find last index where both log_number_swap_saddle_configurations_from_even_by_absolute_energies and log_number_slice_saddle_configurations_from_even_by_absolute_energies are non-zero
+    last_non_zero_index = 0
+    for i in eachindex(log_number_swap_saddle_configurations_from_even_by_absolute_energies)
+        if log_number_swap_saddle_configurations_from_even_by_absolute_energies[i] != 0.0 && log_number_slice_saddle_configurations_from_even_by_absolute_energies[i] != 0.0
+            last_non_zero_index = i
+        end
+    end
+
+
+    plot!(saddle_configuration_from_even_graph, absolute_energies_by_temperature[1:last_non_zero_index]./-solved_configuration_energy(cube), log_number_swap_saddle_configurations_from_even_by_absolute_energies[1:last_non_zero_index], label="Swap Saddle Configurations, ln(N⁻(E))", color=:blue, lw=1)
+    plot!(saddle_configuration_from_even_graph, absolute_energies_by_temperature[1:last_non_zero_index]./-solved_configuration_energy(cube), log_number_slice_saddle_configurations_from_even_by_absolute_energies[1:last_non_zero_index], label="Slice Saddle Configurations, ln(N⁻(E))", color=:red, lw=1)
 
     if E_star != 0.0
         vline!(saddle_configuration_from_even_graph, [E_star], linestyle=:dot, color=:green, label="")
-        annotate!(saddle_configuration_from_even_graph, [(E_star-0.01, ylims(saddle_configuration_from_even_graph)[1]-20, Plots.text(L"E^*", 8, :black))])
+        annotate!(saddle_configuration_from_even_graph, [(E_star+0.02, ylims(saddle_configuration_from_even_graph)[1]+40, Plots.text(L"E^*", 8, :black))])
     end
 
     savefig(saddle_configuration_from_even_graph, "results/relaxed_anneal_results/$(simulation_name)_saddle_configurations_from_even.png")
@@ -438,7 +465,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     
     if E_star != 0.0
         vline!(saddle_proportion_graph, [E_star], linestyle=:dot, color=:green, label="")
-        annotate!(saddle_proportion_graph, [(E_star-0.01, ylims(saddle_proportion_graph)[1]-0.075, Plots.text(L"E^*", 8, :black))])
+        annotate!(saddle_proportion_graph, [(E_star+0.02, ylims(saddle_proportion_graph)[1]+0.2, Plots.text(L"E^*", 8, :black))])
     end
 
     for i in eachindex(number_slice_saddle_configurations_from_even_by_absolute_energies)
@@ -461,7 +488,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
     if E_star != 0.0
         vline!(minima_proportion_graph, [E_star], linestyle=:dot, color=:green, label="")
-        annotate!(minima_proportion_graph, [(E_star-0.01, ylims(minima_proportion_graph)[1]-0.1, Plots.text(L"E^*", 8, :black))])
+        annotate!(minima_proportion_graph, [(E_star+0.02, ylims(minima_proportion_graph)[1]+0.1, Plots.text(L"E^*", 8, :black))])
     end
 
     savefig(minima_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_minima_proportion.png")
@@ -499,7 +526,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
     if E_star != 0.0
         vline!(minima_configuration_from_even_graph, [E_star], linestyle=:dot, color=:green, label="")
-        annotate!(minima_configuration_from_even_graph, [(E_star-0.01, ylims(minima_configuration_from_even_graph)[1]-20, Plots.text(L"E^*", 8, :black))])
+        annotate!(minima_configuration_from_even_graph, [(E_star+0.02, ylims(minima_configuration_from_even_graph)[1]+50, Plots.text(L"E^*", 8, :black))])
     end
 
     savefig(minima_configuration_from_even_graph, "results/relaxed_anneal_results/$(simulation_name)_minima_configurations_from_even.png")

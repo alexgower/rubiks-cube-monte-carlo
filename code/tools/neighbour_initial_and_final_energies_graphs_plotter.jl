@@ -8,10 +8,11 @@ using DataFrames
 
 using Colors
 using ColorTypes, ColorSchemes
+using Plots.PlotMeasures
 
 include("../core/rubiks_cube.jl")
 
-function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_name_to_use::String, connectivity::String="Slice"; neighbour_moves_away::Int64=1)
+function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_name_to_use::String, connectivity::String="Slice"; neighbour_moves_away::Int64=1, E_star::Float64=0.0)
 
     n = neighbour_moves_away
 
@@ -152,9 +153,27 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
     end
 
 
-    graph = histogram2d(data_matrix[:,1]./-solved_configuration_energy(cube), data_matrix[:,2]./-solved_configuration_energy(cube), color=:bluesreds, show_empty_bins=false,
-    normalize=:pdf, bins=(bin_edges_x./-solved_configuration_energy(cube), bin_edges_y./-solved_configuration_energy(cube)), weights=biases, ylabel="Neighbour Configuration Energy, "*L"E^{(1)}", xlabel="Initial Configuration Energy, "*L"E^{(0)}", title="L=$L $connectivity Cube Energy Connectivity", xlims=(min_value./-solved_configuration_energy(cube), max_value./-solved_configuration_energy(cube)), ylims=(min_value./-solved_configuration_energy(cube), max_value./-solved_configuration_energy(cube)), colorbar_title="Sampled Frequency")
-
+    graph = histogram2d(
+    data_matrix[:,1]./-solved_configuration_energy(cube), 
+    data_matrix[:,2]./-solved_configuration_energy(cube), 
+    color=:bluesreds, 
+    show_empty_bins=false,
+    normalize=:pdf, 
+    bins=(bin_edges_x./-solved_configuration_energy(cube), bin_edges_y./-solved_configuration_energy(cube)), 
+    weights=biases, 
+    ylabel="Neighbour Configuration Energy, "*L"E^{(1)}", 
+    xlabel="Initial Configuration Energy, "*L"E^{(0)}", 
+    title="L=$L $connectivity Cube Energy Connectivity", 
+    xlims=(min_value./-solved_configuration_energy(cube), max_value./-solved_configuration_energy(cube)), 
+    ylims=(min_value./-solved_configuration_energy(cube), max_value./-solved_configuration_energy(cube)), 
+    colorbar_title="Sampled Frequency",
+    titlefontsize=10,   # Title font size
+    xguidefontsize=8,   # X-axis label font size
+    yguidefontsize=8,   # Y-axis label font size
+    margin=5mm          # Margin around the plot
+)
+    
+    
 
 
     ### -- Scatter Plot of Modal E_n for each E_0 --
@@ -220,18 +239,51 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
     E_0_values_for_lower_tail_En_above_E0 = E0_values[lower_tail_En .> E0_values]
 
     ##  CREATE THE SCATTER PLOT
-    mode_graph = plot(ylabel="Neighbour Configuration Energy, "*L"E^{(1)}", xlabel="Initial Configuration Energy, "*L"E^{(0)}", title="L=$L $connectivity Cube Energy Connectivity", legend=:bottomright, legendfont = font(8, "Times"))
+    mode_graph = plot(
+        ylabel="Neighbour Configuration Energy, "*L"E^{(1)}", 
+        xlabel="Initial Configuration Energy, "*L"E^{(0)}", 
+        title="L=$L $connectivity Cube Energy Connectivity", 
+        legend=:bottomright, 
+        legendfont = font(8, "Times"), 
+        titlefontsize=10,   # Title font size
+        xguidefontsize=8,   # X-axis label font size
+        yguidefontsize=8,   # Y-axis label font size
+        margin=5mm          # Margin around the plot
+    )    
     scatter!(mode_graph, E_0_values_for_lower_tail_En_below_E0./-solved_configuration_energy(cube), lower_tail_En_below_E0./-solved_configuration_energy(cube), label="Minimal E⁽¹⁾<E⁽⁰⁾ for E⁽⁰⁾", color=:red)
     scatter!(mode_graph, E_0_values_for_lower_tail_En_equal_E0./-solved_configuration_energy(cube), lower_tail_En_equal_E0./-solved_configuration_energy(cube),  label="Minimal E⁽¹⁾=E⁽⁰⁾ for E⁽⁰⁾", color=RGB(0.6, 1.0, 0.6))
     scatter!(mode_graph, E_0_values_for_lower_tail_En_above_E0./-solved_configuration_energy(cube), lower_tail_En_above_E0./-solved_configuration_energy(cube), label="Minimal E⁽¹⁾>E⁽⁰⁾ for E⁽⁰⁾", color=:orange)
     scatter!(mode_graph, modal_E0_values./-solved_configuration_energy(cube), modal_En./-solved_configuration_energy(cube), label="Modal E⁽¹⁾ for E⁽⁰⁾", color=:blue)
 
-
+    lower_tail_graph = plot(
+        ylabel="Neighbour Configuration Energy, "*L"E^{(1)}", 
+        xlabel="Initial Configuration Energy, "*L"E^{(0)}", 
+        title="L=$L $connectivity Cube Energy Connectivity", 
+        legend=:bottomright, 
+        legendfont = font(8, "Times"), 
+        titlefontsize=10,   # Title font size
+        xguidefontsize=8,   # X-axis label font size
+        yguidefontsize=8,   # Y-axis label font size
+        margin=5mm          # Margin around the plot
+    )
+    scatter!(lower_tail_graph, E_0_values_for_lower_tail_En_below_E0./-solved_configuration_energy(cube), lower_tail_En_below_E0./-solved_configuration_energy(cube), label="Minimal E⁽¹⁾<E⁽⁰⁾ for E⁽⁰⁾", color=:red)
+    scatter!(lower_tail_graph, E_0_values_for_lower_tail_En_equal_E0./-solved_configuration_energy(cube), lower_tail_En_equal_E0./-solved_configuration_energy(cube),  label="Minimal E⁽¹⁾=E⁽⁰⁾ for E⁽⁰⁾", color=RGB(0.6, 1.0, 0.6))
+    scatter!(lower_tail_graph, E_0_values_for_lower_tail_En_above_E0./-solved_configuration_energy(cube), lower_tail_En_above_E0./-solved_configuration_energy(cube), label="Minimal E⁽¹⁾>E⁽⁰⁾ for E⁽⁰⁾", color=:orange)
 
     # Add E_0 = E_n lines to graphs
     plot!(graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E⁽⁰⁾=E⁽¹⁾")
     plot!(mode_graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="E⁽⁰⁾=E⁽¹⁾")
+    plot!(lower_tail_graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:black, lw=2, label="E⁽⁰⁾=E⁽¹⁾")
 
+    # Add E_star vertical lines to graphs if E_star is nonzero
+    if E_star != 0.0
+        vline!(graph, [E_star], line=:dash, color=:green, lw=2, label="")
+        vline!(mode_graph, [E_star], line=:dash, color=:green, lw=2, label="")
+        vline!(lower_tail_graph, [E_star], line=:dash, color=:green, lw=2, label="")
+        annotate!(graph, [(E_star+0.02, ylims(graph)[1]+0.02, Plots.text(L"E^*", 8, :black))])
+        annotate!(mode_graph, [(E_star+0.02, ylims(mode_graph)[1]+0.02, Plots.text(L"E^*", 8, :black))])
+        annotate!(lower_tail_graph, [(E_star+0.02, ylims(lower_tail_graph)[1]+0.02, Plots.text(L"E^*", 8, :black))])
+    end
 
     ### -- Save and display the graphs --
     println("Saving graphs...")
@@ -249,8 +301,15 @@ function neighbour_initial_and_final_energies_graphs_plotter(data_simulation_nam
     savefig(mode_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D_mode_maximal.svg")
     savefig(mode_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D_mode_maximal.png")
     display(mode_graph)
-    println("Saved everything")
 
+    # and lower tail graph
+    savefig(lower_tail_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D_lower_tail.svg")
+    savefig(lower_tail_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(data_simulation_name_to_use)_2D_lower_tail.png")
+    display(lower_tail_graph)
+
+    println("Saved everything")
+    println("E_0 values where Lower Tail E_1 is ABOVE E_0: ", sort(E_0_values_for_lower_tail_En_above_E0))
+    println("E_0 values where Lower Tail E_1 is EQUAL TO E_0: ", sort(E_0_values_for_lower_tail_En_equal_E0))
 
 end
 

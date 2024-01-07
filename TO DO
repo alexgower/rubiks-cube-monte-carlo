@@ -18,6 +18,4 @@
 - Replace number_of_three_cycle_swap_moves function with mathematical calulation
 
 # For Paper:
-- Note I am now using not double-counting-bonds definition of energy not Ollie's definition
-- Note Julia and therefore me are using f=1:6 not 0:5 index convention
 - Type up 'Rubik's Cube Monte Carlo Supplementary Document' neatly to accomany codebase

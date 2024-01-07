@@ -90,7 +90,7 @@ include("../probes/capped_anneal.jl")
 
             # Create energy plot ----------
 
-            graph = plot([i for i in 1:length(temperature_vector)], E_by_temperature_step./-solved_configuration_energy(cube), xlabel="Time Step", ylabel="Energy w.r.t Solved Energy", title="Rubik's Cube Capped Anneal, L=$L, N_T=$N_T", label="Energy")
+            graph = plot([i for i in 1:length(temperature_vector)], E_by_temperature_step./-solved_configuration_energy(cube), xlabel="Time Step", ylabel="Energy, E", title="Rubik's Cube Capped Anneal, L=$L", label="Energy")
 
             hline!(graph, [energy_floor./-solved_configuration_energy(cube)], linestyle=:dash, color=:green, label="Energy Floor")
             hline!(graph, [energy_cap./-solved_configuration_energy(cube)], linestyle=:dash, color=:blue, label="Energy Cap")
@@ -107,7 +107,20 @@ include("../probes/capped_anneal.jl")
 
             savefig(graph, "results/capped_anneal_results/$(simulation_name)_correlation_function.png")
 
-            # display(graph)
+
+            # Save Results ----------
+            touch(joinpath("results/capped_anneal_results/$(simulation_name)_results.txt"))
+
+            open(joinpath("results/capped_anneal_results/$(simulation_name)_results.txt"), "w") do simulation_file
+                write(simulation_file, "Simulation:L=$L, P_s=$swap_move_probability, T_1=$T_1, T_0=$T_0, N_T=$N_T, energy_cap=$energy_cap, energy_floor=$energy_floor \n")
+                write(simulation_file, "Original Configuration = $original_configuration \n")
+
+                write(simulation_file, "\n")
+                write(simulation_file, "Temperature T, E(T), C(T) \n")
+                for temperature_index in 1:N_T+1
+                    write(simulation_file, "$(temperature_vector[temperature_index]), $(E_by_temperature_step[temperature_index]), $(correlation_function_by_temperature_step[temperature_index]) \n")
+                end
+            end
 
 
 

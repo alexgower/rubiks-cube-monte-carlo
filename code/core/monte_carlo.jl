@@ -8,6 +8,14 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
 
     current_energy = energy(cube)
 
+    # TODO remove ASAP
+    # if current_energy == -900
+    #     println("CURRENT ENERGY IS -900")
+    #     println("CURRENT CONFIGURATION IS: ")
+    #     println(cube.configuration)
+    # end
+
+
     if verbose
         println("Current Configuration: ")
         println(cube.configuration)
