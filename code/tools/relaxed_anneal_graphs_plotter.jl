@@ -320,7 +320,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
     for (E_absolute_energy_index,absolute_energy) in pairs(absolute_energies_by_temperature)
 
-        E_bin_index = findfirst(>=(absolute_energy), normalised_E0_E1_histogram_swap.edges[2])
+        E_bin_index = findfirst(>(absolute_energy), normalised_E0_E1_histogram_swap.edges[2])-1
         configurations_of_E = exp(this_entropy_by_temperature[E_absolute_energy_index])
 
         for E0_bin_index in 1:E_bin_index
@@ -529,11 +529,15 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
         annotate!(minima_configuration_from_even_graph, [(E_star+0.02, ylims(minima_configuration_from_even_graph)[1]+50, Plots.text(L"E^*", 8, :black))])
     end
 
+    # Print swap minima configuration entropy from even next to absolute energy
+    for i in eachindex(slice_minima_configuration_entropy_from_even_by_absolute_energies)
+        println("Swap Minima Configurations at $(absolute_energies_by_temperature[i]) = $(1-absolute_energies_by_temperature[i]/solved_configuration_energy(cube)): ", swap_minima_configuration_entropy_from_even_by_absolute_energies[i])
+    end
+
     savefig(minima_configuration_from_even_graph, "results/relaxed_anneal_results/$(simulation_name)_minima_configurations_from_even.png")
     savefig(minima_configuration_from_even_graph, "results/relaxed_anneal_results/$(simulation_name)_minima_configurations_from_even.svg")
 
     # Downwards Connections Proportions Graph
-    println("Downwards Swap Connections Proportion From Below: ", downwards_swap_connections_proportion_from_below_by_absolute_energies)
     downwards_connections_proportion_graph = plot(absolute_energies_by_temperature./-solved_configuration_energy(cube), downwards_swap_connections_proportion_from_below_by_absolute_energies, xlabel="Energy, E", ylabel="Proportion of Downward Connections", title="Proportion of Downward Connections"; label="Swap Connections", color=:blue, legend=:topleft)
     plot!(downwards_connections_proportion_graph, absolute_energies_by_temperature./-solved_configuration_energy(cube), downwards_slice_connections_proportion_from_below_by_absolute_energies, label="Slice Connections", color=:red, legend=:topleft)
 
