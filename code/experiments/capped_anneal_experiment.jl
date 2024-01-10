@@ -1,7 +1,3 @@
-# Xeon Only ---
-# DEPOT_PATH[1]="/u/rscratch/apg59/.julia"
-# using Pkg
-# Pkg.instantiate()
 
 using Plots
 using DelimitedFiles
@@ -90,10 +86,10 @@ include("../probes/capped_anneal.jl")
 
             # Create energy plot ----------
 
-            graph = plot([i for i in 1:length(temperature_vector)], E_by_temperature_step./-solved_configuration_energy(cube), xlabel="Time Step", ylabel="Energy, E", title="Rubik's Cube Capped Anneal, L=$L", label="Energy")
+            graph = plot([i for i in 1:length(temperature_vector)], (E_by_temperature_step./-solved_configuration_energy(cube)) .+ 1.0, xlabel="Time Step", ylabel="Energy, E", title="Rubik's Cube Capped Anneal, L=$L", label="Energy")
 
-            hline!(graph, [energy_floor./-solved_configuration_energy(cube)], linestyle=:dash, color=:green, label="Energy Floor")
-            hline!(graph, [energy_cap./-solved_configuration_energy(cube)], linestyle=:dash, color=:blue, label="Energy Cap")
+            hline!(graph, [1.0 + (energy_floor./-solved_configuration_energy(cube))], linestyle=:dash, color=:green, label="Energy Floor")
+            hline!(graph, [1.0 + (energy_cap./-solved_configuration_energy(cube))], linestyle=:dash, color=:blue, label="Energy Cap")
 
             savefig(graph, "results/capped_anneal_results/$simulation_name.png")
 

@@ -73,7 +73,13 @@ end
     return cube.configuration[face_number]
 end
 
+# Function with cube arguments, just pass configurations to separate function
 function configuration_correlation_function(cube::RubiksCube, reference_cube::RubiksCube)
+    return configuration_correlation_function(cube.configuration, reference_cube.configuration)
+end
+
+# Separate function with just the configurations as arguments
+function configuration_correlation_function(cube_configuration::Vector{Matrix{Int64}}, reference_cube_configuration::Vector{Matrix{Int64}})
     # Calculates configuration correlation function with current Rubik's cube configuration compared to a cube in a reference configuration
     # The configuration correlation function is given by:
     # C_{\mathcal{C}} = \frac{1}{N_{facelets}} \sum_{facelets} \delta_{\mathcal{C}(t=0)[facelet], \mathcal{C}(t=t)[facelet]}
@@ -81,37 +87,37 @@ function configuration_correlation_function(cube::RubiksCube, reference_cube::Ru
     # Validation ---
 
     # Throw an error if the reference cube is not the same size
-    if reference_cube.L != cube.L
+    if size(cube_configuration) != size(reference_cube_configuration)
         throw(ArgumentError("Reference cube has different size to current cube"))
     end
 
+    L = size(cube_configuration[1])[1]
 
     # Calculation ---
 
     # Calculate configuration correlation function
-    number_facelets = 6*cube.L^2
+    number_facelets = 6*L^2
 
     unnormalised_configuration_correlation_function = 0
 
     # Sum over facelets on cube
-    for (face_number, face) in pairs(cube.configuration)
+    for (face_number, face) in pairs(cube_configuration)
         for (index, current_spin) in pairs(face)
             # Implement Kronecker Delta
-            if current_spin == reference_cube.configuration[face_number][index]
+            if current_spin == reference_cube_configuration[face_number][index]
                 unnormalised_configuration_correlation_function += 1
             end
         end
     end
 
     # If cube is odd then we subtract 6 from the number of facelets as the central facelets are fixed
-    if isodd(cube.L)
+    if isodd(L)
         unnormalised_configuration_correlation_function -= 6
         number_facelets -= 6
     end
 
     return (1/number_facelets)*unnormalised_configuration_correlation_function
 end
-
 
 
 

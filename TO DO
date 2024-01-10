@@ -1,3 +1,5 @@
+autocorrelation_experiment("first_autocorrelation_test_L=5", 5, 0.0, 10.0, 0.1, 50, collect(LinRange(3.0,0.9,10)), 10000, 10, 100000; verbose_annealing=true, original_configuration=[[2 3 3 2 6; 5 3 6 4 4; 1 2 5 1 5; 2 2 6 6 2; 2 1 2 3 2],[1 2 5 5 3; 6 6 1 2 3; 2 5 5 4 3; 4 1 6 5 4; 4 6 6 2 4], [3 4 5 4 6; 2 5 4 4 1; 5 3 2 5 4; 4 6 1 2 5; 2 5 5 4 6], [3 3 1 6 3; 2 3 1 6 3; 6 6 4 3 2; 1 1 2 3 2; 6 3 1 5 3], [2 3 4 4 1; 3 3 1 3 6; 3 4 4 5 1; 4 5 5 4 1; 6 1 1 6 6], [4 1 2 3 5; 2 1 6 6 5; 4 1 5 5 1; 2 1 5 1 6; 5 4 4 3 6]])
+
 # Soon:
 - Implement recursive ALL neighbour energy function for swap moves too - needed for manual exponential states growth with energy calculation
 - Implement turning off parity swap moves
