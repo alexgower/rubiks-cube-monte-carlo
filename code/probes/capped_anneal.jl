@@ -49,6 +49,7 @@ function capped_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}, e
             printstyled("Currently at Temperature:  $T [$(temperature_index)/$(length(temperature_vector))] (P_swap=$swap_move_probability), L=$(cube.L))\n"; underline=true)
             println("-Energy/Solved Configuration Energy: $(-E_by_temperature_step[temperature_index]/solved_configuration_energy(cube))")
             println("Absolute Energy: $(E_by_temperature_step[temperature_index])")
+            println("Configuration Correlation Function: $(configuration_correlation_function_by_temperature_step[temperature_index])")
         end
     
     end

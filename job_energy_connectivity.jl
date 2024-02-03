@@ -29,12 +29,12 @@ T_0 = 0.1
 N_T = 5
 sample_temperatures = [T_1*(T_0/T_1)^(m/N_T) for m in 0:N_T]
 # special_sample_temperature = [10.0,5.0,2.0,1.9,1.8,1.7,1.6,1.5,1.4,1.3,1.2,1.15,1.14,1.13,1.12,1.11,1.1,1.09,1.08,1.07,1.06,1.05,1.04,1.03,1.02,1.01,1.0,0.99,0.98,0.97,0.96,0.95,0.94,0.93,0.92,0.91,0.9,0.89,0.88,0.87,0.86,0.85,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1]
-special_sample_temperature = collect(LinRange(0.75,0.6,100))
+special_sample_temperature = collect(LinRange(0.9,0.6,100))
 sample_temperatures = vcat(sample_temperatures, special_sample_temperature)
 sort!(sample_temperatures, rev=true)
 
 @sync @distributed for L_value in L_values
-    neighbour_initial_and_final_energies_distribution_experiment("z_newer_focused_low_L=$(L_value)_inherent_disorder_E0_E1_swap", L_value, 1.0, 5, sample_temperatures; relaxation_iterations=10000, collecting_swap_move_neighbours=true, neighbours_per_configuration_sample_size=100, average_sample_size_per_temperature=1000, inherent_disorder=true, neighbour_moves_away=1, parallel_anneals=number_of_processors_per_L_value, initial_cube_configuration=starting_configurations[Int((L_value-3)/2)])
+    neighbour_initial_and_final_energies_distribution_experiment("z_new_focused_low_L=$(L_value)_inherent_disorder_E0_E1_slice", L_value, 1.0, 5, sample_temperatures; relaxation_iterations=10000, collecting_swap_move_neighbours=false, neighbours_per_configuration_sample_size=0, average_sample_size_per_temperature=1000, inherent_disorder=true, neighbour_moves_away=1, parallel_anneals=number_of_processors_per_L_value, initial_cube_configuration=starting_configurations[Int((L_value-3)/2)])
 end
 
 

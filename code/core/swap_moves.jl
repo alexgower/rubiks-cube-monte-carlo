@@ -352,7 +352,15 @@ end
 
         # Get full list of all subsystems which must be two cycled in order to respect fundamental constraints of cube given which of above sigma and theta_ks are being two cycled
         subsystems_to_two_cycle::Vector{String} = get_coupled_subsystems_to_two_cycle(cube,two_cycle_sigma,two_cycle_theta_ks)
-                
+
+    
+        # TODO remove 
+        # # If more than 6 sybsystems to two cycle, then cancel operation and return candidate reversing information of identity
+        # if length(subsystems_to_two_cycle) > 4
+        #     return [["sigma_",1,1]]
+        # end
+        
+
         # Now get 2 random cubelet indices for each cubelet subsystem to be two_cycled and pass these to two_cycle_cubelets!
         candidate_reversing_information = [[subsystem_name,0,0] for subsystem_name in subsystems_to_two_cycle]
 
@@ -477,7 +485,8 @@ end
     # With (cube, reverse=true, candidate_reversing_information) as arguments, it simply undoes the previous swap_move
 
     # Currently we have a perfect uniform distribution of suggesting each type of swap move, but we can bias some classes of swap moves over others using the variables below
-    bias_of_coupled_subsystem_two_cycles_over_three_cycles_or_opposite_orientation_rotations = -0.6
+    bias_of_coupled_subsystem_two_cycles_over_three_cycles_or_opposite_orientation_rotations = -0.6 
+    # bias_of_coupled_subsystem_two_cycles_over_three_cycles_or_opposite_orientation_rotations = -1.0 # TODO remove
     bias_of_three_cycles_over_opposite_orientation_rotations = 0.0
 
 

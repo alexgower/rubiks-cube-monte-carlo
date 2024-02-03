@@ -18,6 +18,7 @@ autocorrelation_experiment("first_autocorrelation_test_L=5", 5, 0.0, 10.0, 0.1, 
 # Maybe:
 - Find consistently best relaxation_iterations_vector
 - Replace number_of_three_cycle_swap_moves function with mathematical calulation
+- Modify sample and all neighbour energy functions if want to swtich off coupled subystem two cycles there too
 
 # For Paper:
 - Type up 'Rubik's Cube Monte Carlo Supplementary Document' neatly to accomany codebase

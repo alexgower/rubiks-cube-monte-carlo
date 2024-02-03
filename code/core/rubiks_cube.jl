@@ -441,6 +441,9 @@ function all_slice_rotation_neighbour_energies!(cube::RubiksCube, neighbour_ener
                             # Undo rotation
                             rotate!(cube, f, l, mod(o+1,2))
 
+                            #TODO remove
+                            # println("f,l,o = ", (f,l,o))
+
                     end
                 end
             end
@@ -451,6 +454,8 @@ function all_slice_rotation_neighbour_energies!(cube::RubiksCube, neighbour_ener
     # Else store energy and increment neighbour index
     elseif recursive_additional_neighbour_steps==0
 
+        # TODO remove
+        # println("Energy = ", energy(cube))
         neighbour_energies[neighbour_index] = energy(cube)
         return neighbour_index + 1
     

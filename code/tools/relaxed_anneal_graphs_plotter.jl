@@ -5,6 +5,8 @@ using StatsBase
 using CSV
 using DataFrames
 
+using LsqFit
+
 using Plots.PlotMeasures
 
 
@@ -304,6 +306,107 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     normalised_E0_E1_histogram_slice = reconstruct_histogram(joinpath("results/relaxed_anneal_results",simulation_name*"_normalised_histogram_data_slice.csv"))
 
 
+    ## - DO SIMPLE ENERGY INCREASING/DECREASING PROPORTIONS CALCULATIONS AND GRAPHS --
+    proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice = zeros(length(normalised_E0_E1_histogram_slice.edges[1])-1)
+    proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_swap = zeros(length(normalised_E0_E1_histogram_slice.edges[1])-1)
+
+    for E0_bin_index in 1:length(normalised_E0_E1_histogram_slice.edges[1])-1
+        for E_bin_index in 1:E0_bin_index-1
+            proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice[E0_bin_index] += normalised_E0_E1_histogram_slice.weights[E0_bin_index, E_bin_index]
+        end
+    end
+
+    for E0_bin_index in 1:length(normalised_E0_E1_histogram_swap.edges[1])-1
+        for E_bin_index in 1:E0_bin_index-1
+            proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_swap[E0_bin_index] += normalised_E0_E1_histogram_swap.weights[E0_bin_index, E_bin_index]
+        end
+    end
+
+    E0_values = normalised_E0_E1_histogram_swap.edges[1][1:end-1]
+
+    # Now only keep the proportion values that have non-zero swap move energy decreasing proportion (to exclude energies not reachable in this cube)
+    # Also remove all indices where proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_swap==0.0 and energy is bigger than half of the maximum energy
+    valid_E0_indices = filter(i -> ((
+        proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_swap[i] != 0.0) &&
+        !(proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice[i] == 0.0 && E0_values[i] > maximum(E0_values) / 2 )
+    ), 1:length(E0_values))
+    proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_swap = [proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_swap[i] for i in valid_E0_indices]
+    proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice = [proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice[i] for i in valid_E0_indices]
+    E0_values = [E0_values[i] for i in valid_E0_indices]
+
+
+    energy_decreasing_connections_proportion_graph = plot(E0_values./-solved_configuration_energy(cube), proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice, xlabel="Energy, E", ylabel="Proportion of Energy Decreasing Connections", title="L=$L Cube"; label="Slice Rotation Cube", color=:red, legend=:topleft)
+    plot!(energy_decreasing_connections_proportion_graph, E0_values./-solved_configuration_energy(cube), proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_swap, label="Swap Move Cube", color=:blue)
+
+    energy_increasing_connections_proportion_graph = plot(E0_values./-solved_configuration_energy(cube), 1 .- proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice, xlabel="Energy, E", ylabel="Proportion of Energy Increasing Connections", title="L=$L Cube"; label="Slice Rotation Cube", color=:red, legend=:bottomleft)
+    plot!(energy_increasing_connections_proportion_graph, E0_values./-solved_configuration_energy(cube), 1 .- proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_swap, label="Swap Move Cube", color=:blue)
+
+    # Overplot where slice energy decreasing proportion is =0.0 in green
+    entropic_wall_indices = findall(==(0.0), proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice)
+    entropic_wall_E0_values = [E0_values[i] for i in entropic_wall_indices]./-solved_configuration_energy(cube)
+    plot!(energy_decreasing_connections_proportion_graph, [entropic_wall_E0_values], [proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice[entropic_wall_indices]], color=:green, label="")
+    plot!(energy_increasing_connections_proportion_graph, [entropic_wall_E0_values], [1 .- proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice[entropic_wall_indices]], color=:green, label="")
+
+    if E_star != 0.0
+        vline!(energy_decreasing_connections_proportion_graph, [E_star], linestyle=:dot, color=:green, label="")
+        vline!(energy_increasing_connections_proportion_graph, [E_star], linestyle=:dot, color=:green, label="")
+        annotate!(energy_decreasing_connections_proportion_graph, [(E_star+0.02,ylims(energy_decreasing_connections_proportion_graph)[1]-0.02, Plots.text(L"E^*", 8, :black))])
+        annotate!(energy_increasing_connections_proportion_graph, [(E_star+0.02, ylims(energy_increasing_connections_proportion_graph)[1]-0.02, Plots.text(L"E^*", 8, :black))])
+    end
+
+    savefig(energy_decreasing_connections_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_energy_decreasing_connections_proportion.png")
+    savefig(energy_decreasing_connections_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_energy_decreasing_connections_proportion.svg")
+
+    savefig(energy_increasing_connections_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_energy_increasing_connections_proportion.png")
+    savefig(energy_increasing_connections_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_energy_increasing_connections_proportion.svg")
+
+
+    # Fit exponential to slice energy decreasing proportion
+    model(x, p) = p[1] * exp.(p[2] * x)
+    fit_exponential = curve_fit(model, E0_values, proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_slice, [0.0, 0.0])
+    println("Slice Energy Decreasing Proportion Exponential Fit: ", fit_exponential.param)
+    plot!(energy_decreasing_connections_proportion_graph, E0_values./-solved_configuration_energy(cube), fit_exponential.param[1]*exp.(fit_exponential.param[2]*E0_values), label="$(fit_exponential.param[1])exp($(fit_exponential.param[2])E)", color=:black, linestyle=:dash)
+
+    # Fit exponential to swap energy decreasing proportion
+    fit_exponential = curve_fit(model, E0_values, proportion_of_energy_decreasing_connections_from_even_by_absolute_energies_swap, [0.0, 0.0])
+    println("Swap Energy Decreasing Proportion Exponential Fit: ", fit_exponential.param)
+    plot!(energy_decreasing_connections_proportion_graph, E0_values./-solved_configuration_energy(cube), fit_exponential.param[1]*exp.(fit_exponential.param[2]*E0_values), label="$(fit_exponential.param[1])exp($(fit_exponential.param[2])E)", color=:pink, linestyle=:dash)
+
+    # Save the graph
+    savefig(energy_decreasing_connections_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_energy_decreasing_connections_proportion_fit.png")
+    savefig(energy_decreasing_connections_proportion_graph, "results/relaxed_anneal_results/$(simulation_name)_energy_decreasing_connections_proportion_fit.svg")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     ## -- DO SLICE/SWAP CONNECTIVITIES CALCULATIONS --
     downwards_swap_connections_from_below_by_absolute_energies = zeros(N_T+1)
     downwards_slice_connections_from_below_by_absolute_energies  = zeros(N_T+1)
@@ -320,7 +423,7 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
     for (E_absolute_energy_index,absolute_energy) in pairs(absolute_energies_by_temperature)
 
-        E_bin_index = findfirst(>(absolute_energy), normalised_E0_E1_histogram_swap.edges[2])-1
+        E_bin_index = findfirst(>=(absolute_energy), normalised_E0_E1_histogram_swap.edges[2])
         configurations_of_E = exp(this_entropy_by_temperature[E_absolute_energy_index])
 
         for E0_bin_index in 1:E_bin_index
@@ -559,91 +662,3 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     # TODO FOR LOOP DIFFERENT ENTROPIES
 
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# LATENT HEAT FUDGE STUFF TO DELETE LATER
-
-# latent_energies = zeros(11)
-    # latent_energies[7] = 260
-    # latent_energies[9] = 423
-    # transition_temperatures = zeros(11)
-    # transition_temperatures[7] = 0.89
-    # transition_temperatures[9] = 0.89
-    # transition_endpoint_temperatures = zeros(11)
-    # transition_endpoint_temperatures[7] = 0.91
-    # transition_endpoint_temperatures[9] = 0.91
-
-
-    # for temperature_index in 2:N_T
-    #     println("Temperature Index: ", temperature_index)
-
-    #     if temperature_index < findfirst(>(transition_endpoint_temperatures[L]), temperatures)-1
-    #         entropy_by_temperature[temperature_index] = 0.0
-    #     elseif temperature_index == findfirst(>(transition_endpoint_temperatures[L]), temperatures)-1
-    #         entropy_by_temperature[temperature_index] = latent_energies[L]/transition_temperatures[L]
-    #         println("Temperature Index")
-    #         println("Latent Entropy Increase ", latent_energies[L]/transition_temperatures[L])
-    #     else
-    #         entropy_by_temperature[temperature_index] = entropy_by_temperature[temperature_index-1] + 0.5 * (temperatures[temperature_index] - temperatures[temperature_index-1]) * (heat_capacities_by_temperature[temperature_index]/temperatures[temperature_index] + heat_capacities_by_temperature[temperature_index-1]/temperatures[temperature_index-1])
-    #     end
-    # end
-
-    # for temperature_index in 2:N_T
-    #     if temperature_index < findfirst(>(transition_endpoint_temperatures[L]), temperatures)-1
-    #         alternative_entropy_by_temperature[temperature_index] = 0.0
-    #     elseif temperature_index == findfirst(>(transition_endpoint_temperatures[L]), temperatures)-1
-    #         alternative_entropy_by_temperature[temperature_index] = latent_energies[L]/transition_temperatures[L]
-    #     else
-    #         alternative_entropy_by_temperature[temperature_index] = alternative_entropy_by_temperature[temperature_index-1] + 0.5 * (absolute_energies_by_temperature[temperature_index] - absolute_energies_by_temperature[temperature_index-1]) * (1/temperatures[temperature_index] + 1/temperatures[temperature_index-1])
-    #     end
-    # end
-
-    # for temperature_index in N_T:-1:1
-    #     if temperature_index > findfirst(>(transition_endpoint_temperatures[L]), temperatures)
-    #         upper_fixed_entropy_by_temperature[temperature_index] += upper_fixed_entropy_by_temperature[temperature_index+1]
-    #         upper_fixed_entropy_by_temperature[temperature_index] += 0.5 * (temperatures[temperature_index] - temperatures[temperature_index+1]) * (heat_capacities_by_temperature[temperature_index]/temperatures[temperature_index] + heat_capacities_by_temperature[temperature_index+1]/temperatures[temperature_index+1])
-    #     elseif temperature_index == findfirst(>(transition_endpoint_temperatures[L]), temperatures)
-    #         upper_fixed_entropy_by_temperature[temperature_index] = upper_fixed_entropy_by_temperature[temperature_index+1] - latent_energies[L]/transition_temperatures[L]
-    #     else
-    #         upper_fixed_entropy_by_temperature[temperature_index] += upper_fixed_entropy_by_temperature[temperature_index+1]
-    #     end
-    # end
-
-    # for temperature_index in N_T:-1:1
-    #     if temperature_index > findfirst(>(transition_endpoint_temperatures[L]), temperatures)
-    #         upper_fixed_alternative_entropy_by_temperature[temperature_index] += upper_fixed_alternative_entropy_by_temperature[temperature_index+1]
-    #         upper_fixed_alternative_entropy_by_temperature[temperature_index] += 0.5 * (absolute_energies_by_temperature[temperature_index] - absolute_energies_by_temperature[temperature_index+1]) * (1/temperatures[temperature_index] + 1/temperatures[temperature_index+1]) 
-    #     elseif temperature_index == findfirst(>(transition_endpoint_temperatures[L]), temperatures)
-    #         upper_fixed_alternative_entropy_by_temperature[temperature_index] = upper_fixed_alternative_entropy_by_temperature[temperature_index+1] - latent_energies[L]/transition_temperatures[L]
-    #     else
-    #         upper_fixed_alternative_entropy_by_temperature[temperature_index] += upper_fixed_alternative_entropy_by_temperature[temperature_index+1]
-    #     end
-
-    # end

@@ -29,5 +29,5 @@ L_values = [11]
 starting_configurations = [starting_configuration_L_5, starting_configuration_L_7, starting_configuration_L_9, starting_configuration_L_11]
 
 @sync @distributed for L_value in L_values
-    relaxed_anneal_experiment("z_second_new_slow_anneal_L=$L_value", L_value, [0.0], 10.0,10.0,0.1,100; inherent_disorder=true, relaxation_iterations=100000, initial_cube_configuration=starting_configurations[Int((L_value-3)/2)])
+    relaxed_anneal_experiment("z_new_swap_L=$L_value", L_value, [1.0], 10.0,10.0,0.1,100; inherent_disorder=true, relaxation_iterations=10000, initial_cube_configuration=starting_configurations[Int((L_value-3)/2)])
 end
