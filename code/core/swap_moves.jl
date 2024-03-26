@@ -842,91 +842,98 @@ end
 
 # - All Neighbours Function -
 
-function all_neighbour_energies(cube::RubiksCube, including_swap_moves::Bool; keep_energy_deltas_only::Bool=false, neighbour_moves_away::Int64=1)
+# TODO delete once know not needed
+# function all_neighbour_energies(cube::RubiksCube, including_swap_moves::Bool; keep_energy_deltas_only::Bool=false, neighbour_moves_away::Int64=1)
 
-    initial_energy = energy(cube)
+#     initial_energy = energy(cube)
 
-    # Make empty array of neighbour energy deltas for neighbours that are neighbour_moves_away away, i.e. exluding any immediate 'backward steps'
-    # For Z = degree of network, this is equal to Z*(Z-1)^(neighbour_moves_away-1) since we have Z choices for the first move, and then Z-1 choices for each subsequent move
+#     # Make empty array of neighbour energy deltas for neighbours that are neighbour_moves_away away, i.e. exluding any immediate 'backward steps'
+#     # For Z = degree of network, this is equal to Z*(Z-1)^(neighbour_moves_away-1) since we have Z choices for the first move, and then Z-1 choices for each subsequent move
+#     Z = configuration_network_degree(cube.L, including_swap_moves)
+#     neighbour_energies = zeros(Z*(Z-1)^(neighbour_moves_away-1))
+
+#     if including_swap_moves
+#         throw("Recursive all_swap_move_neighbour_energies function not implemented yet")
+#         # @views all_swap_move_neighbour_energy_deltas!(cube, neighbour_energies[:]) # TODO turn into recursive too and energies not deltas
+#     else
+#         @views all_slice_rotation_neighbour_energies!(cube, neighbour_energies[:]; recursive_additional_neighbour_steps=neighbour_moves_away, excluded_slice_rotation=(0,0,0))
+#     end
+
+#     if keep_energy_deltas_only
+#         neighbour_energy_deltas = neighbour_energies .- initial_energy
+#         return neighbour_energy_deltas
+#     else
+#         neighbour_initial_and_final_energies = [(initial_energy, neighbour_energies[neighbour_index]) for neighbour_index in eachindex(neighbour_energies)]
+#         return neighbour_initial_and_final_energies
+#     end
+# end
+
+function all_energy_connections(cube::RubiksCube, including_swap_moves::Bool; keep_energy_deltas_only::Bool=false, neighbour_order_to_measure_to::Int64=1)
+
+    # Make empty array of neighbour energy deltas for neighbour order that are neighbour_order_to_measure_to moves away, i.e. exluding any immediate 'backward steps'
+    # For Z = degree of network, this is equal to Z*(Z-1)^(neighbour_order_to_measure_to-1) since we have Z choices for the first move, and then Z-1 choices for each subsequent move
     Z = configuration_network_degree(cube.L, including_swap_moves)
-    neighbour_energies = zeros(Z*(Z-1)^(neighbour_moves_away-1))
+    energy_connections = fill((0.0,0.0),Z*(Z-1)^(neighbour_order_to_measure_to-1))
 
     if including_swap_moves
         throw("Recursive all_swap_move_neighbour_energies function not implemented yet")
         # @views all_swap_move_neighbour_energy_deltas!(cube, neighbour_energies[:]) # TODO turn into recursive too and energies not deltas
     else
-        @views all_slice_rotation_neighbour_energies!(cube, neighbour_energies[:]; recursive_additional_neighbour_steps=neighbour_moves_away, excluded_slice_rotation=(0,0,0))
+        @views all_slice_rotation_energy_connections!(cube, energy_connections[:]; recursive_neighbour_order_to_measure_to=neighbour_order_to_measure_to, excluded_slice_rotation=(0,0,0))
     end
 
     if keep_energy_deltas_only
-        neighbour_energy_deltas = neighbour_energies .- initial_energy
-        return neighbour_energy_deltas
-    else
-        neighbour_initial_and_final_energies = [(initial_energy, neighbour_energies[neighbour_index]) for neighbour_index in eachindex(neighbour_energies)]
-        return neighbour_initial_and_final_energies
+        energy_connections = [(x[1],x[2]-x[1]) for x in energy_connections]
     end
-end
 
+    return energy_connections
+end
 
 
 # --- RANDOM NEIGHBOURS ---
 
-function sample_neighbour_energies(cube::RubiksCube, including_swap_moves::Bool, neighbour_sample_size::Int64; keep_energy_deltas_only::Bool=false, neighbour_moves_away::Int64=1, deep_copy_method::Bool=true)
-    
-    initial_energy = energy(cube)
+function sample_energy_connections(cube::RubiksCube, including_swap_moves::Bool, neighbour_sample_size::Int64; keep_energy_deltas_only::Bool=false, neighbour_order_to_measure_to::Int64=1)
+
+    # Note this function DOES NOT include trivial final move reversals (i.e. where the final move is a trivial reversal of the second to last move) in measuring energy connections
+    # However reversals can happen along the way 
+
     neighbour_generating_function! = including_swap_moves ? random_swap_move! : random_rotate!
 
     # Make empty array of neighbour energies
-    neighbour_energies = zeros(neighbour_sample_size)
+    energy_connections = fill((0.0,0.0), neighbour_sample_size)
 
-    ### DEEP COPY METHOD ###
-    if deep_copy_method
+    for connection_index in 1:neighbour_sample_size
+        copied_cube = deepcopy(cube)
 
-        for neighbour_index in 1:neighbour_sample_size
-            copied_cube = deepcopy(cube)
-
-            for neighbour_step in 1:neighbour_moves_away
-                neighbour_generating_function!(copied_cube)
-            end
-
-            neighbour_energies[neighbour_index] = energy(copied_cube)
+        for neighbour_step in 1:neighbour_order_to_measure_to-2
+            neighbour_generating_function!(copied_cube)
         end
-    ### ###
 
+        configuration_n_minus_2 = deepcopy(copied_cube.configuration)
 
-    ### REVERSING METHOD ###
-    else
-        all_steps_neighbour_reversing_information = including_swap_moves ? Array{Any}(undef, neighbour_sample_size) : Array{Tuple{Int64, Int64, Int64}}(undef, neighbour_sample_size)
-
-
-        for neighbour_index in 1:neighbour_sample_size
-
-            # Do all neighbour moves
-            for neighbour_step in 1:neighbour_moves_away
-                all_steps_neighbour_reversing_information[neighbour_step] = neighbour_generating_function!(cube)
-            end
-
-            neighbour_energies[neighbour_index] = energy(copied_cube)
-
-
-            # Reverse all neighbour moves
-            for reverse_neighbour_step in reverse(all_steps_neighbour_reversing_information)
-                neighbour_generating_function!(cube; reverse=true, candidate_reversing_information=reverse_neighbour_step)
-            end
-
+        # Get energy of n-1 configuration (i.e. one before neighbour_order_measure_to moves away from initial configuration)
+        neighbour_generating_function!(copied_cube)
+        E_n_minus_1 = energy(copied_cube)
+        
+        # Perform move to get n configuration (i.e. neighbour_order_measure_to moves away from initial configuration)
+        neighbour_generating_function!(copied_cube)
+        # MAKE SURE THAT THE CONFIGURATION IS NOT THE SAME AS THE n-2 CONFIGURATION 
+        # (I.E. WHERE THE FINAL MOVE IS A TRIVIAL REVERSAL)
+        while copied_cube.configuration == configuration_n_minus_2
+            neighbour_generating_function!(copied_cube)
         end
+        E_n = energy(copied_cube)
+
+        energy_connections[connection_index] = (E_n_minus_1, E_n)
+
     end
-    ### ###
 
     
     if keep_energy_deltas_only
-        neighbour_energy_deltas = neighbour_energies .- initial_energy
-        return neighbour_energy_deltas
-    else
-        neighbour_initial_and_final_energies = [(initial_energy, neighbour_energies[neighbour_index]) for neighbour_index in eachindex(neighbour_energies)]
-        return neighbour_initial_and_final_energies
+        energy_connections = [(x[1],x[2]-x[1]) for x in energy_connections]
     end
 
+    return energy_connections
 end
 
 

@@ -13,55 +13,9 @@ using Plots.PlotMeasures
 include("../core/rubiks_cube.jl")
 include("../core/swap_moves.jl")
 
-function reconstruct_histogram(histogram_data_name::String)
 
-    # Step 1: Read the CSV file into a DataFrame
-    histogram_data = CSV.read(histogram_data_name, DataFrame)
 
-    # Step 2: Extract the bin edges and weights from the DataFrame
-    x_edge_starts = histogram_data.E0
-    y_edge_starts = histogram_data.En
-    weights_flat = histogram_data.normalised_by_E0_weights
 
-    x_edges_unique = unique(x_edge_starts)
-    y_edges_unique = unique(y_edge_starts)
-
-    num_bins_x = length(x_edges_unique)
-    num_bins_y = length(y_edges_unique)
-
-    # Step 4: Reshape the weights into a 2D array
-    weights_matrix = reshape(weights_flat, num_bins_x, num_bins_y)
-
-    # Step 5: Construct the Histogram object with the inferred edges and reshaped weights
-    # We assume the last edge for each dimension is one step beyond the last unique edge found
-    # This assumes the bin width is consistent and equal to the difference between consecutive edges
-    x_edges_complete = [x_edges_unique; x_edges_unique[end] + (x_edges_unique[2] - x_edges_unique[1])]
-    y_edges_complete = [y_edges_unique; y_edges_unique[end] + (y_edges_unique[2] - y_edges_unique[1])]
-    reconstructed_edges = (x_edges_complete, y_edges_complete)
-
-    # Create the Histogram object
-    hist = Histogram(reconstructed_edges, weights_matrix)
-
-    return hist
-
-end
-
-function window_average(array::Array{Float64, 1}, window_size::Int)
-    # Ensure the window size is odd for symmetric averaging
-    if window_size % 2 == 0
-        error("Window size should be odd.")
-    end
-
-    len = length(array)
-    half_window = window_size ÷ 2
-    result = copy(array)
-
-    for i in (half_window + 1):(len - half_window)
-        result[i] = mean(array[(i - half_window):(i + half_window)])
-    end
-
-    return result
-end
 
 
 function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probabilities::Vector{Float64}; inherent_disorder::Bool=false, smooth_window::Int64=1, T_on::Float64=0.0, T_off::Float64=0.0)
@@ -180,16 +134,11 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
 
 
     ### --- PLOT SPECIFIC HEAT CAPACITY GRAPH ---
-    specific_heat_capacity_graph = plot(temperature_vector, array_specific_heat_capacities_by_temperature[swap_move_one_probabilty_index], xlabel="Temperature", ylabel="Specific Heat Capacity", title="L=$L Rubik's Cube Anneal", label="Swap Move Cube", color=:blue)
+    specific_heat_capacity_graph = plot(temperature_vector, array_specific_heat_capacities_by_temperature[swap_move_one_probabilty_index], xlabel="Temperature", ylabel="Specific Heat Capacity", title="Specific Heat Capacity", label="Swap Move Cube", color=:blue)
     plot!(specific_heat_capacity_graph, slice_rotation_temperature_vector, array_specific_heat_capacities_by_temperature[swap_move_zero_probabilty_index], label="Slice Rotation Cube", color=:red)    
     savefig(specific_heat_capacity_graph, "results/relaxed_anneal_results/$(simulation_name)_specific_heat_capacity.png")
     savefig(specific_heat_capacity_graph, "results/relaxed_anneal_results/$(simulation_name)_specific_heat_capacity.svg")
 
-
-    ### --- PLOT SPECIFIC HEAT CAPACITY DIVDED BY TEMPERATURE GRAPH ---
-    heat_capacity_divided_by_temperature_graph = plot(temperatures, array_specific_heat_capacities_by_temperature[swap_move_one_probabilty_index] ./ temperatures, xlabel="Temperature", ylabel="Heat Capacity/Temperature", title="L=$L Rubik's Cube Anneal", label="Heat Capacity", color=:black)
-    savefig(heat_capacity_divided_by_temperature_graph, "results/relaxed_anneal_results/$(simulation_name)_heat_capacity_divided_by_temperature.png")
-    savefig(heat_capacity_divided_by_temperature_graph, "results/relaxed_anneal_results/$(simulation_name)_heat_capacity_divided_by_temperature.svg")
 
     ########################################################################################################################################################################################################################################################################
 
@@ -662,3 +611,55 @@ function relaxed_anneal_graphs_plotter(simulation_name::String, swap_move_probab
     # TODO FOR LOOP DIFFERENT ENTROPIES
 
 end
+
+function reconstruct_histogram(histogram_data_name::String)
+
+    # Step 1: Read the CSV file into a DataFrame
+    histogram_data = CSV.read(histogram_data_name, DataFrame)
+
+    # Step 2: Extract the bin edges and weights from the DataFrame
+    x_edge_starts = histogram_data.E0
+    y_edge_starts = histogram_data.En
+    weights_flat = histogram_data.normalised_by_E0_weights
+
+    x_edges_unique = unique(x_edge_starts)
+    y_edges_unique = unique(y_edge_starts)
+
+    num_bins_x = length(x_edges_unique)
+    num_bins_y = length(y_edges_unique)
+
+    # Step 4: Reshape the weights into a 2D array
+    weights_matrix = reshape(weights_flat, num_bins_x, num_bins_y)
+
+    # Step 5: Construct the Histogram object with the inferred edges and reshaped weights
+    # We assume the last edge for each dimension is one step beyond the last unique edge found
+    # This assumes the bin width is consistent and equal to the difference between consecutive edges
+    x_edges_complete = [x_edges_unique; x_edges_unique[end] + (x_edges_unique[2] - x_edges_unique[1])]
+    y_edges_complete = [y_edges_unique; y_edges_unique[end] + (y_edges_unique[2] - y_edges_unique[1])]
+    reconstructed_edges = (x_edges_complete, y_edges_complete)
+
+    # Create the Histogram object
+    hist = Histogram(reconstructed_edges, weights_matrix)
+
+    return hist
+
+end
+
+function window_average(array::Array{Float64, 1}, window_size::Int)
+    # Ensure the window size is odd for symmetric averaging
+    if window_size % 2 == 0
+        error("Window size should be odd.")
+    end
+
+    len = length(array)
+    half_window = window_size ÷ 2
+    result = copy(array)
+
+    for i in (half_window + 1):(len - half_window)
+        result[i] = mean(array[(i - half_window):(i + half_window)])
+    end
+
+    return result
+end
+
+

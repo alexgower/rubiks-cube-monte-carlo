@@ -418,10 +418,51 @@ end
 
 # ----- Neighbours -----
 
-function all_slice_rotation_neighbour_energies!(cube::RubiksCube, neighbour_energies; recursive_additional_neighbour_steps::Int64=0, neighbour_index::Int64=1, excluded_slice_rotation=(0,0,0))
+# TODO delete once incorporate normal neighbour sampling into newer function
+# function all_slice_rotation_neighbour_energies!(cube::RubiksCube, neighbour_energies; recursive_additional_neighbour_steps::Int64=0, neighbour_index::Int64=1, excluded_slice_rotation=(0,0,0))
+
+#     # Do additional neighbour steps if required
+#     if recursive_additional_neighbour_steps > 0
+
+#         # For all slice rotation neighbours
+#         for f in 1:6
+#             for l in 0:floor(Int,(cube.L/2)-1)
+#                 for o in 0:1
+
+#                     # Do not include excluded slice rotation (which will correspond to immediately undo-ing the previous slice rotation when we are in a recursive call)
+#                     if (f,l,o) != excluded_slice_rotation
+
+
+#                             # Do rotation
+#                             rotate!(cube, f, l, o)
+
+#                             # Recurse
+#                             neighbour_index = all_slice_rotation_neighbour_energies!(deepcopy(cube), neighbour_energies; recursive_additional_neighbour_steps=recursive_additional_neighbour_steps-1, neighbour_index=neighbour_index, excluded_slice_rotation=(f,l,mod(o+1,2)))
+
+#                             # Undo rotation
+#                             rotate!(cube, f, l, mod(o+1,2))
+
+#                     end
+#                 end
+#             end
+#         end
+
+#         return neighbour_index
+
+#     # Else store energy and increment neighbour index
+#     elseif recursive_additional_neighbour_steps==0
+
+#         neighbour_energies[neighbour_index] = energy(cube)
+#         return neighbour_index + 1
+    
+#     end
+
+# end
+
+function all_slice_rotation_energy_connections!(cube::RubiksCube, energy_connections; recursive_neighbour_order_to_measure_to::Int64=1, connection_index::Int64=1, excluded_slice_rotation=(0,0,0), verbose::Bool=false)
 
     # Do additional neighbour steps if required
-    if recursive_additional_neighbour_steps > 0
+    if recursive_neighbour_order_to_measure_to > 0
 
         # For all slice rotation neighbours
         for f in 1:6
@@ -436,28 +477,50 @@ function all_slice_rotation_neighbour_energies!(cube::RubiksCube, neighbour_ener
                             rotate!(cube, f, l, o)
 
                             # Recurse
-                            neighbour_index = all_slice_rotation_neighbour_energies!(deepcopy(cube), neighbour_energies; recursive_additional_neighbour_steps=recursive_additional_neighbour_steps-1, neighbour_index=neighbour_index, excluded_slice_rotation=(f,l,mod(o+1,2)))
+                            connection_index = all_slice_rotation_energy_connections!(cube, energy_connections; recursive_neighbour_order_to_measure_to=recursive_neighbour_order_to_measure_to-1, connection_index=connection_index, excluded_slice_rotation=(f,l,mod(o+1,2)))
 
                             # Undo rotation
                             rotate!(cube, f, l, mod(o+1,2))
-
-                            #TODO remove
-                            # println("f,l,o = ", (f,l,o))
 
                     end
                 end
             end
         end
 
-        return neighbour_index
+        return connection_index
 
     # Else store energy and increment neighbour index
-    elseif recursive_additional_neighbour_steps==0
+    elseif recursive_neighbour_order_to_measure_to==0
 
-        # TODO remove
-        # println("Energy = ", energy(cube))
-        neighbour_energies[neighbour_index] = energy(cube)
-        return neighbour_index + 1
+        # Get current energy of cube
+        E_current = energy(cube)
+        # Do excluded slice rotation to get previous energy
+        rotate!(cube, excluded_slice_rotation[1], excluded_slice_rotation[2], excluded_slice_rotation[3])
+        E_previous = energy(cube)
+        # Rotate cube back
+        rotate!(cube, excluded_slice_rotation[1], excluded_slice_rotation[2], mod(excluded_slice_rotation[3]+1,2))
+
+        # Store energy connection
+        energy_connections[connection_index] = (E_previous, E_current)
+
+        # Print energy decreasing connections if verbose
+        if verbose && E_previous > E_current
+            println("E_previous > E_current = ", E_previous, " > ", E_current)
+
+            println("Current Configuration")
+            println(cube.configuration)
+
+            println("(f,l,o) = ", excluded_slice_rotation)
+            println("Previous Configuration")
+            rotate!(cube, excluded_slice_rotation[1], excluded_slice_rotation[2], excluded_slice_rotation[3])
+            println(cube.configuration)
+            
+            # Now rotate back
+            rotate!(cube, excluded_slice_rotation[1], excluded_slice_rotation[2], mod(excluded_slice_rotation[3]+1,2))
+        end
+
+        # Move pointer to next location in energy_connections array
+        return connection_index + 1
     
     end
 

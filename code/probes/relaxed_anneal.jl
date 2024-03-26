@@ -4,9 +4,7 @@ include("../core/monte_carlo.jl")
 
 
 
-
-
-@inbounds @fastmath function relaxed_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, relaxation_iterations_vector=nothing, average_sample_size_per_temperature::Int64=100, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, mixing_p_swap::Float64=0.0, neighbour_sample_temperatures::Vector{Float64}=empty([0.0]), collecting_swap_move_neighbours::Bool=false, neighbours_per_configuration_sample_size::Int64=0, energy_histogram_sample_temperatures::Vector{Float64}=empty([0.0]), collect_energy_connections::Bool=false, collect_energy_saddle_index_densities::Bool=false)
+@inbounds @fastmath function relaxed_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}; swap_move_probability::Float64=0.0, T_swap::Float64=0.0, relaxation_iterations_vector=nothing, average_sample_size_per_temperature::Int64=100, verbose_annealing::Bool=false, verbose_metropolis_swap::Bool=false, mixing_p_swap::Float64=0.0, sample_temperatures::Vector{Float64}=empty([0.0]), connections_to_measure::Union{String,Nothing}=nothing, connections_per_configuration_sample_size::Int64=0, neighbour_order_to_measure_to::Int64=1, collect_energy_saddle_index_densities::Bool=false, bin_energy_connections::Bool=false, collect_energy_histogram::Bool=false)
 
     # Notes ---
 
@@ -16,8 +14,8 @@ include("../core/monte_carlo.jl")
 
 
     # Validation and Initial Set-Up --- 
-    collecting_neighbour_info = !isempty(neighbour_sample_temperatures)
-    creating_energy_histogram = !isempty(energy_histogram_sample_temperatures)
+    collecting_connections = !isnothing(connections_to_measure)
+    collecting_swap_move_connections = connections_to_measure=="swap"
 
     # Make sure relaxation_iterations_vector (if provided) has same number of elements as temperature_vector
     if !isnothing(relaxation_iterations_vector) && length(relaxation_iterations_vector) != length(temperature_vector)
@@ -70,6 +68,11 @@ include("../core/monte_carlo.jl")
     # Create arrays to store parameters for each temeprature
     E_average_by_temperature = zeros(length(temperature_vector))
     E_squared_average_by_temperature = zeros(length(temperature_vector))
+    M_average_by_temperature = zeros(length(temperature_vector))
+    M_2_average_by_temperature = zeros(length(temperature_vector))
+    M_4_average_by_temperature = zeros(length(temperature_vector))
+
+
     measured_relaxation_iterations_by_temperature = zeros(length(temperature_vector))
     accepted_candidates_by_temperature = zeros(length(temperature_vector))
     final_configuration_correlation_function_by_temperature = zeros(length(temperature_vector))
@@ -80,33 +83,34 @@ include("../core/monte_carlo.jl")
     energy_samples_by_temperature = nothing
 
     # If collecting neighbouring energy deltas then create array to store them
-    if collecting_neighbour_info
+    if collecting_connections
 
         # If neighbour_per_configuration_sample_size=0 (default) then just sample all neighbours, otherwise sample a random sample of neighbours
-        if neighbours_per_configuration_sample_size==0
-            number_of_neighbours = configuration_network_degree(cube.L, collecting_swap_move_neighbours)
+        if connections_per_configuration_sample_size==0
+            Z = configuration_network_degree(cube.L, collecting_swap_move_connections)
+            number_of_neighbours = Z*(Z-1)^(neighbour_order_to_measure_to-1)
         else
-            number_of_neighbours = neighbours_per_configuration_sample_size
+            number_of_neighbours = connections_per_configuration_sample_size
         end
 
 
         # Create array to store neighbour energy connectivity if required
-        if collect_energy_connections
-            energy_connections_tuple = Array{Tuple{Float64, Float64},1}(undef, length(neighbour_sample_temperatures)*average_sample_size_per_temperature*number_of_neighbours)
+        if !bin_energy_connections
+            energy_connections_tuple = Array{Tuple{Float64, Float64},1}(undef, length(sample_temperatures)*average_sample_size_per_temperature*number_of_neighbours)
         end
 
         # Create arrays to store saddle index densities and energy minima if required
         if collect_energy_saddle_index_densities
-            energy_saddle_index_densities_tuple = Array{Tuple{Float64, Float64},1}(undef, length(neighbour_sample_temperatures)*average_sample_size_per_temperature)
-            energy_minima_tuple = Array{Tuple{Float64, Bool},1}(undef, length(neighbour_sample_temperatures)*average_sample_size_per_temperature)
+            energy_saddle_index_densities_tuple = Array{Tuple{Float64, Float64},1}(undef, length(sample_temperatures)*average_sample_size_per_temperature)
+            energy_minima_tuple = Array{Tuple{Float64, Bool},1}(undef, length(sample_temperatures)*average_sample_size_per_temperature)
         end
 
 
     end
 
     # If creating energy histogram then create array to store it (with length just equal to average_sample_size)
-    if creating_energy_histogram
-        energy_samples_by_temperature = zeros(length(energy_histogram_sample_temperatures),average_sample_size_per_temperature)
+    if collect_energy_histogram
+        energy_samples_by_temperature = zeros(length(sample_temperatures),average_sample_size_per_temperature)
     end
 
     
@@ -136,29 +140,26 @@ include("../core/monte_carlo.jl")
 
             # Measurement Stage ---
 
-            # If creating energy histogram at this temperature then measure and store them
-            if creating_energy_histogram 
-                if insorted(T, energy_histogram_sample_temperatures) && verbose_annealing
+            # Printing and break out of loop early if relaxed anneal is for collecting other data
+            if collect_energy_histogram || collecting_connections || collect_energy_saddle_index_densities
+                if insorted(T, sample_temperatures) && verbose_annealing && collect_energy_histogram
                     printstyled("!!! Creating energy histogram at T = $T\n"; color=:red)
                 end
 
+                if insorted(T, sample_temperatures) && verbose_annealing && collecting_connections
+                    printstyled("!!! Collecting neighbour energy deltas at T = $T\n"; color=:red)
+                end
+
+                if insorted(T, sample_temperatures) && verbose_annealing && collect_energy_saddle_index_densities
+                    printstyled("!!! Collecting saddle index densities at T = $T\n"; color=:red)
+                end
+
                 # If completed final energy histogram then break out of for loop
-                if (!temperature_increasing_anneal && all(energy_histogram_sample_temperatures .> T)) || (temperature_increasing_anneal && all(energy_histogram_sample_temperatures .< T))
+                if all(sample_temperatures .> T)
                     break
                 end
             end
 
-            # If collecting neighbour information at this temperature then measure and store them
-            if collecting_neighbour_info
-                if insorted(T, neighbour_sample_temperatures) && verbose_annealing
-                    printstyled("!!! Collecting neighbour energy deltas at T = $T\n"; color=:red)
-                end
-                
-                # If completed final neighbour energy deltas then break out of for loop
-                if all(neighbour_sample_temperatures .> T)
-                    break
-                end
-            end
 
             
             # Do measurements ---
@@ -166,6 +167,9 @@ include("../core/monte_carlo.jl")
             # Calculate <E> and <E^2> at this temperature but only take measurements every relation_iterations steps to ensure statistical independence
             E_running_total = 0.0
             E_squared_running_total = 0.0
+            M_running_total = 0.0
+            M_2_running_total = 0.0
+            M_4_running_total = 0.0
 
 
             for sample_index in 1:average_sample_size_per_temperature
@@ -180,29 +184,37 @@ include("../core/monte_carlo.jl")
                 E_running_total += E
                 E_squared_running_total += E^2
 
+                # ORDER PARAMETER MEASUREMENT
+                M = order_parameter(cube)
+                M_running_total += M
+                M_2_running_total += M^2
+                M_4_running_total += M^4
+
                 # ENERGY HISTOGRAM MEASUREMENT
-                if creating_energy_histogram && insorted(T, energy_histogram_sample_temperatures)
-                    energy_samples_by_temperature[indexin(T,energy_histogram_sample_temperatures), sample_index] .= E
+                if collect_energy_histogram && insorted(T, sample_temperatures)
+                    energy_samples_by_temperature[indexin(T,sample_temperatures), sample_index] .= E
                 end
 
-                # NEIGHBOUR MEASUREMENTS
-                if collecting_neighbour_info && insorted(T, neighbour_sample_temperatures)
+                # CONNECTION MEASUREMENTS
+                if collecting_connections && insorted(T, sample_temperatures)
+                    println("Collecting connections at T = $T") # TODO delete
                     # If neighbour_per_configuration_sample_size=0 (default) then just collect all neighbours, otherwise collect a random sample of neighbours
-                    if neighbours_per_configuration_sample_size==0
-                        energy_connections_sample = all_neighbour_energies(cube, collecting_swap_move_neighbours, keep_energy_deltas_only=false)
+                    if connections_per_configuration_sample_size==0
+                        println("Collecting all connections") # TODO delete
+                        energy_connections_sample = all_energy_connections(cube, collecting_swap_move_connections, keep_energy_deltas_only=false, neighbour_order_to_measure_to=neighbour_order_to_measure_to)
                         saddle_index_density = sum([x[2]<x[1] for x in energy_connections_sample]/length(energy_connections_sample))
                     else
-                        energy_connections_sample = sample_neighbour_energies(cube, collecting_swap_move_neighbours, neighbours_per_configuration_sample_size; keep_energy_deltas_only=false)
+                        energy_connections_sample = sample_energy_connections(cube, collecting_swap_move_connections, connections_per_configuration_sample_size; keep_energy_deltas_only=false, neighbour_order_to_measure_to=neighbour_order_to_measure_to)
                         saddle_index_density = sum([x[2]<x[1] for x in energy_connections_sample]/length(energy_connections_sample))
                     end
 
-                    if collect_energy_connections
-                        energy_connections_tuple[(indexin(T,neighbour_sample_temperatures)[1]-1)*average_sample_size_per_temperature*number_of_neighbours + (sample_index-1)*number_of_neighbours+1 : (indexin(T,neighbour_sample_temperatures)[1]-1)*average_sample_size_per_temperature*number_of_neighbours + sample_index*number_of_neighbours] .= energy_connections_sample
+                    if !bin_energy_connections
+                        energy_connections_tuple[(indexin(T,sample_temperatures)[1]-1)*average_sample_size_per_temperature*number_of_neighbours + (sample_index-1)*number_of_neighbours+1 : (indexin(T,sample_temperatures)[1]-1)*average_sample_size_per_temperature*number_of_neighbours + sample_index*number_of_neighbours] .= energy_connections_sample
                     end
 
                     if collect_energy_saddle_index_densities
-                        energy_saddle_index_densities_tuple[(indexin(T,neighbour_sample_temperatures)[1]-1)*average_sample_size_per_temperature + sample_index] = (E, saddle_index_density)
-                        energy_minima_tuple[(indexin(T,neighbour_sample_temperatures)[1]-1)*average_sample_size_per_temperature + sample_index] = (E, saddle_index_density==0)
+                        energy_saddle_index_densities_tuple[(indexin(T,sample_temperatures)[1]-1)*average_sample_size_per_temperature + sample_index] = (E, saddle_index_density)
+                        energy_minima_tuple[(indexin(T,sample_temperatures)[1]-1)*average_sample_size_per_temperature + sample_index] = (E, saddle_index_density==0)
                     end
 
                 end
@@ -212,6 +224,10 @@ include("../core/monte_carlo.jl")
             # AVERAGE FOR TEMPERATURE CALCULATIONS
             E_average_by_temperature[temperature_index] = E_running_total/average_sample_size_per_temperature
             E_squared_average_by_temperature[temperature_index] = E_squared_running_total/average_sample_size_per_temperature
+            M_average_by_temperature[temperature_index] = M_running_total/average_sample_size_per_temperature
+            M_2_average_by_temperature[temperature_index] = M_2_running_total/average_sample_size_per_temperature
+            M_4_average_by_temperature[temperature_index] = M_4_running_total/average_sample_size_per_temperature
+
 
             measured_relaxation_iterations_by_temperature[temperature_index] = final_iteration_number/2 # (divide by 2 as relaxation stage uses 2 relaxation_iterations before stopping)
             accepted_candidates_by_temperature[temperature_index] = final_accepted_candidates_number/2 # (divide by 2 as relaxation stage uses 2 relaxation_iterations before stopping)
@@ -236,41 +252,37 @@ include("../core/monte_carlo.jl")
 
         # Break out of loop if user types 'break'
         # Check for user input
-        # catch e 
-            # println("Stopping the loop due to user input!")
+    #     catch e 
+    #         println("Stopping the loop due to user input!")
 
-            # # Trim all arrays so curernt temperature is final temperature
-            # temperature_vector = temperature_vector[1:temperature_index]
-            # E_average_by_temperature = E_average_by_temperature[1:temperature_index]
-            # E_squared_average_by_temperature = E_squared_average_by_temperature[1:temperature_index]
-            # measured_relaxation_iterations_by_temperature = measured_relaxation_iterations_by_temperature[1:temperature_index]
-            # accepted_candidates_by_temperature = accepted_candidates_by_temperature[1:temperature_index]
-            # final_configuration_correlation_function_by_temperature = final_configuration_correlation_function_by_temperature[1:temperature_index]
+    #         # Trim all arrays so curernt temperature is final temperature
+    #         temperature_vector = temperature_vector[1:temperature_index]
+    #         E_average_by_temperature = E_average_by_temperature[1:temperature_index]
+    #         E_squared_average_by_temperature = E_squared_average_by_temperature[1:temperature_index]
+    #         measured_relaxation_iterations_by_temperature = measured_relaxation_iterations_by_temperature[1:temperature_index]
+    #         accepted_candidates_by_temperature = accepted_candidates_by_temperature[1:temperature_index]
+    #         final_configuration_correlation_function_by_temperature = final_configuration_correlation_function_by_temperature[1:temperature_index]
 
-            # if collecting_neighbour_info
-            #     if collect_energy_connections
-            #         energy_connections_tuple = energy_connections_tuple[1:temperature_index,:]
-            #     end
-            #     if collect_energy_saddle_index_densities
-            #         energy_saddle_index_densities_tuple = energy_saddle_index_densities_tuple[1:temperature_index,:]
-            #     end
-            # end
+    #         # TODO fix this later
+    #         # if collecting_connections
+    #         #     if !bin_energy_connections
+    #         #         energy_connections_tuple = energy_connections_tuple[1:temperature_index,:]
+    #         #     end
+    #         #     if collect_energy_saddle_index_densities
+    #         #         energy_saddle_index_densities_tuple = energy_saddle_index_densities_tuple[1:temperature_index,:]
+    #         #         energy_minima_tuple = energy_minima_tuple[1:temperature_index,:]
+    #         #     end
+    #         # end
 
-            # if creating_energy_histogram
-            #     energy_samples_by_temperature = energy_samples_by_temperature[1:temperature_index,:]
-            # end
+    #         # if collect_energy_histogram
+    #         #     energy_samples_by_temperature = energy_samples_by_temperature[1:temperature_index,:]
+    #         # end
 
-            # break
-        # end
+    #         break
+    #     end
     
     end
 
     # Return results as dictionary
-    if collecting_neighbour_info
-        return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature, energy_connections_tuple, energy_saddle_index_densities_tuple, energy_minima_tuple
-    elseif creating_energy_histogram
-        return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature, energy_samples_by_temperature
-    else
-        return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature 
-    end
+    return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, M_average_by_temperature, M_2_average_by_temperature, M_4_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature, energy_connections_tuple, energy_saddle_index_densities_tuple, energy_minima_tuple
 end

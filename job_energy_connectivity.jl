@@ -7,7 +7,7 @@ addprocs(250)
 @everywhere Pkg.activate(".")
 @everywhere Pkg.instantiate()
 
-@everywhere include("code/experiments/neighbour_initial_and_final_energies_distribution_experiment.jl")
+@everywhere include("code/experiments/connections_experiment.jl")
 
 starting_configuration_L_5 = [[2 3 3 2 6; 5 3 6 4 4; 1 2 5 1 5; 2 2 6 6 2; 2 1 2 3 2],[1 2 5 5 3; 6 6 1 2 3; 2 5 5 4 3; 4 1 6 5 4; 4 6 6 2 4], [3 4 5 4 6; 2 5 4 4 1; 5 3 2 5 4; 4 6 1 2 5; 2 5 5 4 6], [3 3 1 6 3; 2 3 1 6 3; 6 6 4 3 2; 1 1 2 3 2; 6 3 1 5 3], [2 3 4 4 1; 3 3 1 3 6; 3 4 4 5 1; 4 5 5 4 1; 6 1 1 6 6], [4 1 2 3 5; 2 1 6 6 5; 4 1 5 5 1; 2 1 5 1 6; 5 4 4 3 6]]
 starting_configuration_L_7 = [[5 6 4 2 6 3 1; 5 5 4 5 6 5 6; 4 2 2 2 4 1 3; 4 1 4 4 1 1 2; 5 3 1 3 3 2 3; 1 1 1 4 6 5 6; 2 5 3 6 6 2 5],[1 6 2 3 1 2 6; 4 5 3 2 4 3 2; 3 6 4 4 6 3 4; 5 4 1 6 6 5 4; 1 5 2 5 5 3 1; 1 1 2 1 6 2 2; 3 4 2 3 2 6 5], [6 5 5 2 5 5 5; 1 5 4 1 2 3 4; 4 6 5 3 5 6 2; 4 3 1 6 5 2 2; 3 2 6 1 4 5 6; 4 4 6 1 4 5 4; 2 2 3 1 6 4 5], [2 3 2 2 3 3 1; 4 6 5 1 6 4 5; 5 4 6 4 4 3 4; 4 3 1 1 3 3 3; 5 2 1 5 4 4 2; 2 6 5 4 5 6 5; 5 5 6 3 3 1 2], [2 2 2 2 1 3 6; 4 5 3 3 5 5 5; 2 3 1 2 6 4 4; 1 6 1 2 1 6 3; 6 3 6 6 5 1 3; 4 3 1 3 5 1 1; 4 6 3 2 4 4 6], [5 6 3 2 2 3 2; 2 4 2 3 4 5 1; 4 1 1 1 6 3 1; 6 2 4 1 2 1 3; 6 6 6 6 6 3 5; 5 4 2 6 1 3 1; 3 5 3 1 4 1 6]]
@@ -24,17 +24,16 @@ starting_configurations = [starting_configuration_L_5, starting_configuration_L_
 number_of_processors = 250
 number_of_processors_per_L_value = Int(floor(number_of_processors/length(L_values)))
 
-T_1 = 10.0
-T_0 = 0.1
-N_T = 5
-sample_temperatures = [T_1*(T_0/T_1)^(m/N_T) for m in 0:N_T]
-# special_sample_temperature = [10.0,5.0,2.0,1.9,1.8,1.7,1.6,1.5,1.4,1.3,1.2,1.15,1.14,1.13,1.12,1.11,1.1,1.09,1.08,1.07,1.06,1.05,1.04,1.03,1.02,1.01,1.0,0.99,0.98,0.97,0.96,0.95,0.94,0.93,0.92,0.91,0.9,0.89,0.88,0.87,0.86,0.85,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1]
+sample_temperatures = [10.0*(0.1/10.0)^(m/10) for m in 0:10]
 special_sample_temperature = collect(LinRange(0.9,0.6,100))
 sample_temperatures = vcat(sample_temperatures, special_sample_temperature)
 sort!(sample_temperatures, rev=true)
 
 @sync @distributed for L_value in L_values
-    neighbour_initial_and_final_energies_distribution_experiment("z_new_focused_low_L=$(L_value)_inherent_disorder_E0_E1_slice", L_value, 1.0, 5, sample_temperatures; relaxation_iterations=10000, collecting_swap_move_neighbours=false, neighbours_per_configuration_sample_size=0, average_sample_size_per_temperature=1000, inherent_disorder=true, neighbour_moves_away=1, parallel_anneals=number_of_processors_per_L_value, initial_cube_configuration=starting_configurations[Int((L_value-3)/2)])
+    connections_experiment("z_second_neighbours_L=$(L_value)_inherent_disorder_E0_E1_slice", L_value, 1.0, 5, 
+        sample_temperatures; relaxation_iterations=10000, connections_to_measure="slice", 
+        connections_per_configuration_sample_size=0, neighbour_order_to_measure_to=2, average_sample_size_per_temperature=100, 
+        initial_cube_configuration=starting_configurations[Int((L_value-3)/2)], parallel_anneals=number_of_processors_per_L_value)
 end
 
 
