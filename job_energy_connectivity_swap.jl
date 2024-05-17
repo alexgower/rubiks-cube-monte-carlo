@@ -1,7 +1,7 @@
 
 
 using Distributed
-addprocs(250)
+addprocs(100)
 
 @everywhere using Pkg
 @everywhere Pkg.activate(".")
@@ -21,18 +21,18 @@ starting_configuration_L_11 = [[4 2 1 3 3 2 6 6 6 6 5; 3 3 3 5 5 5 2 4 6 1 6; 3 
 L_values = [11]
 starting_configurations = [starting_configuration_L_5, starting_configuration_L_7, starting_configuration_L_9, starting_configuration_L_11]
 
-number_of_processors = 250
+number_of_processors = 100
 number_of_processors_per_L_value = Int(floor(number_of_processors/length(L_values)))
 
 sample_temperatures = [10.0*(0.1/10.0)^(m/10) for m in 0:10]
-special_sample_temperature = collect(LinRange(0.9,0.6,100))
+special_sample_temperature = collect(LinRange(0.9,2.0,50))
 sample_temperatures = vcat(sample_temperatures, special_sample_temperature)
 sort!(sample_temperatures, rev=true)
 
 @sync @distributed for L_value in L_values
-    connections_experiment("z_second_neighbours_L=$(L_value)_inherent_disorder_E0_E1_swap", L_value, 1.0, 5, 
+    connections_experiment("z_newer_neighbours_L=$(L_value)_inherent_disorder_E1_E2_swap", L_value, 1.0, 5, 
         sample_temperatures; relaxation_iterations=10000, connections_to_measure="swap", 
-        connections_per_configuration_sample_size=3000, neighbour_order_to_measure_to=2, average_sample_size_per_temperature=100, 
+        connections_per_configuration_sample_size=100, neighbour_order_to_measure_to=2, average_sample_size_per_temperature=50, 
         initial_cube_configuration=starting_configurations[Int((L_value-3)/2)], parallel_anneals=number_of_processors_per_L_value)
 end
 

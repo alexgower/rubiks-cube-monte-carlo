@@ -25,7 +25,7 @@ include("code/experiments/relaxed_anneal_experiment.jl")
 
 println("Running experiment")
 
-experiment_name = "$(model)_L_$(L)_trial_$(trial)"
+experiment_name = "L_$(L)_trial_$(trial_number)"
 
 T_swap = 3.0
 T_1 = 10.0
@@ -55,4 +55,4 @@ else
     exit(1)
 end
 
-relaxed_anneal_experiment(experiment_name, L, [swap_move_probability], T_swap, T_1, T_0, N_T; verbose_metropolis_swap::Bool=false, relaxation_iterations=relaxation_iterations, mixing_p_swap=0.0, bonus_temperatures=bonus_temperatures, inherent_disorder=inherent_disorder, initial_cube_configuration=initial_cube_configuration)
+relaxed_anneal_experiment(experiment_name, L, [swap_move_probability], T_swap, T_1, T_0, N_T; verbose_metropolis_swap=false, relaxation_iterations=relaxation_iterations, mixing_p_swap=0.0, bonus_temperatures=bonus_temperatures, inherent_disorder=inherent_disorder, initial_cube_configuration=initial_cube_configuration)

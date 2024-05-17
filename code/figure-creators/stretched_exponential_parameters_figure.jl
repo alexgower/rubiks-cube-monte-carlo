@@ -47,10 +47,11 @@ function stretched_exponential_parameters_figure(simulation_name::String)
     unique_energy_betas = zeros(Float64, length(unique_sample_temperatures))
     for (i, temperature) in pairs(unique_sample_temperatures)
         indices = findall(sample_temperatures .== temperature)
-        unique_configuration_taus[i] = mean(configuration_taus_samples[indices])
-        unique_configuration_betas[i] = mean(configuration_betas_samples[indices])
-        unique_energy_taus[i] = mean(energy_taus_samples[indices])
-        unique_energy_betas[i] = mean(energy_betas_samples[indices])
+
+        unique_configuration_taus[i] = mean([x for x in configuration_taus_samples[indices] if x != 0.0 && x < 1e8])
+        unique_configuration_betas[i] = mean([x for x in configuration_betas_samples[indices] if x != 0.0])
+        unique_energy_taus[i] = mean([x for x in energy_taus_samples[indices] if x != 0.0])
+        unique_energy_betas[i] = mean([x for x in energy_betas_samples[indices] if x != 0.0])
     end
 
     ### --- COLOURS ---
@@ -63,13 +64,13 @@ function stretched_exponential_parameters_figure(simulation_name::String)
 
     ### --- PLOTTING ---
     # Plot all data on same graph, use different y-axis scalings on left and right for taus and BETAS
-    graph = plot(title="", xlabel="Temperature, "*L"T", legend=:topleft, yaxis="Relaxation Time, "*L"\tau")
+    graph = plot(title="", xlabel="Temperature, "*L"T", legend=:topleft, yaxis="Relaxation Time, "*L"\tau", margin=10mm)
     betas_graph = twinx(graph)
     plot!(graph, unique_sample_temperatures, unique_configuration_taus, label=L"\tau_C", color=alex_red, marker=:circle)
-    plot!(graph, unique_sample_temperatures, unique_energy_taus, label=L"\tau_E", color=alex_blue, marker=:circle)
+    # plot!(graph, unique_sample_temperatures, unique_energy_taus, label=L"\tau_E", color=alex_blue, marker=:circle)
 
     plot!(betas_graph, unique_sample_temperatures, unique_configuration_betas, label=L"\beta_C", color=alex_orange, marker=:circle,yaxis="Stretching Exponent, "*L"\beta")
-    plot!(betas_graph, unique_sample_temperatures, unique_energy_betas, label=L"\beta_E", color=alex_green, marker=:circle)
+    # plot!(betas_graph, unique_sample_temperatures, unique_energy_betas, label=L"\beta_E", color=alex_green, marker=:circle)
 
 
 

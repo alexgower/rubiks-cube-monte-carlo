@@ -1,5 +1,5 @@
 using Distributed
-addprocs(5)
+addprocs(50)
 
 @everywhere using Pkg
 @everywhere Pkg.activate(".")
@@ -27,14 +27,16 @@ addprocs(5)
 
 ######
 
-autocorrelation_window_length = 150100
-lag_limit = 150000
-
-sample_temperatures = [3.0, 1.0, 0.9, 0.8, 0.7]
+n_procs = 50
+samples_per_temperature = 50
+autocorrelation_window_length = 50000
+lag_limit = 30000
+sample_temperatures = [10.0,5.0,3.0,2.0]
+special_sample_temperatures = collect(LinRange(0.6,1.2,20))
+sample_temperatures = vcat(sample_temperatures, special_sample_temperatures)
 
 annealing_swap_move_probability = 1.0
-autocorrelation_swap_move_probability = 0.0
+autocorrelation_swap_move_probability = 1.0
 
-@distributed for index in 1:length(sample_temperatures)
-    autocorrelation_experiment("maybe_again_final_disorder_averaged_slice_T_$(sample_temperatures[index])", 11, annealing_swap_move_probability, autocorrelation_swap_move_probability, 10.0, 0.1, 60, [sample_temperatures[index]], 10000, 1, autocorrelation_window_length; verbose_annealing=true, inherent_disorder_average=true, parallel_anneals=1, bin_autocorrelation_averages_by_time=false, lag_limit=lag_limit)
-end
+autocorrelation_experiment("new_disorder_averaged_swap", 11, annealing_swap_move_probability, autocorrelation_swap_move_probability, 10.0, 0.1, 60, sample_temperatures, 10000, samples_per_temperature, autocorrelation_window_length; verbose_annealing=true, inherent_disorder_average=true, parallel_anneals=n_procs, bin_autocorrelation_averages_by_time=false, lag_limit=lag_limit)
+

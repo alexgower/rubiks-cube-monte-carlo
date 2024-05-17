@@ -20,7 +20,7 @@
 #! The Cascade Lake (cclake) nodes have 56 CPUs (cores) each and
 #! 3420 MiB of memory per CPU.
 #! TODO change
-#SBATCH --ntasks=3
+#SBATCH --ntasks=50
 #! How much wallclock time will be required?
 #SBATCH --time=12:00:00
 #! What types of email messages do you wish to receive?
@@ -56,7 +56,8 @@ workdir="$SLURM_SUBMIT_DIR"  # The value of SLURM_SUBMIT_DIR sets workdir to the
 
 
 
-cd $workdir
+# cd $workdir
+cd rubiks-cube-monte-carlo
 echo -e "Changed directory to `pwd`.\n"
 
 JOBID=$SLURM_JOB_ID
@@ -65,6 +66,6 @@ echo -e "JobID: $JOBID\n======"
 echo "Time: `date`"
 echo "Running on master node: `hostname`"
 echo "Current directory: `pwd`"
+echo "Arguments passed to SLURM script: $@"
 
-julia job_autocorrelation_experiment.jl
-
+julia single_autocorrelation_experiment.jl "$@"

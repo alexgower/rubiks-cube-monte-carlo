@@ -7,7 +7,7 @@ using Colors
 
 include("../core/rubiks_cube.jl")
 
-function saddle_index_density_figure(simulation_name::String)
+function saddle_index_density_figure(simulation_name::String; neighbour_order_to_measure_to::Int64=1)
 
 
     ### --- SET UP DEFAULT PARAMETERS ---
@@ -36,17 +36,27 @@ function saddle_index_density_figure(simulation_name::String)
     # Get the unique E0 values
     E0_bin_values_slice = unique(energy_saddle_index_densities_data_matrix_slice[:,1])
 
+    # Now do the same calculation but if we exclude K=1 saddles
+    # i.e. Remove all values whose * 6(L-1) rounds to 1.0 (i.e. K=1 saddle index)
+    Z = 6*(L-1)
+    normalization_factor = Z*(Z-1)^(neighbour_order_to_measure_to-1)
+    neighbours_saddle_indices_shared_between = Z^(neighbour_order_to_measure_to-1)
+
     # For each E0 value, find all saddle index densities and average them
     average_saddle_index_densities_slice_including_K_1_slice = zeros(Float64, length(E0_bin_values_slice))
     average_saddle_index_densities_slice_excluding_K_1_slice = zeros(Float64, length(E0_bin_values_slice))
     for (i, E0) in pairs(E0_bin_values_slice)
         # Get the saddle index densities for the current E0 slice
         saddle_index_densities_including_K_1_slice = [energy_saddle_index_densities_data_matrix_slice[j,2] for j in 1:size(energy_saddle_index_densities_data_matrix_slice,1) if energy_saddle_index_densities_data_matrix_slice[j,1] == E0] 
-        average_saddle_index_densities_slice_including_K_1_slice[i] = mean(saddle_index_densities_including_K_1_slice)
+        
+        if neighbour_order_to_measure_to > 1 # Account for immediate reversal exclusion for neighbour_order_to_measure_to > 1
+            saddle_index_densities_including_K_1_slice = saddle_index_densities_including_K_1_slice .+ (1/Z)
+        end
 
-        # Now do the same calculation but if we exclude K=1 saddles
-        # i.e. Remove all values whose * 6(L-1) rounds to 1.0 (i.e. K=1 saddle index)
-        saddle_index_densities_excluding_K_1_slice = saddle_index_densities_including_K_1_slice[round.(saddle_index_densities_including_K_1_slice*6*(L-1)) .!= 1.0]
+        average_saddle_index_densities_slice_including_K_1_slice[i] = mean(saddle_index_densities_including_K_1_slice)
+    
+        
+        saddle_index_densities_excluding_K_1_slice = saddle_index_densities_including_K_1_slice[round.((saddle_index_densities_including_K_1_slice*normalization_factor)/neighbours_saddle_indices_shared_between) .!= 1.0]
         average_saddle_index_densities_slice_excluding_K_1_slice[i] = mean(saddle_index_densities_excluding_K_1_slice)
 
     end
@@ -81,8 +91,10 @@ function saddle_index_density_figure(simulation_name::String)
         xguidefontsize=12,  # X-axis label font size
         yguidefontsize=12,  # Y-axis label font size
         margin=1mm,         # Margin around the plot
-        xlabel="Energy Density, "*L"E/|\!\!E_s|", 
+        xlabel="Energy Density, "*L"\epsilon = E/|\!\!E_s|",
         ylabel="Average Saddle Index Density, "*L"\langle k \rangle", 
+        title = neighbour_order_to_measure_to>1 ? "Second Nearest Neighbours" : "",
+        titlefontsize=12,
     )
 
 
@@ -112,19 +124,6 @@ function saddle_index_density_figure(simulation_name::String)
     println("Slice zero saddle index densities including K=1 indices: ", zero_saddle_index_densities_including_K_1_indices)
     println("Slice zero saddle index densities excluding K=1 indices: ", zero_saddle_index_densities_excluding_K_1_indices)
 
-    scatter!(average_saddle_index_densities_graph,
-        -1.0 .+ (E0_bin_values_slice[zero_saddle_index_densities_including_K_1_indices]/-solved_configuration_energy(cube)), 
-        zeros(Float64, length(zero_saddle_index_densities_including_K_1_indices)), 
-        label="",
-        color=alex_red,
-    )
-
-    scatter!(average_saddle_index_densities_graph,
-        -1.0 .+ (E0_bin_values_slice[zero_saddle_index_densities_excluding_K_1_indices]/-solved_configuration_energy(cube)), 
-        zeros(Float64, length(zero_saddle_index_densities_excluding_K_1_indices)), 
-        label="",
-        color=alex_pink,
-    )
 
     scatter!(average_saddle_index_densities_graph,
         -1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube)), 
@@ -133,9 +132,31 @@ function saddle_index_density_figure(simulation_name::String)
         color=alex_orange,
     )
 
+    scatter!(average_saddle_index_densities_graph,
+    -1.0 .+ (E0_bin_values_slice[zero_saddle_index_densities_excluding_K_1_indices]/-solved_configuration_energy(cube)), 
+    average_saddle_index_densities_slice_including_K_1_slice[zero_saddle_index_densities_excluding_K_1_indices], 
+    label="",
+    color=alex_pink,
+    )
+
+    # Print largest E0 value for zero_saddle_index_densities_excluding_K_1_indices and then print E^*
+    # println("Largest E0 value for zero saddle index densities excluding K=1 indices: ", -1.0 + maximum(E0_bin_values_slice[zero_saddle_index_densities_excluding_K_1_indices])/-solved_configuration_energy(cube))
+    println("E^* = ", E_star)
+
+    # Print lowest energy average saddle index density for each cube
+    println("Lowest energy average saddle index density for swap-move cube: ", minimum(average_saddle_index_densities_swap))
+    println("Lowest energy average saddle index density for slice-rotation cube: ", minimum(average_saddle_index_densities_slice_including_K_1_slice))
+
+    scatter!(average_saddle_index_densities_graph,
+    -1.0 .+ (E0_bin_values_slice[zero_saddle_index_densities_including_K_1_indices]/-solved_configuration_energy(cube)), 
+    zeros(Float64, length(zero_saddle_index_densities_including_K_1_indices)), 
+    label="",
+    color=alex_red,
+    )
+
     # Add E^* vertical line
     vline!(average_saddle_index_densities_graph, [E_star], linecolor=:green, linestyle=:dash, linewidth=2, label="")
-    annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"E^*", 12, :black))])
+    annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"\epsilon^*", 12, :black))])
     
 
     #####
@@ -143,16 +164,30 @@ function saddle_index_density_figure(simulation_name::String)
 
     ### --- LOG-LINEAR INSET GRAPH ---
 
+    # Main inset data
     scatter!(average_saddle_index_densities_graph, 
-        [-1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]./-solved_configuration_energy(cube)), 
-        -1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube))],
-        [log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap]),
-        log.(average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice])]; 
-        color=[alex_blue alex_orange], legend=false, inset=bbox(0.21,0.2,0.35,0.45), subplot=2,
-        xlabel=L"E/|\!\!E_s|", ylabel=L"\log\langle k \rangle", yguidefontsize=12,xguidefontsize=12)
+    [-1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]./-solved_configuration_energy(cube)), 
+    -1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube))],
+    [log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap]),
+    log.(average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice])]; 
+    color=[alex_blue alex_orange], legend=false, inset=bbox(0.25,0.25,0.3,0.4), subplot=2,
+    xlabel=L"\epsilon", ylabel=L"\ln\langle k \rangle", yguidefontsize=12,xguidefontsize=12)
+
+
+    # Pink slice inset data
+    scatter!(average_saddle_index_densities_graph, 
+        -1.0 .+ (E0_bin_values_slice[zero_saddle_index_densities_excluding_K_1_indices]/-solved_configuration_energy(cube)),
+        log.(average_saddle_index_densities_slice_including_K_1_slice[zero_saddle_index_densities_excluding_K_1_indices]); 
+        color=alex_pink, subplot=2)
    
+
+    # Add E^* vertical line
+    vline!(average_saddle_index_densities_graph, [E_star], linecolor=:green, linestyle=:dash, linewidth=2, label="", subplot=2)
+    # annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"E^*", 12, :black))])
+       
 
     ### --- SAVE AND DISPLAY GRAPH ---
     savefig(average_saddle_index_densities_graph, "results/final_paper_results/$(simulation_name)_average_saddle_index_densities.svg")
+    savefig(average_saddle_index_densities_graph, "results/final_paper_results/$(simulation_name)_average_saddle_index_densities.png")
     display(average_saddle_index_densities_graph)
 end

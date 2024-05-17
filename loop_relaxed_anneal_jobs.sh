@@ -1,15 +1,15 @@
 #!/bin/bash
 
 
-# models_to_test=("clean" "inherent_disorder")
-# L_values=(3 5 7 9 11)
-# swap_move_probabilities=(0.0 1.0)
-# number_of_trials=50
+models_to_test=("clean" "inherent_disorder")
+L_values=(3 5 7 9 11)
+swap_move_probabilities=(0.0 1.0)
+number_of_trials=50
 
-models_to_test=("inherent_disorder")
-L_values=(3)
-swap_move_probabilities=(0.0)
-number_of_trials=1
+# models_to_test=("inherent_disorder")
+# L_values=(3)
+# swap_move_probabilities=(0.0)
+# number_of_trials=1
 
 
 for model in "${models_to_test[@]}"; do

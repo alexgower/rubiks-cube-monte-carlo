@@ -9,16 +9,32 @@ using Colors
 # using ColorTypes, ColorSchemes
 using Plots.PlotMeasures
 
+using Images
+
 include("../core/rubiks_cube.jl")
 
 # Make nice function renamings
-E1_E2_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation") = energy_connectivity_histogram_figure(simulation_name, connectivity; neighbour_order_to_measure_to=2)
-E0_E1_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation") = energy_connectivity_histogram_figure(simulation_name, connectivity; neighbour_order_to_measure_to=1)
+E1_E2_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; bin_diagonal_graph=false) = energy_connectivity_histogram_figure(simulation_name, connectivity; neighbour_order_to_measure_to=2, bin_diagonal_graph=bin_diagonal_graph)
+E0_E1_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; bin_diagonal_graph=false) = energy_connectivity_histogram_figure(simulation_name, connectivity; neighbour_order_to_measure_to=1, bin_diagonal_graph=bin_diagonal_graph)
 
-
+function annotatewithbox!(
+    fig::Plots.Plot,
+    text::Plots.PlotText,
+    x::Real, y::Real,
+    Δx::Real, Δy::Real = Δx; kwargs...)
+    
+    box = Plots.Shape(:rect)
+    Plots.scale!(box, Δx, Δy)
+    Plots.translate!(box, x, y)
+    
+    Plots.plot!(fig, box, c=:white, linecolor=:white, label=false; kwargs...)
+    Plots.annotate!(fig, x+Δx/30, y, text)
+    
+    fig
+end
 
 # Main function
-function energy_connectivity_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1)
+function energy_connectivity_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, bin_diagonal_graph::Bool=false)
 
     E_star = -0.39015151515151514
 
@@ -79,12 +95,18 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
     E0_values = energy_connections_data_matrix[:,1]./-solved_configuration_energy(cube)
     E1_values = energy_connections_data_matrix[:,2]./-solved_configuration_energy(cube)
 
+    if bin_diagonal_graph==false
+
     if neighbour_order_to_measure_to == 2
-        diagonal_ylabel = "Second-Neighbour Configuration Energy Density, "*L"E^{(2)}/E_s"
-        diagonal_xlabel = "Neighbour Configuration Energy Density, "*L"E^{(1)}/E_s"
+        # diagonal_ylabel = "Second-Neighbour Configuration Energy Density, "*L"E^{(2)}/E_s"
+        # diagonal_xlabel = "Neighbour Configuration Energy Density, "*L"E^{(1)}/E_s"
+        diagonal_ylabel = "Second-Neighbour Energy Density, "*L"\epsilon^{(2)}"
+        diagonal_xlabel = "Neighbour Energy Density, "*L"\epsilon^{(1)}"
     elseif neighbour_order_to_measure_to == 1
-        diagonal_ylabel = "Neighbour Configuration Energy Density, "*L"E^{(1)}/E_s"
-        diagonal_xlabel = "Initial Configuration Energy Density, "*L"E^{(0)}/E_s"
+        # diagonal_ylabel = "Neighbour Configuration Energy Density, "*L"E^{(1)}/E_s"
+        # diagonal_xlabel = "Initial Configuration Energy Density, "*L"E^{(0)}/E_s"
+        diagonal_ylabel = "Neighbour Energy Density, "*L"\epsilon^{(1)}"
+        diagonal_xlabel = "Energy Density, "*L"\epsilon^{(0)}"
     else
         error("Invalid neighbour_order_to_measure_to value for x/y labels: $neighbour_order_to_measure_to")
     end
@@ -99,31 +121,67 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
         weights=biases, 
         ylabel=diagonal_ylabel, 
         xlabel=diagonal_xlabel, 
-        title="$connectivity Cube", 
+        # title="$connectivity Cube", 
         xlims=(minimum(E0_values), maximum(E0_values)), 
         ylims=(minimum(E1_values), maximum(E1_values)),
-        colorbar_title="Sampled Frequency",
-        titlefontsize=10,   # Title font size
-        xguidefontsize=8,   # X-axis label font size
-        yguidefontsize=8,   # Y-axis label font size
-        margin=5mm          # Margin around the plot
+        colorbar_title="",
+        # titlefontsize=10,   # Title font size
+        xguidefontsize=12,   # X-axis label font size
+        yguidefontsize=12,   # Y-axis label font size
+        margin=5mm,          # Margin around the plot
+        xticks=(0.4:0.1:0.8, -1.0 .+ 0.4:0.1:0.8),
+        yticks=(0.4:0.1:0.8, -1.0 .+ 0.4:0.1:0.8),
+        # background_color=:white,
+        # grid=false
     )
+    annotate!(1.115 * maximum(E0_values), 0.5 * (minimum(E1_values) + maximum(E1_values)), text("Sampled Frequency", 10, :center, :center, rotation=90))
 
     # Add E_0 = E1 lines to graph
     if neighbour_order_to_measure_to==2
-        annotation = "E⁽¹⁾=E⁽²⁾"
+        # annotation = L"E⁽²⁾=E⁽¹⁾"
+        annotation = L"\epsilon^{(2)} = \epsilon^{(1)}"
     elseif neighbour_order_to_measure_to==1
-        annotation = "E⁽⁰⁾=E⁽¹⁾"
+        # annotation = L"E⁽¹⁾=E⁽⁰⁾"
+        annotation = L"\epsilon^{(1)} = \epsilon^{(0)}"
     else
         error("Invalid neighbour_order_to_measure_to value for annotation: $neighbour_order_to_measure_to")
     end
 
-    plot!(graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label=annotation)
+    annotate!(graph, [(xlims(graph)[1]+0.1, ylims(graph)[1]+0.03, Plots.text(annotation, 12, :black))])
 
-    # Add E_star vertical lines to graphs if E_star is nonzero and we are slice rotation cube
-    if E_star != 0.0 && connectivity == "Slice-Rotation"
-        vline!(graph, [E_star], line=:dash, color=:green, lw=2, label="")
-        annotate!(graph, [(E_star+0.02, ylims(graph)[1]+0.02, Plots.text(L"E^*", 8, :black))])
+    plot!(graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="")
+
+    # Add E_star vertical lines to graphs if we are slice rotation cube
+    if connectivity == "Slice-Rotation"
+        E_star_plot = 1+E_star
+        vline!(graph, [E_star_plot], line=:dash, color=:green, lw=2, label="")
+        annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.05, Plots.text(L"\epsilon^*", 12, :black))])
+    end
+
+        # Add title as annotated text in top right corner
+        if connectivity=="Slice-Rotation"
+            annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
+        else
+            annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
+        end
+
+    ### --- PLOT IMAGE ON GRAPH ---
+    if connectivity == "Slice-Rotation" && neighbour_order_to_measure_to == 1
+        img = load("results/final_paper_results/spiral.png")
+
+        # Determine the desired width and height on the graph
+        # Here you set one dimension, and calculate the other to preserve the aspect ratio
+        desired_width = 0.4
+        aspect_ratio = size(img, 2) / size(img, 1) # width / height
+        desired_height = (desired_width / aspect_ratio)
+
+        # Determine the location on the graph where you want the image's bottom-left corner
+        x_location = 0.13
+        y_location = 0.065
+
+        # Plot the image with the specified dimensions and location
+        plot!(graph, reverse(img; dims=1), yflip=false, inset=bbox(x_location,y_location,desired_width-0.1,desired_height), subplot=2, aspect_ratio=:auto, axis=false, grid=false, framestyle=:box, legend=false, ticks=nothing, border=:none, plot_bgcolor=:transparent)
+
     end
 
     ### -- Save and display the graphs --
@@ -131,6 +189,31 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
     savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.svg")
     savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.png")
     display(graph)
+
+    end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -165,11 +248,15 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
     E_difference_values = (energy_connections_data_matrix[:,2] .- energy_connections_data_matrix[:,1])./-solved_configuration_energy(cube)
 
     if neighbour_order_to_measure_to == 2
-        horizontal_ylabel = "Second-Neighbour Energy Density Difference, "*L"(E^{(2)}\!\!\!-\!E^{(1)})/\,|\!\!E_s\,|"
-        horizontal_xlabel = "Neighbour Energy Density, "*L"E^{(1)}\!\!/\,|\!\!E_s\,|"
+        # horizontal_ylabel = "Second-Neighbour Energy Density Difference, "*L"(E^{(2)}\!\!\!-\!E^{(1)})/\,|\!\!E_s\,|"
+        horizontal_ylabel = "Second-Neighbour Energy Density Difference, "*L"\epsilon^{(2)}-\epsilon^{(1)}"        
+        # horizontal_xlabel = "Neighbour Ernergy Density, "*L"E^{(1)}\!\!/\,|\!\!E_s\,|"
+        horizontal_xlabel = "Neighbour Energy Density, "*L"\epsilon^{(1)}"
     elseif neighbour_order_to_measure_to == 1
-        horizontal_ylabel = "Neighbour Energy Density Difference, "*L"(E^{(1)}\!\!\!-\!E^{(0)})/\,|\!\!E_s\,|"
-        horizontal_xlabel = "Energy Density, "*L"E^{(0)}\!\!/\,|\!\!E_s\,|"
+        # horizontal_ylabel = "Neighbour Energy Density Difference, "*L"(E^{(1)}\!\!\!-\!E^{(0)})/\,|\!\!E_s\,|"
+        horizontal_ylabel = "Neighbour Energy Density Difference, "*L"\epsilon^{(1)}-\epsilon^{(0)}"
+        # horizontal_xlabel = "Energy Density, "*L"E^{(0)}\!\!/\,|\!\!E_s\,|"
+         horizontal_xlabel = "Energy Density, "*L"\epsilon^{(0)}"
     else
         error("Invalid neighbour_order_to_measure_to value for x/y labels: $neighbour_order_to_measure_to")
     end
@@ -186,37 +273,56 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
         xlabel=horizontal_xlabel,
         xlims=(minimum(E0_values), maximum(E0_values)), 
         ylims=(minimum(E_difference_values), maximum(E_difference_values)),
-        colorbar_title="Sampled Frequency",
+        colorbar_title="",
         xguidefontsize=8,   # X-axis label font size
         yguidefontsize=8,   # Y-axis label font size
-        margin=1mm,          # Margin around the plot
-        title="$connectivity Cube",
-        titlefontsize=10,   # Title font size
+        margin=5mm,          # Margin around the plot
+        # title="$connectivity Cube",
+        # titlefontsize=10,   # Title font size
         xticks=(0.4:0.1:0.8, -1.0 .+ 0.4:0.1:0.8),
     )
+    annotate!(1.115 * maximum(E0_values), 0.5 * (minimum(E_difference_values) + maximum(E_difference_values)), text("Sampled Frequency", 8, :center, :center, rotation=90))
 
+    # Add title as annotated text in top right corner
+    if connectivity=="Slice-Rotation"
+        annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.012, Plots.text("$(connectivity) Cube", 10, :black))])
+    else
+        annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.012, Plots.text("$(connectivity) Cube", 10, :black))])
+    end
 
     # Add E_0 = E1 lines to graph
     hline!(graph, [0.0], line=:dash, color=:orange, lw=2, label="")
 
     if neighbour_order_to_measure_to==2
-        annotation = L"E^{(1)} = E^{(2)}"
+        annotation = L"\epsilon^{(2)} = \epsilon^{(1)}"
     elseif neighbour_order_to_measure_to==1
-        annotation = L"E^{(0)} = E^{(1)}"
+        annotation = L"\epsilon^{(1)} = \epsilon^{(0)}" 
     else
         error("Invalid neighbour_order_to_measure_to value for annotation: $neighbour_order_to_measure_to")
     end
 
     if connectivity == "Slice-Rotation"
-        annotate!(graph, [(xlims(graph)[1]+0.05, 0.0-0.003, Plots.text(annotation, 10, :black))])
+        if neighbour_order_to_measure_to==1
+            annotate!(graph, [(xlims(graph)[1]+0.05, 0.0-0.005, Plots.text(annotation, 10, :black))])
+        else
+            xpos = xlims(graph)[1]+0.1
+            ypos = 0.0-0.0065
+            rectangle_width = 0.06
+            rectangle_height = 0.004
+            annotatewithbox!(graph, Plots.text(annotation, 10, color), xpos, ypos, rectangle_width, rectangle_height)
+
+        end
     else
-        annotate!(graph, [(xlims(graph)[1]+0.05, 0.0-0.0065, Plots.text(annotation, 10, :black))])
+        annotate!(graph, [(xlims(graph)[1]+0.05, 0.0-0.010, Plots.text(annotation, 10, :black))])
+        # annotate!(graph, [(xlims(graph)[1]+0.05, 0.0-0.0115, Plots.text(annotation, 10, :black))])
     end
 
-    # Add E_star vertical lines to graphs if E_star is nonzero and we are slice rotation cube
-    if E_star != 0.0 && connectivity == "Slice-Rotation"
-        vline!(graph, [E_star], line=:dash, color=:green, lw=2, label="")
-        annotate!(graph, [(E_star+0.05, ylims(graph)[1]-0.05, Plots.text(L"E^*", 8, :black))])
+
+    # Add E_star vertical lines to graphs if we are slice rotation cube
+    if connectivity == "Slice-Rotation"
+        E_star_plot = 1+E_star
+        vline!(graph, [E_star_plot], line=:dash, color=:green, lw=2, label="")
+        annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.005, Plots.text(L"\epsilon^*", 10, :black))])
     end
 
 

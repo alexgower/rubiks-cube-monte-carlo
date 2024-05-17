@@ -1,0 +1,9 @@
+/var/spool/slurm/slurmd/job52623654/slurm_script: line 60: cd: rubiks-cube-monte-carlo: No such file or directory
+Changed directory to /home/apg59/rubiks-cube-monte-carlo.
+
+JobID: 52623654
+======
+Time: Fri May 17 13:49:15 BST 2024
+Running on master node: cpu-p-597
+Current directory: /home/apg59/rubiks-cube-monte-carlo
+Arguments passed to SLURM script: 0.9 250000 1

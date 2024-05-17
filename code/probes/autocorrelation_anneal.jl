@@ -9,7 +9,7 @@ include("../core/monte_carlo.jl")
 
 
 
-@inbounds @fastmath function autocorrelation_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}, relaxation_iterations_per_temperature::Int64=10000, sample_temperatures::Vector{Float64}=empty([0.0]), average_sample_size_per_temperature::Int64=10, autocorrelation_window_length::Int64=1000; lag_limit::Int64=100, swap_move_probability::Float64=0.0,  verbose_annealing::Bool=true, verbose_graph_annealing::Bool=false, verbose_metropolis_swap::Bool=false, bin_autocorrelation_averages_by_time::Bool=false)
+@inbounds @fastmath function autocorrelation_anneal!(cube::RubiksCube, temperature_vector::Vector{Float64}, relaxation_iterations_per_temperature::Int64=10000, sample_temperatures::Vector{Float64}=empty([0.0]), average_sample_size_per_temperature::Int64=10, autocorrelation_window_length::Int64=1000; lag_limit::Int64=100, annealing_swap_move_probability::Float64=1.0, autocorrelation_swap_move_probability::Float64=0.0, verbose_annealing::Bool=true, verbose_graph_annealing::Bool=false, verbose_metropolis_swap::Bool=false, bin_autocorrelation_averages_by_time::Bool=false)
 
     # Notes ---
 
@@ -30,7 +30,7 @@ include("../core/monte_carlo.jl")
     run_metropolis_swap_algorithm!(cube, 0.0; swap_move_probability=0.0, maximum_iterations=Int(ceil(10*relaxation_iterations_per_temperature)), verbose=false, configuration_correlation_convergence_criteria=exp(-10))
 
     if verbose_annealing
-        printstyled("New Cube With P_swap = $swap_move_probability \n"; color=:blue)
+        printstyled("New Cube With P_swap = $annealing_swap_move_probability \n"; color=:blue)
         println("Mixed cube")
         println("Cube Energy/Infinite Temperature Energy: $(energy(cube)/infinite_temperature_energy(cube))")
     end
@@ -54,7 +54,8 @@ include("../core/monte_carlo.jl")
     for (temperature_index, T) in pairs(all_temperatures)
         beta = 1/T
 
-        run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability, maximum_iterations=relaxation_iterations_per_temperature, verbose=false, configuration_correlation_convergence_criteria=exp(-2))
+        # ANNEAL WITH annealing_swap_move_probability
+        run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=annealing_swap_move_probability, maximum_iterations=relaxation_iterations_per_temperature, verbose=false, configuration_correlation_convergence_criteria=exp(-2))
 
 
         if T ∈ sample_temperatures
@@ -71,7 +72,8 @@ include("../core/monte_carlo.jl")
 
                     # Do autocorrelation_window_length MC steps and save every energy value and configuration
                     for step_index in 1:autocorrelation_window_length
-                        candidate_generating_function! = swap_move_probability==0.0 ? random_rotate! : random_swap_move!
+                        # AUTOCORRELATION WITH autocorrelation_swap_move_probability
+                        candidate_generating_function! = autocorrelation_swap_move_probability==0.0 ? random_rotate! : random_swap_move!
                         monte_carlo_timestep!(cube, candidate_generating_function!, beta, verbose=false)
 
                         energy_by_sample[step_index] = energy(cube)
@@ -95,7 +97,8 @@ include("../core/monte_carlo.jl")
                     energy_autocorrelation_model(t, p) = exp.(-(t./p[1]).^p[2])
                     # Fit for autocorrelation time and stretching exponent for configuration correlation function
                     # Remember it asymptotes at 1/6 not 0 and still starts at 1
-                    configuration_autocorrelation_model(t, p) = (5/6).* exp.(-(t./p[1]).^p[2]) .+ (1/6)
+                    c = 0.201388888888888
+                    configuration_autocorrelation_model(t, p) = (1-c).* exp.(-(t./p[1]).^p[2]) .+ c
 
                     p0 = [10, 0.9]
                     lb = [1e-3, 0.1] # example lower bounds
@@ -113,7 +116,7 @@ include("../core/monte_carlo.jl")
                     
                         # Print autocorrelation time and stretching exponent if verbose_annealing mode activated
                         if verbose_annealing
-                            printstyled("Currently at Temperature:  $T [$(temperature_index)/$(length(all_temperatures))] (P_swap=$swap_move_probability, L=$(cube.L))\n"; underline=true)
+                            printstyled("Currently at Temperature:  $T [$(temperature_index)/$(length(all_temperatures))] (annealing_P_swap=$annealing_swap_move_probability, autocorrelation_P_swap=$autocorrelation_swap_move_probability, L=$(cube.L))\n"; underline=true)
                             println("Energy Autocorrelation Time: $(energy_autocorrelation_fit.param[1])")
                             println("Energy Stretching Exponent: $(energy_autocorrelation_fit.param[2])")
                             println("Configuration Autocorrelation Time: $(configuration_autocorrelation_fit.param[1])")

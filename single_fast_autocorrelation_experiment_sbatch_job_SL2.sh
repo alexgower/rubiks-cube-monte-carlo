@@ -12,7 +12,7 @@
 #! Name of the job:
 #SBATCH -J cpujob
 #! Which project should be charged:
-#SBATCH -A CASTELNOVO-SL3-CPU
+#SBATCH -A CASTELNOVO-SL2-CPU
 #SBATCH -p cclake-himem
 #! How many whole nodes should be allocated?
 #SBATCH --nodes=1
@@ -20,9 +20,9 @@
 #! The Cascade Lake (cclake) nodes have 56 CPUs (cores) each and
 #! 3420 MiB of memory per CPU.
 #! TODO change
-#SBATCH --ntasks=3
+#SBATCH --ntasks=1
 #! How much wallclock time will be required?
-#SBATCH --time=12:00:00
+#SBATCH --time=36:00:00
 #! What types of email messages do you wish to receive?
 #SBATCH --mail-type=ALL
 #! Uncomment this to prevent the job from being requeued (e.g. if
@@ -56,7 +56,8 @@ workdir="$SLURM_SUBMIT_DIR"  # The value of SLURM_SUBMIT_DIR sets workdir to the
 
 
 
-cd $workdir
+# cd $workdir
+cd rubiks-cube-monte-carlo
 echo -e "Changed directory to `pwd`.\n"
 
 JOBID=$SLURM_JOB_ID
@@ -65,6 +66,6 @@ echo -e "JobID: $JOBID\n======"
 echo "Time: `date`"
 echo "Running on master node: `hostname`"
 echo "Current directory: `pwd`"
+echo "Arguments passed to SLURM script: $@"
 
-julia job_autocorrelation_experiment.jl
-
+julia single_fast_autocorrelation_experiment.jl "$@"

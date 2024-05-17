@@ -40,7 +40,7 @@ include("../tools/neighbour_graphs_plotter.jl")
 
         samples_per_temperature_per_anneal = Int(ceil(average_sample_size_per_temperature/parallel_anneals))
 
-        Z = configuration_network_degree(cube.L, connections_to_measure=="swap")
+        Z = configuration_network_degree(cube.L, connections_to_measure=="swap") # Note this TESTS a bool
         number_of_connections = connections_per_configuration_sample_size==0 ? Z*(Z-1)^(neighbour_order_to_measure_to-1) : connections_per_configuration_sample_size
 
         # Calculate the sizes for each SharedArray
@@ -58,10 +58,10 @@ include("../tools/neighbour_graphs_plotter.jl")
             printstyled("Trial: $trial \n", color=:light_blue)
 
             if relaxation_iterations == 0
-                temperature_vector, _, _, _, _, _, _, _, _, trial_energy_connections_tuples, trial_energy_saddle_index_densities_tuples, trial_energy_minima_tuples = relaxed_anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, sample_temperatures=sample_temperatures, connections_to_measure=connections_to_measure, connections_per_configuration_sample_size=connections_per_configuration_sample_size, bin_energy_connections=bin_energy_connections, collect_energy_saddle_index_densities=collect_energy_saddle_index_densities, average_sample_size_per_temperature=samples_per_temperature_per_anneal)
+                temperature_vector, _, _, _, _, _, _, _, _, trial_energy_connections_tuples, trial_energy_saddle_index_densities_tuples, trial_energy_minima_tuples = relaxed_anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, sample_temperatures=sample_temperatures, connections_to_measure=connections_to_measure, connections_per_configuration_sample_size=connections_per_configuration_sample_size, bin_energy_connections=bin_energy_connections, collect_energy_saddle_index_densities=collect_energy_saddle_index_densities, average_sample_size_per_temperature=samples_per_temperature_per_anneal, neighbour_order_to_measure_to=neighbour_order_to_measure_to)
             else
                 relaxation_iterations_vector = [relaxation_iterations for T in temperature_vector]
-                temperature_vector, _, _, _, _, _, _, _, _, trial_energy_connections_tuples, trial_energy_saddle_index_densities_tuples, trial_energy_minima_tuples = relaxed_anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, relaxation_iterations_vector = relaxation_iterations_vector,  sample_temperatures=sample_temperatures, connections_to_measure=connections_to_measure, connections_per_configuration_sample_size=connections_per_configuration_sample_size, bin_energy_connections=bin_energy_connections, collect_energy_saddle_index_densities=collect_energy_saddle_index_densities, average_sample_size_per_temperature=samples_per_temperature_per_anneal)
+                temperature_vector, _, _, _, _, _, _, _, _, trial_energy_connections_tuples, trial_energy_saddle_index_densities_tuples, trial_energy_minima_tuples = relaxed_anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, relaxation_iterations_vector = relaxation_iterations_vector,  sample_temperatures=sample_temperatures, connections_to_measure=connections_to_measure, connections_per_configuration_sample_size=connections_per_configuration_sample_size, bin_energy_connections=bin_energy_connections, collect_energy_saddle_index_densities=collect_energy_saddle_index_densities, average_sample_size_per_temperature=samples_per_temperature_per_anneal, neighbour_order_to_measure_to=neighbour_order_to_measure_to)
             end
 
             if !bin_energy_connections

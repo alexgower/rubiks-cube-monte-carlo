@@ -1,0 +1,8 @@
+Changed directory to /home/apg59/rubiks-cube-monte-carlo.
+
+JobID: 52590397
+======
+Time: Fri May 17 14:43:17 BST 2024
+Running on master node: cpu-p-204
+Current directory: /home/apg59/rubiks-cube-monte-carlo
+Arguments passed to SLURM script: clean 11 1.0 1
