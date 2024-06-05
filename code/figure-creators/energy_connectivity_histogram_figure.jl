@@ -36,7 +36,8 @@ end
 # Main function
 function energy_connectivity_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, bin_diagonal_graph::Bool=false)
 
-    E_star = -0.39015151515151514
+    # E_star = -0.39015151515151514
+    E_star = -0.376098787878788
 
     ### --- READ IN THE DATA ---
     filename = "results/final_paper_results",simulation_name*"_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_energy_connections"
@@ -264,7 +265,7 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
     graph = histogram2d(
         E0_values, 
         E_difference_values, 
-        color=:bluesreds, 
+        # color=:bluesreds, # TODO readd
         show_empty_bins=false,
         normalize=:pdf, 
         bins=((bin_edges_x./-solved_configuration_energy(cube)), bin_edges_y./-solved_configuration_energy(cube)), 

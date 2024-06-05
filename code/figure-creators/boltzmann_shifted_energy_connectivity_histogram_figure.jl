@@ -19,7 +19,8 @@ include("../core/rubiks_cube.jl")
 # Main function
 function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, temperature_shift::Float64=0.0)
 
-    E_star = -0.39015151515151514
+    # E_star = -0.39015151515151514
+    E_star = -0.376098787878788
     
 
     ### --- READ IN THE DATA ---
@@ -41,12 +42,10 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
 
 
     ### --- GET AVERAGE ENERGY AGAINST TEMPERATURE DATA ---
-    # TODO GET NICE DATA FOR THIS DISORDER INSTANCE NOT INHERENT DISORDER AVERAGE
-    # TODO check spline nicely interpolates curve
     filename = "results/final_paper_results",simulation_name*"_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_energy_connections"
 
-    temperatures = [10.0, 9.440608762859235, 8.912509381337456, 8.413951416451951, 7.943282347242815, 7.498942093324558, 7.079457843841379, 6.6834391756861455, 6.3095734448019325, 5.956621435290105, 5.623413251903491, 5.3088444423098835, 5.011872336272722, 4.7315125896148045, 4.466835921509632, 4.216965034285822, 3.981071705534972, 3.758374042884442, 3.548133892335754, 3.3496543915782766, 3.1622776601683795, 2.9853826189179595, 2.8183829312644537, 2.6607250597988097, 2.51188643150958, 2.371373705661655, 2.2387211385683394, 2.1134890398366464, 1.9952623149688797, 1.8836490894898006, 1.7782794100389228, 1.6788040181225603, 1.5848931924611134, 1.4962356560944334, 1.4125375446227544, 1.333521432163324, 1.2589254117941673, 1.1885022274370183, 1.1220184543019636, 1.0592537251772889, 1.0, 0.9440608762859236, 0.9, 0.8912509381337455, 0.8842105263157894, 0.868421052631579, 0.8526315789473685, 0.8413951416451952, 0.8368421052631578, 0.8210526315789474, 0.8052631578947369, 0.7943282347242814, 0.7894736842105263, 0.7736842105263158, 0.7578947368421052, 0.7498942093324558, 0.7421052631578948, 0.7263157894736842, 0.7105263157894737, 0.707945784384138, 0.6947368421052631, 0.6789473684210526, 0.6683439175686146, 0.6631578947368421, 0.6473684210526315, 0.631578947368421, 0.6309573444801932, 0.6157894736842106, 0.6, 0.5956621435290104, 0.5623413251903491, 0.5308844442309885, 0.5011872336272722, 0.4731512589614806, 0.4466835921509631, 0.4216965034285822, 0.3981071705534973, 0.37583740428844414, 0.3548133892335755, 0.3349654391578276, 0.3162277660168379, 0.298538261891796, 0.28183829312644537, 0.26607250597988097, 0.25118864315095796, 0.23713737056616555, 0.22387211385683398, 0.21134890398366468, 0.19952623149688797, 0.18836490894898, 0.1778279410038923, 0.16788040181225608, 0.15848931924611134, 0.14962356560944334, 0.1333521432163324, 0.12589254117941676, 0.11220184543019636, 0.10592537251772886]
-    average_energy_densities_by_temperature = [-0.17839177489177488, -0.17883874458874466, -0.17976443001443004, -0.18036219336219336, -0.18141558441558447, -0.1828080808080808, -0.183728354978355, -0.18547474747474751, -0.18624711399711402, -0.18801767676767678, -0.1880606060606061, -0.19049314574314574, -0.19169480519480522, -0.193234126984127, -0.1955667388167388, -0.1977027417027417, -0.1991569264069264, -0.20138564213564208, -0.203487012987013, -0.2056634199134199, -0.20901623376623377, -0.21251839826839827, -0.21551190476190474, -0.21867352092352088, -0.22276984126984123, -0.22641847041847044, -0.23113780663780664, -0.2357734487734488, -0.24022077922077925, -0.24576803751803755, -0.2515335497835498, -0.25796536796536795, -0.2652431457431457, -0.2731818181818182, -0.2814329004329005, -0.2906125541125541, -0.3006432178932179, -0.31308658008658014, -0.32555158730158734, -0.3393001443001442, -0.3556926406926407, -0.37400360750360756, -0.3929195526695527, -0.3963459595959596, -0.40076623376623377, -0.4074029581529582, -0.41649891774891784, -0.4224444444444444, -0.42484163059163066, -0.43698124098124097, -0.44870779220779233, -0.45488455988456, -0.4589689754689754, -0.4712049062049062, -0.485448051948052, -0.4897723665223664, -0.4982564935064936, -0.5104635642135641, -0.5246349206349207, -0.5262352092352092, -0.5393780663780663, -0.5484971139971141, -0.5559325396825398, -0.5631518759018758, -0.5771948051948053, -0.5896998556998556, -0.5935191197691199, -0.6001255411255413, -0.6055147907647906, -0.612765873015873, -0.62870202020202, -0.6426475468975469, -0.6539480519480521, -0.6623708513708514, -0.6690212842712844, -0.67572113997114, -0.6799285714285713, -0.6834220779220779, -0.6857106782106781, -0.6885407647907649, -0.6905515873015873, -0.6923257575757576, -0.6933246753246752, -0.694488455988456, -0.6954289321789321, -0.695962481962482, -0.696670634920635, -0.6974556277056279, -0.6976601731601731, -0.6978968253968254, -0.6981829004329003, -0.6984693362193363, -0.6986879509379509, -0.6988181818181818, -0.6988398268398269, -0.6988896103896105, -0.6989491341991342, -0.6989949494949496]
+    temperatures = [10.0, 9.54992586021436, 9.120108393559098, 8.709635899560805,8.317637711026709, 7.943282347242815, 7.5857757502918375, 7.244359600749901,6.918309709189366, 6.60693448007596, 6.3095734448019325, 6.025595860743578,5.7543993733715695, 5.495408738576245, 5.248074602497725, 5.011872336272722,4.786300923226383, 4.57088189614875, 4.36515832240166, 4.168693834703355,3.981071705534972, 3.801893963205612, 3.6307805477010135, 3.467368504525316,3.311311214825911, 3.1622776601683795, 3.019951720402016, 2.8840315031266055,2.7542287033381663, 2.6302679918953817, 2.51188643150958, 2.3988329190194904,2.2908676527677727, 2.1877616239495525, 2.089296130854039, 1.9952623149688797,1.9054607179632475, 1.8197008586099832, 1.7378008287493754, 1.6595869074375604,1.5848931924611134, 1.5135612484362082, 1.4454397707459277, 1.380384264602885,1.318256738556407, 1.2589254117941673, 1.202264434617413, 1.148153621496883,1.096478196143185, 1.0471285480508996, 1.0, 0.9549925860214359,0.9120108393559097, 0.8709635899560806, 0.831763771102671, 0.7943282347242814,0.7585775750291835, 0.7244359600749903, 0.6918309709189365, 0.6606934480075961,0.6309573444801932, 0.6025595860743578, 0.5754399373371569, 0.5495408738576245,0.5248074602497725, 0.5011872336272722, 0.4786300923226383, 0.45708818961487496,0.4365158322401659, 0.4168693834703355, 0.3981071705534973, 0.38018939632056126,0.36307805477010135, 0.34673685045253166, 0.33113112148259116, 0.3162277660168379,0.3019951720402016, 0.28840315031266056, 0.2754228703338166, 0.26302679918953814,0.25118864315095796, 0.23988329190194896, 0.22908676527677738, 0.2187761623949553,0.20892961308540398, 0.19952623149688797, 0.19054607179632474, 0.18197008586099836,0.17378008287493754, 0.16595869074375605, 0.15848931924611134, 0.1513561248436208,0.1445439770745927, 0.13803842646028847, 0.13182567385564076, 0.12589254117941676,0.12022644346174131, 0.11481536214968828, 0.1096478196143185, 0.10471285480508996]
+    average_energy_densities_by_temperature = [-0.1809469696969697, -0.18082575757575758, -0.18192424242424243, -0.17976515151515152,-0.1805378787878788, -0.18525, -0.18692424242424244, -0.18406818181818183,-0.18787121212121213, -0.1863030303030303, -0.18712121212121213, -0.19046969696969698,-0.19040151515151515, -0.19242424242424241, -0.19165151515151516, -0.1923030303030303,-0.19496212121212123, -0.19711363636363635, -0.20083333333333336, -0.20047727272727273,-0.20236363636363636, -0.20400757575757578, -0.20588636363636362, -0.20875000000000002,-0.21309848484848487, -0.2115757575757576, -0.2155, -0.21622727272727274,-0.21995454545454549, -0.2198106060606061, -0.2242121212121212, -0.22921969696969696,-0.2314090909090909, -0.2324848484848485, -0.23884090909090908, -0.24062121212121212,-0.24951515151515152, -0.2516515151515152, -0.258530303030303, -0.2602878787878788,-0.26795454545454545, -0.274, -0.28042424242424246, -0.2888939393939394,-0.2936590909090909, -0.30199242424242423, -0.31156060606060604, -0.3235227272727273,-0.33324242424242423, -0.34381060606060604, -0.3576212121212121, -0.36961363636363637,-0.3893030303030303, -0.4058257575757576, -0.43169696969696975, -0.4528560606060606,-0.48315909090909087, -0.5125, -0.5389015151515152, -0.5718484848484848,-0.5935530303030303, -0.612, -0.6338863636363636, -0.6457954545454546,-0.6553484848484848, -0.6639848484848485, -0.6690681818181818, -0.6777272727272727,-0.686060606060606, -0.6898863636363636, -0.6929015151515151, -0.6951590909090909,-0.6950303030303031, -0.6968106060606061, -0.6981060606060606, -0.6991893939393939,-0.7018560606060606, -0.7027348484848485, -0.7056742424242425, -0.7068560606060607,-0.7070454545454546, -0.707780303030303, -0.7078636363636364, -0.7083181818181818,-0.7086287878787879, -0.7083181818181818, -0.708939393939394, -0.7088181818181818,-0.7088030303030303, -0.7090151515151515, -0.7089772727272727, -0.7090681818181819,-0.7090681818181819, -0.7090757575757576, -0.7090681818181819, -0.7090454545454545,-0.7090757575757576, -0.7090909090909091, -0.7090909090909091, -0.7090909090909091]
     average_energies_by_temperature = average_energy_densities_by_temperature .* -solved_configuration_energy(cube)
 
     # highlight which energies in average_energies_by_temperature are not in descending order
@@ -78,8 +77,6 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
     for i in 0:100:1320
         println("E: $i, T: $(get_equilibrium_temperature_from_absolute_energy(i))")
     end
-
-    println("epsilon: -0.3, T: $(get_equilibrium_temperature_from_absolute_energy_density(-0.3))")
     
 
 
@@ -136,181 +133,38 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
     end
 
 
-    # Print E_star as absolute energy
-    println("E_star: $(E_star)")
-    println("E_star as absolute energy: $(E_star*abs(solved_configuration_energy(cube)) + abs(solved_configuration_energy(cube))))")
 
-    
     # Plot mean j-i against i
     # Get smoothened data averaged over n_average energy units each
-    mean_j_minus_i_smoothed = [mean(mean_j_minus_i[i:i+20]) for i in 1:20:length(mean_j_minus_i)-20]
+    smoothing_window = 60
+    mean_j_minus_i_smoothed = [mean(mean_j_minus_i[i:i+smoothing_window]) for i in 1:smoothing_window:length(mean_j_minus_i)-smoothing_window]
     # Dont plot 0.0s
-    graph = scatter(bin_edges_x[1:end-1][mean_j_minus_i .!= 0.0], mean_j_minus_i[mean_j_minus_i .!= 0.0], label=L"\langle E^{(1)} - E^{(0)} \rangle", xlabel=L"E^{(0)}", ylabel=L"\langle E^{(1)} - E^{(0)} \rangle", title="", legend=:topright)
+    graph = scatter(-1 .+ (bin_edges_x[1:end-1][mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i[mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube)), label=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle", xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle", title="", legend=false, xtickfontsize=16, ytickfontsize=16, xguidefontsize=20, yguidefontsize=20, margin=5mm)
 
     # Do smoothed line
-    plot!(graph, bin_edges_x[1:end-1][1:20:end-20][mean_j_minus_i_smoothed .!= 0.0], mean_j_minus_i_smoothed[mean_j_minus_i_smoothed .!= 0.0], line=:dash, color=:orange, lw=2, label="Smoothed")
+    plot!(graph, -1 .+ (bin_edges_x[1:end-1][1:smoothing_window:end-smoothing_window][mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i_smoothed[mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube)), line=:solid, color=:orange, lw=3, xlims=(-0.71,-0.25), xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle")
 
     # Plot 0.0 line
     hline!(graph, [0.0], line=:dash, color=:red, lw=2, label="")
 
-    # Plot E_star line for it's absolute energy
-    E_star_absolute_energy = E_star*abs(solved_configuration_energy(cube)) + abs(solved_configuration_energy(cube))
-    vline!(graph, [E_star_absolute_energy], line=:dash, color=:green, lw=2, label=L"E^{*}")
+    # Plot E* line
+    if connectivity == "Slice-Rotation"
+        vline!(graph, [E_star], line=:dash, color=:green, lw=2, label="")
+    end
+
+        
 
     # Add title as annotated text in top right corner
-    annotate!(graph, [(xlims(graph)[2]-200, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
+    # annotate!(graph, [(xlims(graph)[2]-200, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
 
     # Anotate temperature shift if not 0
     if temperature_shift != 0.0
         annotate!(graph, [(xlims(graph)[1]+250, ylims(graph)[2]-0.25, Plots.text("Temperature Shift: $temperature_shift", 10, :black))])
     end
 
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_mean_j_minus_i.png")
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_mean_j_minus_i.svg")
+    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.png")
+    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.svg")
     display(graph)
-
-    println("Size of bin_edges_x: ", size(bin_edges_x))
-    println("Size of bin_edges_y: ", size(bin_edges_y))
-    println("Size of boltzmann_shifted_weights: ", size(boltzmann_shifted_weights))
-
-    indices_where_mean_j_minus_i_is_positive = findall(mean_j_minus_i .> 0.0)
-
-    relative_boltzmann_shifted_weights = zeros(1320, 2*1320)
-
-    for i in 1:1320
-        for j in 1:1320
-            relative_boltzmann_shifted_weights[i, j-i+1320] = boltzmann_shifted_weights[i, j]
-        end
-    end
-
-    # Check relative boltzmann shifted weights is still normalised per i
-    for i in 1:1320
-        slice_sum = sum(relative_boltzmann_shifted_weights[i, :])
-        println("Slice sum: ", slice_sum)
-    end
-
-    println("Relative boltzmann shifted weights all zero?: ", all(relative_boltzmann_shifted_weights .== 0.0))
-
-    ### --- PLOT RELATIVE BOLTZMANN SHIFTED WEIGHTS ON 2D HISTOGRAM ---
-    graph = heatmap(
-        [i for i in 1:1320], 
-        [i for i in -1320:1320 if i != 0],
-        relative_boltzmann_shifted_weights, 
-        # color=:bluesreds, 
-        show_empty_bins=false, 
-        xlabel=L"E^{(0)}", 
-        ylabel=L"E^{(1)}", 
-        title="", 
-        xlims = extrema(indices_where_mean_j_minus_i_is_positive),
-        colorbar_title="",
-        # xticks=(0:100:1200, 0:100:1200),
-        # yticks=(0:100:1200, 0:100:1200),
-        xguidefontsize=12,   # X-axis label font size
-        yguidefontsize=12,   # Y-axis label font size
-        margin=5mm,          # Margin around the plot
-        # background_color=:white,
-        # grid=false
-    )
-
-
-    # graph = heatmap(
-    #     bin_edges_x, 
-    #     bin_edges_y,
-    #     boltzmann_shifted_weights, 
-    #     color=:bluesreds, 
-    #     show_empty_bins=false, 
-    #     xlabel=L"E^{(0)}", 
-    #     ylabel=L"E^{(1)}", 
-    #     title="", 
-    #     xlims = extrema(indices_where_mean_j_minus_i_is_positive),
-    #     ylims = extrema(indices_where_mean_j_minus_i_is_positive),
-    #     colorbar_title="",
-    #     # xticks=(0:100:1200, 0:100:1200),
-    #     # yticks=(0:100:1200, 0:100:1200),
-    #     xguidefontsize=12,   # X-axis label font size
-    #     yguidefontsize=12,   # Y-axis label font size
-    #     margin=5mm,          # Margin around the plot
-    #     # background_color=:white,
-    #     # grid=false
-    # )
-
-
-    ### -- Plots. jl 2D HISTOGRAM --
-
-    # min_value = minimum([minimum(energy_connections_data_matrix[:,1]), minimum(energy_connections_data_matrix[:,2])])
-    # max_value = maximum([maximum(energy_connections_data_matrix[:,1]), maximum(energy_connections_data_matrix[:,2])])
-
-
-    # # # Initialize an array to hold the biases
-    # # biases = zeros(size(energy_connections_data_matrix, 1))
-
-    # # # NOTE THAT BIASES BELOW DO NOT MEAN FREQUENCIES IN THE HISTOGRAM BUT RATHER HOW WE BIAS THESE FREQUENCIES
-    # # # Calculate the sum of counts in each E_0 slice
-    # # for i in 1:size(hist_2d.weights, 1)
-    # #     slice_sum = sum(hist_2d.weights[i, :])
-    # #     if slice_sum != 0  # Avoid division by zero
-    # #         # Assign the reciprocal of the slice sum to the weights array for each data point in the current E_0 slice
-    # #         mask = energy_connections_data_matrix[:,1] .== bin_edges_x[i]
-    # #         biases[mask] .= 1.0 / slice_sum
-    # #     end
-    # # end
-
-    # E0_values = energy_connections_data_matrix[:,1]./-solved_configuration_energy(cube)
-    # E1_values = energy_connections_data_matrix[:,2]./-solved_configuration_energy(cube)
-
-    # diagonal_ylabel = "Second-Neighbour Energy Density, "*L"\epsilon^{(2)}"
-    # diagonal_xlabel = "Neighbour Energy Density, "*L"\epsilon^{(1)}"
-
-    # graph = histogram2d(
-    #     E0_values, 
-    #     E1_values, 
-    #     color=:bluesreds, 
-    #     show_empty_bins=false,
-    #     normalize=:pdf, 
-    #     bins=(bin_edges_x./-solved_configuration_energy(cube), bin_edges_y./-solved_configuration_energy(cube)), 
-    #     weights=boltzmann_shifted_weights, 
-    #     ylabel=diagonal_ylabel, 
-    #     xlabel=diagonal_xlabel, 
-    #     # title="$connectivity Cube", 
-    #     xlims=(minimum(E0_values), maximum(E0_values)), 
-    #     ylims=(minimum(E1_values), maximum(E1_values)),
-    #     colorbar_title="",
-    #     # titlefontsize=10,   # Title font size
-    #     xguidefontsize=12,   # X-axis label font size
-    #     yguidefontsize=12,   # Y-axis label font size
-    #     margin=5mm,          # Margin around the plot
-    #     xticks=(0.4:0.1:0.8, -1.0 .+ 0.4:0.1:0.8),
-    #     yticks=(0.4:0.1:0.8, -1.0 .+ 0.4:0.1:0.8),
-    #     # background_color=:white,
-    #     # grid=false
-    # )
-    # annotate!(1.115 * maximum(E0_values), 0.5 * (minimum(E1_values) + maximum(E1_values)), text("Sampled Frequency", 10, :center, :center, rotation=90))
-
-    # annotation = L"\epsilon^{(1)} = \epsilon^{(0)}"
-    # annotate!(graph, [(xlims(graph)[1]+0.1, ylims(graph)[1]+0.03, Plots.text(annotation, 12, :black))])
-
-    # plot!(graph, [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], [min_value/-solved_configuration_energy(cube), max_value/-solved_configuration_energy(cube)], line=:dash, color=:orange, lw=2, label="")
-
-    # # Add E_star vertical lines to graphs if we are slice rotation cube
-    # if connectivity == "Slice-Rotation"
-    #     E_star_plot = 1+E_star
-    #     vline!(graph, [E_star_plot], line=:dash, color=:green, lw=2, label="")
-    #     annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.05, Plots.text(L"\epsilon^*", 12, :black))])
-    # end
-
-    # # Add title as annotated text in top right corner
-    # if connectivity=="Slice-Rotation"
-    #     annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
-    # else
-    #     annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
-    # end
-
-    # ### -- Save and display the graphs --
-    # println("Saving diagonal graph...")
-    # savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_boltzmann_shifted.svg")
-    # savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_boltzmann_shifted.png")
-    # display(graph)
-
 
 end
 

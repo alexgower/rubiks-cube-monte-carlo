@@ -76,7 +76,7 @@ include("../tools/relaxed_anneal_graphs_plotter.jl")
         # Save Results ----------
         try
 
-            touch(joinpath("results//relaxed_anneal_results",simulation_name_to_use))
+            touch(joinpath("results/relaxed_anneal_results",simulation_name_to_use))
 
             open(joinpath("results/relaxed_anneal_results",simulation_name_to_use), "w") do simulation_file
                 write(simulation_file, "Simulation:L=$L, P_s=$swap_move_probability, T_swap=$T_swap, T_1=$T_1, T_0=$T_0, N_T=$N_T \n")

@@ -16,7 +16,8 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
     L = parse(Int, match_obj.captures[1])
     cube = RubiksCube(L)
 
-    E_star = -0.39015151515151514
+    # E_star = -0.39015151515151514
+    E_star = -0.376098787878788
 
     ### --- READ IN DATA ---
     energy_saddle_index_densities_data_matrix_slice = readdlm(joinpath("results/final_paper_results",simulation_name*"_energy_saddle_index_densities_slice"), ',', Float64, '\n', skipstart=3)    

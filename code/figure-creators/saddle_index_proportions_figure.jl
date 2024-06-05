@@ -15,7 +15,8 @@ include("../core/rubiks_cube.jl")
 
 function saddle_index_proportions_figure(simulation_name::String; neighbour_order_to_measure_to::Int64=1)
 
-    E_star = -0.39015151515151514 
+    # E_star = -0.39015151515151514 
+    E_star = -0.376098787878788
 
 
     ### -- SET UP DEFAULT PARAMETERS --

@@ -18,12 +18,17 @@ function relaxed_anneal_figure(output_name::String)
     # trials = 50
     # N_T = 100
 
-    ## --- L=11 Figure ---
+    # --- L=11 Figure ---
     models = ["clean", "inherent_disorder"]
     Ls = [11]
     swap_move_probabilities = [0.0, 1.0]
     trials = 50
-    N_T = 100
+
+    ## --- Custom FIgure ---
+    # models = ["custom"]
+    # Ls = [11]
+    # swap_move_probabilities = [0.0, 1.0]
+    # trials = 50
 
 
     ### --- COLOURS ---
@@ -41,11 +46,15 @@ function relaxed_anneal_figure(output_name::String)
 
     ### --- READ IN DATA ---
     filenames_that_do_not_exist=[]
+    custom_epsilon_star = []
+    custom_epsilon_0 = []
 
     results_dictionary = Dict()
     for model in models
         for L in Ls
             for swap_move_probability in swap_move_probabilities
+                N_T = model == "clean" ? 200 : 100
+
                 temperatures = zeros(N_T)
                 running_total_average_energy_densities_by_temperature = zeros(N_T)
 
@@ -57,6 +66,16 @@ function relaxed_anneal_figure(output_name::String)
                         
                         temperatures .= data_matrix[:,1]
                         running_total_average_energy_densities_by_temperature .+= data_matrix[:,3]
+
+                        if model=="custom"
+                            println("$(model) $(L) $(swap_move_probability) $(minimum(data_matrix[:,3]))")
+                            if swap_move_probability == 0.0
+                                push!(custom_epsilon_star, minimum(data_matrix[:,3]))
+                            elseif swap_move_probability == 1.0
+                                push!(custom_epsilon_0, minimum(data_matrix[:,3]))
+                            end
+
+                        end
                         
                         actual_number_of_trials += 1
                     catch e
@@ -71,7 +90,6 @@ function relaxed_anneal_figure(output_name::String)
         end
     end
 
-
     ### --- PLOT DATA ---
     graph = plot(title="", xlabel="Temperature, "*L"T", legend=:bottomright, yaxis="Average Energy Density, "*L"\langle\! \epsilon \rangle = \langle\! E/|\!\!E_s|\!\rangle", ylims=(-1.0,-0.1))
 
@@ -80,8 +98,10 @@ function relaxed_anneal_figure(output_name::String)
     for model in models
         if model=="clean"
             colors =  [alex_alt_blue, alex_green, alex_blue, alex_grey]
-        elseif model=="inherent_disorder"
+        elseif model=="inherent_disorder" 
             colors = [alex_pink, alex_red, alex_orange]
+        elseif model=="custom"
+            colors = [alex_blue]
         end
 
         for L in Ls
@@ -97,6 +117,9 @@ function relaxed_anneal_figure(output_name::String)
                     if model == "inherent_disorder" && swap_move_probability == 1.0
                         label *= ", Randomised"
                     end
+                    if model == "custom" && swap_move_probability == 1.0
+                        label *= ", Randomisation Instance"
+                    end
                 end
 
                 plot!(graph,temperatures, average_energy_densities, label=label, color=colors[mod1(color_index,length(colors))], linestyle=linestyle)
@@ -107,16 +130,48 @@ function relaxed_anneal_figure(output_name::String)
     end
 
     ### --- ADD ANNOTATIONS TO GRAPH ---
-    annotate!(graph, [(0.35, ylims(graph)[2]-0.24, Plots.text(L"\bar{\epsilon}^*", 12, alex_red, ))])
+    if "inherent_disorder" in models
+        annotate!(graph, [(0.35, ylims(graph)[2]-0.24, Plots.text(L"\bar{\epsilon}^*", 12, alex_red, ))])
+    elseif "custom" in models
+        annotate!(graph, [(0.35, ylims(graph)[2]-0.24, Plots.text(L"{\epsilon}^*", 12, alex_blue, ))])
+        # Add dot at (lowest T value with average_energy_densities values, custom average_energy_densities at T nearest to 0)
+        custom_average_energy_densities = results_dictionary[("custom", 11, 0.0, "average_energy_densities")]
+        scatter!([minimum(results_dictionary[("custom", 11, 0.0, "temperatures")])], [custom_average_energy_densities[argmin(abs.(results_dictionary[("custom", 11, 0.0, "temperatures")]))]], color=alex_blue, label="", markersize=1.5)
+    end
 
-    T_star = 0.98
-    annotate!(graph, [(T_star+0.4, ylims(graph)[2]-0.15, Plots.text(L"\bar{T}^*", 12, alex_red))])
+    if "inherent_disorder" in models
+        T_star = 0.87
+        annotate!(graph, [(T_star+0.35, ylims(graph)[2]-0.28, Plots.text(L"\bar{T}^*", 12, alex_red))])
+    elseif "custom" in models
+        T_star = 0.87
+        annotate!(graph, [(T_star+0.4, ylims(graph)[2]-0.28, Plots.text(L"T^*", 12, alex_blue))])
+        # Add dot at (T_star, custom average_energy_densities at T nearest to T_star)
+        custom_average_energy_densities = results_dictionary[("custom", 11, 0.0, "average_energy_densities")]
+        scatter!([T_star], [custom_average_energy_densities[argmin(abs.(results_dictionary[("custom", 11, 0.0, "temperatures")].-T_star))]], color=alex_blue, label="", markersize=1.5)
+    end
 
-    T_c = 0.90
-    annotate!(graph, [(T_c+0.25, ylims(graph)[1]+0.05, Plots.text(L"T_c", 12, alex_alt_blue))])
+
+    if "clean" in models
+        T_c = 0.90
+        annotate!(graph, [(T_c+0.25, ylims(graph)[1]+0.05, Plots.text(L"T_c", 12, alex_alt_blue))])
+    end
 
 
+    if "custom" in models
+        # Print epsilon^* for custom data if it exists (i.e. lowest value of epsilon for p_swap=0.0)
+        custom_epsilon_star_avg = minimum(results_dictionary[("custom", 11, 0.0, "average_energy_densities")])
+        println("Custom epsilon^* = $custom_epsilon_star_avg")
 
+        # Print epsilon_0 for custom data if it exists (i.e. lowest value of epsilon for p_swap=1.0)
+        custom_epsilon_0_avg = minimum(results_dictionary[("custom", 11, 1.0, "average_energy_densities")])
+        println("Custom epsilon_0 = $custom_epsilon_0_avg")
+
+        println("Mean epsilon^* = $(mean(custom_epsilon_star))")
+        println("Standard Deviation epsilon^* = $(std(custom_epsilon_star))")
+
+        println("Mean epsilon_0 = $(mean(custom_epsilon_0))")
+        println("Standard Deviation epsilon_0 = $(std(custom_epsilon_0))")
+    end
 
  
 
