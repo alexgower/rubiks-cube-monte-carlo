@@ -9,7 +9,7 @@ using LsqFit
 include("../core/rubiks_cube.jl")
 
 
-function quick_test()
+function noise_test()
     # Make some large tau stretched exponential curves with varying levels of noise and plot
     # taus = [1e7,3e7,1e8,3e8,1e9,3e9,1e10,3e10]
     taus = [1e7,1e8,1e9,1e10, 1e11]
@@ -141,14 +141,15 @@ end
 
 function autocorrelation_function_figures()
 
-    # TODO check if other autocorrelation stuff starts on time step 0
-    
     simulation_name = "combined"
 
     ### --- READ IN DATA ---
+
+    ## -- Define the Data --
+
     # Read this in for all the following filenames for different temperatures
     filenames = [
-    # "L_11_T_0.6_t_130000_1.0_configuration_autocorrelation_averages_by_time.csv", #
+    "L_11_T_0.6_t_130000_1.0_configuration_autocorrelation_averages_by_time.csv",
     # "L_11_T_0.8_t_140000_1.0_configuration_autocorrelation_averages_by_time.csv", #
     "L_11_T_0.9_t_250000_1.0_configuration_autocorrelation_averages_by_time.csv",
     # "L_11_T_0.91_t_140000_1.0_configuration_autocorrelation_averages_by_time.csv",
@@ -166,51 +167,28 @@ function autocorrelation_function_figures()
     "L_11_T_2.0_t_140000_1.0_configuration_autocorrelation_averages_by_time.csv", 
     "L_11_T_3.0_t_130000_1.0_configuration_autocorrelation_averages_by_time.csv"] 
 
-    all_temperatures = [0.6, 0.8, 0.9, 0.91, 0.92, 0.93, 0.95, 0.97, 1.0, 1.02, 1.05, 1.1, 1.15, 1.2, 1.25, 1.5, 2.0, 3.0]
-    sample_temperatures_to_overlay_streched_exponential_fits_onto = all_temperatures
+    minimal_graph_main_temperatures = [0.6, 0.9, 0.92, 0.95, 1.0, 1.2]
+    minimal_graph_inset_temperatures = [0.9,0.92,0.95]
 
 
+    ## -- Read in the data --
 
-    minimal_filenames = [
-        "L_11_T_0.6_t_130000_1.0_configuration_autocorrelation_averages_by_time.csv", #
-        "L_11_T_0.9_t_250000_1.0_configuration_autocorrelation_averages_by_time.csv",
-        "L_11_T_0.92_t_250000_1.0_configuration_autocorrelation_averages_by_time.csv",
-        "L_11_T_0.95_t_250000_1.0_configuration_autocorrelation_averages_by_time.csv",
-        "L_11_T_1.0_t_130000_1.0_configuration_autocorrelation_averages_by_time.csv",
-        "L_11_T_1.2_t_140000_1.0_configuration_autocorrelation_averages_by_time.csv"] 
-
-    minimal_graph_main_temperatures = [0.6, 0.9, 0.92, 1.0, 1.2]
-    inset_temperatures = [0.9,0.92,0.95]
-
-
-
-
-
-    sample_temperatures = []
-    samples_in_average = []
-    autocorrelation_functions_by_temperature = []
+    autocorrelation_functions_by_temperature = Dict()
 
     # For each file in filenames, read in the data as a matrix
     for (i, filename) in pairs(filenames)
         data = readdlm(joinpath("results/autocorrelation_anneal_results", filename), ',', skipstart=3)
 
-        sample_temperatures = append!(sample_temperatures, data[1])
-        samples_in_average = append!(samples_in_average, data[2])
-        autocorrelation_functions_by_temperature = append!(autocorrelation_functions_by_temperature, [data[3:end]])
+        temperature = data[1]
+        samples_in_average = data[2]
+        autocorrelation_function = data[3:end]
+        
+        # Store the data in the dictionary
+        autocorrelation_functions_by_temperature[temperature] = autocorrelation_function
     end
 
-    minimal_sample_temperatures = []
-    minimal_samples_in_average = []
-    minimal_autocorrelation_functions_by_temperature = []
+    all_temperatures = sort(collect(keys(autocorrelation_functions_by_temperature)))
 
-    # For each file in filenames, read in the data as a matrix
-    for (i, filename) in pairs(minimal_filenames)
-        data = readdlm(joinpath("results/autocorrelation_anneal_results", filename), ',', skipstart=3)
-
-        minimal_sample_temperatures = append!(minimal_sample_temperatures, data[1])
-        minimal_samples_in_average = append!(minimal_samples_in_average, data[2])
-        minimal_autocorrelation_functions_by_temperature = append!(minimal_autocorrelation_functions_by_temperature, [data[3:end]])
-    end
 
     ### --- COLOURS ---
     Plots.default(dpi = 300)
@@ -220,6 +198,7 @@ function autocorrelation_function_figures()
     alex_pink = RGB(255/255, 105/255, 180/255)
     alex_green = RGB(23/255,177/255,105/255) # RGB(159/255, 226/255, 191/255)
     alex_blue = RGB(100/255, 149/255, 237/255)
+    alex_alt_blue = RGB(4/255, 57/255, 94/255)
 
     # Define a fixed table of temperatures and their corresponding colors
     temp_to_color = Dict()
@@ -230,56 +209,93 @@ function autocorrelation_function_figures()
     end
     temp_to_color[0.6] = alex_red
     temp_to_color[0.9] = alex_pink
+    temp_to_color[0.92] = alex_blue
+    temp_to_color[0.95] = alex_alt_blue
     temp_to_color[1.0] = alex_orange
     temp_to_color[1.2] = alex_green
 
 
+
+
+
+
+
+
+
+
+
     ### --- PLOTTING ---
+    
     ## -- COMBINED GRAPHS ---
-    graph = plot(title="", xlabel="Time, $(L"t") [MC Steps]", ylabel="Autocorrelation Function, "*L"\mathcal{C}(t)", legend=(0.9,0.7), ylims = (0.0,1.05), yticks=[0.0,0.2,0.4,0.6,0.8,1.0])
-    alternative_graph = plot(title="", xlabel="Time, $(L"t") [MC Steps]", ylabel="Autocorrelation Function, "*L"\mathcal{C}(t)", legend=(0.9,0.7), ylims = (0.0,1.05), yticks=[0.0,0.2,0.4,0.6,0.8,1.0])
-    minimal_graph = plot(title="", xlabel="Time, $(L"t") [MC Steps]", ylabel="Autocorrelation Function, "*L"\mathcal{C}(t)", legend=(0.9,0.7), ylims = (0.0,1.05), yticks=[0.0,0.2,0.4,0.6,0.8,1.0])
+    long_fit_example_graph = plot(title="", xlabel="Time, $(L"t") [MC Steps]", ylabel="Autocorrelation Function, "*L"\mathcal{C}(t)", legend=(0.9,0.7), ylims = (0.0,1.05), yticks=[0.0,0.2,0.4,0.6,0.8,1.0])
+    short_fit_example_graph = plot(title="", xlabel="Time, $(L"t") [MC Steps]", ylabel="Autocorrelation Function, "*L"\mathcal{C}(t)", legend=(0.9,0.7), ylims = (0.0,1.05), yticks=[0.0,0.2,0.4,0.6,0.8,1.0])
+    minimal_graph = plot(title="", xlabel="Time, $(L"t") [MC Steps]", ylabel="Autocorrelation Function, "*L"\mathcal{C}(t)", legend=(0.9,0.35), ylims = (0.0,1.05), yticks=[0.0,0.2,0.4,0.6,0.8,1.0], xticks=[0,2.5e4,5.0e4,7.5e4,1.0e5,1.2e5])
 
     c = 0.201388888888888
-    lag_limit_relative_subtracted_cutoff = 1e4
-    altenative_lag_limit_cutoff = 5e4
+    long_window_length = 99900 # Int(1.2e5)
+    short_window_length = Int(5e4)
 
-    for (i, temperature) in pairs(sample_temperatures)     
-        plot!(graph, 0:length(autocorrelation_functions_by_temperature[i][1:end-Int(lag_limit_relative_subtracted_cutoff)])-1, (1+c)*autocorrelation_functions_by_temperature[i][1:end-Int(lag_limit_relative_subtracted_cutoff)] .- c, label="T = $(temperature)", color=temp_to_color[temperature], linewidth=2)
-        plot!(alternative_graph, 0:length(autocorrelation_functions_by_temperature[i][1:Int(altenative_lag_limit_cutoff)])-1, (1+c)*autocorrelation_functions_by_temperature[i][1:Int(altenative_lag_limit_cutoff)] .- c, label="T = $(temperature)", color=temp_to_color[temperature], linewidth=2)
+    # -- FIT EXAMPLE GRAPHS --
+    for temperature in all_temperatures     
+        plot!(long_fit_example_graph, 0:long_window_length-1, (1+c)*autocorrelation_functions_by_temperature[temperature][1:long_window_length] .- c, label="T = $(temperature)", color=temp_to_color[temperature], linewidth=2)
+        plot!(short_fit_example_graph, 0:short_window_length-1, (1+c)*autocorrelation_functions_by_temperature[temperature][1:short_window_length] .- c, label="T = $(temperature)", color=temp_to_color[temperature], linewidth=2)
     end
 
     ## -- MINIMAL GRAPH ---
-    main_minimal_graph_window = Int(1.2e5)
-    for (i, temperature) in pairs(minimal_graph_main_temperatures)     
-        plot!(minimal_graph, 0:Int(main_minimal_graph_window-1), (1+c)*minimal_autocorrelation_functions_by_temperature[i][1:minimal_autocorrelation_functions_by_temperature] .- c, label="T = "*string(temperature), color=temp_to_color[temperature], linewidth=2)
+    main_minimal_graph_window_length = Int(1.2e5)
+    inset_minimal_graph_window_length = Int(2.2e5)
+
+    for temperature in minimal_graph_main_temperatures     
+        plot!(minimal_graph, 0:main_minimal_graph_window_length-1, (1+c)*autocorrelation_functions_by_temperature[temperature][1:main_minimal_graph_window_length] .- c, label="T = "*string(temperature), color=temp_to_color[temperature], linewidth=2)
     end
 
     ### --- INSET TEMPERATURE GRAPH ON MINIMAL ---
-    for inset_temperature in inset_temperatures
-        temperature_index = findall(x -> x == inset_temperature, sample_temperatures)[1]
+    # Make matrix of the autocorrelation functions for the inset temperatures
+    matrix_of_autocorrelation_functions = hcat([autocorrelation_functions_by_temperature[temperature][1:inset_minimal_graph_window_length] for temperature in minimal_graph_inset_temperatures]...)
+    
+    # plot!(minimal_graph, 0:inset_minimal_graph_window_length-1, (1+c)*(matrix_of_autocorrelation_functions .- c),
+    # color=[temp_to_color[inset_temperature] for inset_temperature in minimal_graph_inset_temperatures], 
+    # label=["T=$(inset_temperature)" for inset_temperature in minimal_graph_inset_temperatures], inset=bbox(0.25,0.44,0.28,0.28), subplot=2,
+    # xlabel=L"t", ylabel=L"\mathcal{C}(t)", yguidefontsize=10,xguidefontsize=10, linewidth=2)
+    
+    inset_temperature = 0.9
+    plot!(minimal_graph, 0:inset_minimal_graph_window_length-1, (1+c)*(autocorrelation_functions_by_temperature[inset_temperature][1:inset_minimal_graph_window_length] .- c),
+    color=temp_to_color[inset_temperature], label="T=$(inset_temperature)", inset=bbox(0.25,0.44,0.28,0.28), subplot=2,
+    xlabel=L"t", ylabel=L"\mathcal{C}(t)", yguidefontsize=10,xguidefontsize=10, linewidth=2, xticks=[])
+    inset_temperature = 0.92
+    plot!(minimal_graph, 0:inset_minimal_graph_window_length-1, (1+c)*(autocorrelation_functions_by_temperature[inset_temperature][1:inset_minimal_graph_window_length] .- c),
+    color=temp_to_color[inset_temperature], label="T=$(inset_temperature)", subplot=2,
+    xlabel=L"t", ylabel=L"\mathcal{C}(t)", yguidefontsize=10,xguidefontsize=10, linewidth=2, xticks=[])
+    inset_temperature = 0.95
+    plot!(minimal_graph, 0:inset_minimal_graph_window_length-1, (1+c)*(autocorrelation_functions_by_temperature[inset_temperature][1:inset_minimal_graph_window_length] .- c),
+    color=temp_to_color[inset_temperature], label="T=$(inset_temperature)", subplot=2,
+    xlabel=L"t", ylabel=L"\mathcal{C}(t)", yguidefontsize=10,xguidefontsize=10, linewidth=2, xticks=[0,1e5, 2.2e5], legendfontsize=6)
 
-        # Plot same data on an inset graph within the minimal graph
-        inset_graph_window_size = Int(2.2e5)
-        # inset_graph = plot(title="", xlabel="Time, $(L"t") [MC Steps]", ylabel="Autocorrelation Function, "*L"\mathcal{C}(t)", legend=:topright, ylims = (0.0,1.05), yticks=[0.0,0.2,0.4,0.6,0.8,1.0])
-        # plot!(inset_graph, 0:inset_graph_window_size-1, (1+c)*autocorrelation_functions_by_temperature[temperature_index][1:inset_graph_window_size] .- c, color=temp_to_color[inset_temperature], label="T=$(inset_temperature)", linewidth=2)
-        plot!(minimal_graph, 0:main_minimal_graph_window-1, (1+c)*minimal_autocorrelation_functions_by_temperature[temperature_index][1:main_minimal_graph_window] .- c, color=temp_to_color[inset_temperature], label="T=$(inset_temperature)", inset=bbox(0.25,0.44,0.28,0.28), subplot=2,
-        xlabel=L"t", ylabel=L"\mathcal{C}(t)", yguidefontsize=10,xguidefontsize=10,  xticks=[0,6e4,1.2e5], linewidth=2)        
-        
-        # plot!(minimal_graph, (1+c)*(minimal_autocorrelation_functions_by_temperature[temperature_index][1:end-Int(lag_limit_relative_subtracted_cutoff)] .- c),
+    # for inset_temperature in minimal_graph_inset_temperatures
+        # plot!(minimal_graph, 0:inset_minimal_graph_window_length-1, (1+c)*(autocorrelation_functions_by_temperature[inset_temperature][1:inset_minimal_graph_window_length] .- c),
         # color=temp_to_color[inset_temperature], label="T=$(inset_temperature)", inset=bbox(0.25,0.44,0.28,0.28), subplot=2,
-        # xlabel=L"t", ylabel=L"\mathcal{C}(t)", yguidefontsize=10,xguidefontsize=10,  xticks=[0,6e4,1.2e5], linewidth=2)
-    end
+        # xlabel=L"t", ylabel=L"\mathcal{C}(t)", yguidefontsize=10,xguidefontsize=10, linewidth=2)
+    # end
+
+
+
+    
 
 
     ### --- FITTING PARAMETER EXTRACTION ---
+    excluded_temperatures_from_fitting = [0.6,0.8]
+    fitted_temperatures = [T for T in all_temperatures if T ∉ excluded_temperatures_from_fitting]
+
     tau_beta_by_temperature = []
     beta_by_temperature = []
 
     longer_tau_beta_by_temperature = []
     longer_beta_by_temperature = []
 
-    for (i, temperature) in pairs(sample_temperatures) 
+    for temperature in fitted_temperatures
+        if temperature in excluded_temperatures_from_fitting
+            continue
+        end
         println("Temperature: ", temperature)
 
 
@@ -290,6 +306,7 @@ function autocorrelation_function_figures()
 
         beta_relaxation_end = 1e4
         longer_beta_relaxation_end = 99900
+
         t_values = 1:beta_relaxation_end
         longer_t_values = 1:longer_beta_relaxation_end
 
@@ -300,7 +317,7 @@ function autocorrelation_function_figures()
         if temperature >= 1.2
 
             # Fit the model to the data
-            autocorrelation_fit = curve_fit(autocorrelation_model, t_values, autocorrelation_functions_by_temperature[i][1:Int(beta_relaxation_end)], p0, lower=lb, upper=ub)
+            autocorrelation_fit = curve_fit(autocorrelation_model, t_values, autocorrelation_functions_by_temperature[temperature][1:Int(beta_relaxation_end)], p0, lower=lb, upper=ub)
 
             # Extract the parameters
             tau = autocorrelation_fit.param[1]
@@ -311,8 +328,7 @@ function autocorrelation_function_figures()
             tau_beta_by_temperature = append!(tau_beta_by_temperature, tau)
             beta_by_temperature = append!(beta_by_temperature, beta)
 
-
-            longer_autocorrelation_fit = curve_fit(autocorrelation_model, longer_t_values, autocorrelation_functions_by_temperature[i][1:Int(longer_beta_relaxation_end)], p0, lower=lb, upper=ub)
+            longer_autocorrelation_fit = curve_fit(autocorrelation_model, longer_t_values, autocorrelation_functions_by_temperature[temperature][1:Int(longer_beta_relaxation_end)], p0, lower=lb, upper=ub)
             longer_tau = longer_autocorrelation_fit.param[1]
             longer_beta = longer_autocorrelation_fit.param[2]
             longer_tau_beta_by_temperature = append!(longer_tau_beta_by_temperature, longer_tau)
@@ -321,7 +337,7 @@ function autocorrelation_function_figures()
 
         else
             # Now try fitting on log of data with offset already removed
-            reduced_data = log.((1-c)^(-1) * (autocorrelation_functions_by_temperature[i][1:Int(beta_relaxation_end)] .- c))
+            reduced_data = log.((1-c)^(-1) * (autocorrelation_functions_by_temperature[temperature][1:Int(beta_relaxation_end)] .- c))
 
             reduced_model(t,p) = -(t./p[1]).^p[2]
 
@@ -336,7 +352,7 @@ function autocorrelation_function_figures()
             beta_by_temperature = append!(beta_by_temperature, reduced_beta)
 
 
-            longer_reduced_data = log.((1-c)^(-1) * (autocorrelation_functions_by_temperature[i][1:Int(longer_beta_relaxation_end)] .- c))
+            longer_reduced_data = log.((1-c)^(-1) * (autocorrelation_functions_by_temperature[temperature][1:Int(longer_beta_relaxation_end)] .- c))
 
             longer_autocorrelation_fit = curve_fit(reduced_model, longer_t_values, longer_reduced_data, p0, lower=lb, upper=ub)
             longer_reduced_tau = longer_autocorrelation_fit.param[1]
@@ -347,27 +363,28 @@ function autocorrelation_function_figures()
 
         end
 
+
         # Plot the fit
         dashed_cutoff = beta_relaxation_end
-        alternative_dashed_cutoff = 5e4
+        extrapolated_dashed_cutoff = 5e4
 
-        if temperature in sample_temperatures_to_overlay_streched_exponential_fits_onto
+        if temperature in fitted_temperatures
             # label="T = "*string(temperature)*", τ = "*string(tau_beta)*", β = "*string(beta)
-            plot!(graph, (1+c)*autocorrelation_model(1:Int(dashed_cutoff), autocorrelation_fit.param) .- c, color=:black, linestyle=:dash, label="")
-            plot!(alternative_graph, (1+c)*autocorrelation_model(1:Int(alternative_dashed_cutoff), autocorrelation_fit.param) .- c, color=:black, linestyle=:dash, label="")
+            plot!(long_fit_example_graph, (1+c)*autocorrelation_model(1:Int(dashed_cutoff), autocorrelation_fit.param) .- c, color=:black, linestyle=:dash, label="")
+            plot!(short_fit_example_graph, (1+c)*autocorrelation_model(1:Int(extrapolated_dashed_cutoff), autocorrelation_fit.param) .- c, color=:black, linestyle=:dash, label="")
 
-            if temperature in minimal_sample_temperatures
+            if temperature in minimal_graph_main_temperatures
                 plot!(minimal_graph, (1+c)*autocorrelation_model(1:Int(dashed_cutoff), autocorrelation_fit.param) .- c, color=:black, linestyle=:dash, label="")
             end
         end
 
         # Plot the longer fit
         longer_dashed_cutoff = longer_beta_relaxation_end
-        if temperature in sample_temperatures_to_overlay_streched_exponential_fits_onto
-            plot!(graph, (1+c)*autocorrelation_model(1:Int(longer_dashed_cutoff), longer_autocorrelation_fit.param) .- c, color=:green, linestyle=:dash, label="")
-            plot!(alternative_graph, (1+c)*autocorrelation_model(1:Int(longer_dashed_cutoff), longer_autocorrelation_fit.param) .- c, color=:green, linestyle=:dash, label="")
+        if temperature in fitted_temperatures
+            plot!(long_fit_example_graph, (1+c)*autocorrelation_model(1:Int(longer_dashed_cutoff), longer_autocorrelation_fit.param) .- c, color=:green, linestyle=:dash, label="")
+            plot!(short_fit_example_graph, (1+c)*autocorrelation_model(1:Int(extrapolated_dashed_cutoff), longer_autocorrelation_fit.param) .- c, color=:green, linestyle=:dash, label="")
         
-            if temperature in minimal_sample_temperatures
+            if temperature in minimal_graph_main_temperatures
                 plot!(minimal_graph, (1+c)*autocorrelation_model(1:Int(longer_dashed_cutoff), longer_autocorrelation_fit.param) .- c, color=:green, linestyle=:dash, label="")
             end
         end
@@ -375,13 +392,13 @@ function autocorrelation_function_figures()
     end
 
     # --- SAVE GRAPHS ---
-    savefig(graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_autocorrelation_averages_by_time.png"))
-    savefig(graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_autocorrelation_averages_by_time.svg"))
-    display(graph)
+    savefig(long_fit_example_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_autocorrelation_averages_by_time.png"))
+    savefig(long_fit_example_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_autocorrelation_averages_by_time.svg"))
+    display(long_fit_example_graph)
 
-    savefig(alternative_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_autocorrelation_averages_by_time_alternative.png"))
-    savefig(alternative_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_autocorrelation_averages_by_time_alternative.svg"))
-    display(alternative_graph)
+    savefig(short_fit_example_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_autocorrelation_averages_by_time_alternative.png"))
+    savefig(short_fit_example_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_autocorrelation_averages_by_time_alternative.svg"))
+    display(short_fit_example_graph)
 
     savefig(minimal_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_autocorrelation_averages_by_time_minimal.png"))
     savefig(minimal_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_autocorrelation_averages_by_time_minimal.svg"))
@@ -399,18 +416,27 @@ function autocorrelation_function_figures()
         # Do fits on log of data to avoid numerical errors
         log_tau_beta_by_temperature = log10.(tau_beta_by_temperature) # Note using log10 here
         longer_log_tau_beta_by_temperature = log10.(longer_tau_beta_by_temperature)
+        
+        combined_fitted_temperatures = vcat(fitted_temperatures, fitted_temperatures+1e-15*randn(length(fitted_temperatures)))
+        combined_log_tau_beta_by_temperature = vcat(log_tau_beta_by_temperature, longer_log_tau_beta_by_temperature)
+        # Sort combined_fitted_temperatures but sort combined_log_tau_beta_by_temperature in the same way
+        combined_fitted_temperatures, combined_log_tau_beta_by_temperature = combined_fitted_temperatures[sortperm(combined_fitted_temperatures)], combined_log_tau_beta_by_temperature[sortperm(combined_fitted_temperatures)]
 
-        fit_temperatures = collect(LinRange(minimum(sample_temperatures)-0.03, maximum(sample_temperatures), 100))
+        fit_temperatures = collect(LinRange(minimum(fitted_temperatures)-0.03, maximum(fitted_temperatures), 100))
 
         tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3))
-        scatter!(tau_fits_graph, sample_temperatures, log_tau_beta_by_temperature, color=alex_red, label="", markersize=5, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], alpha=0.8)
-        scatter!(tau_fits_graph, sample_temperatures, longer_log_tau_beta_by_temperature, color=alex_red, label="", markersize=4, marker=:square, alpha=0.8)
+        squares_only_tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3))
+        circles_only_tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3))
 
-        conf_int = 0.05
+        scatter!(tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, color=alex_red, label="", markersize=5, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], alpha=0.8)
+        scatter!(circles_only_tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, color=alex_red, label="", markersize=5, marker=:circle, alpha=0.8, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5])
+
+        scatter!(tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, color=alex_red, label="", markersize=4, marker=:square, alpha=0.8)
+        scatter!(squares_only_tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, color=alex_red, label="", markersize=4, marker=:square, alpha=0.8, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5])
 
 
         # # Arrhenius fit
-        # arrhenius_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T), sample_temperatures, log_tau_beta_by_temperature, [0.1, 0.1], lower=[-Inf,-Inf], upper=[Inf, Inf])
+        # arrhenius_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T), all_temperatures, log_tau_beta_by_temperature, [0.1, 0.1], lower=[-Inf,-Inf], upper=[Inf, Inf])
         # arrhenius_fit_parameters = arrhenius_fit.param
         # arrhenius_fit_curve = arrhenius_fit_parameters[1] .+ (arrhenius_fit_parameters[2] ./ fit_temperatures)
         # lowest_confidence_interval_arrhenius_curve = confint(arrhenius_fit, level=conf_int)[1][1] .+ (confint(arrhenius_fit, level=conf_int)[2][1] ./ fit_temperatures)
@@ -429,109 +455,187 @@ function autocorrelation_function_figures()
 
 
         # Parabolic fit over all data
-        parabolic_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T) .+ (p[3] ./ T.^2), sample_temperatures, log_tau_beta_by_temperature, [0.1, 0.1, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf])
+        parabolic_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T) .+ (p[3] ./ T.^2), fitted_temperatures, log_tau_beta_by_temperature, [0.1, 0.1, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf])
         parabolic_fit_parameters = parabolic_fit.param
         parabolic_fit_curve = parabolic_fit_parameters[1] .+ (parabolic_fit_parameters[2] ./ fit_temperatures) .+ (parabolic_fit_parameters[3] ./ fit_temperatures.^2)
-        lowest_confidence_interval_parabolic_curve = confint(parabolic_fit, level=conf_int)[1][1] .+ (confint(parabolic_fit, level=conf_int)[2][1] ./ fit_temperatures) .+ (confint(parabolic_fit, level=conf_int)[3][1] ./ fit_temperatures.^2)
-        highest_confidence_interval_parabolic_curve = confint(parabolic_fit, level=conf_int)[1][2] .+ (confint(parabolic_fit, level=conf_int)[2][2] ./ fit_temperatures) .+ (confint(parabolic_fit, level=conf_int)[3][2] ./ fit_temperatures.^2)
-        # plot!(tau_fits_graph, fit_temperatures, parabolic_fit_curve, label="Parabolic Fit", color=alex_blue, ribbon=(parabolic_fit_curve .- lowest_confidence_interval_parabolic_curve, highest_confidence_interval_parabolic_curve .- parabolic_fit_curve), fc=:green, fa=0.05) # with confidence interval
-        plot!(tau_fits_graph, fit_temperatures, parabolic_fit_curve, label="Parabolic Fit", linestyle=:dash, color=alex_blue, linewidth=3)
+        plot!(circles_only_tau_fits_graph, fit_temperatures, parabolic_fit_curve, label="Parabolic Fit", linestyle=:dash, color=alex_blue, linewidth=3)
 
         println("")
         println("")
-        println("Parabolic Parameters: ", parabolic_fit_parameters)
-        println("Parabolic Residuals", parabolic_fit.resid)
-        println("Parabolic Covariance Matrix", vcov(parabolic_fit))
-        println("Parabolic Standard Errors", stderror(parabolic_fit))
-        println("Parabolic Margin Error: ", margin_error(parabolic_fit))
-        println("Confdience Intervals", confint(parabolic_fit))
+        println("Shorter Parabolic Parameters: ", parabolic_fit_parameters)
+        # println("Shorter Parabolic Residuals", parabolic_fit.resid)
+        # println("Shorter Parabolic Covariance Matrix", vcov(parabolic_fit))
+        # println("Shorter Parabolic Standard Errors", stderror(parabolic_fit))
+        # println("Shorter Parabolic Margin Error: ", margin_error(parabolic_fit))
+        # println("Shorter Confdience Intervals", confint(parabolic_fit))
 
-        longer_parabolic_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T) .+ (p[3] ./ T.^2), sample_temperatures, longer_log_tau_beta_by_temperature, [0.1, 0.1, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf])
+        longer_parabolic_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T) .+ (p[3] ./ T.^2), fitted_temperatures, longer_log_tau_beta_by_temperature, [0.1, 0.1, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf])
         longer_parabolic_fit_parameters = longer_parabolic_fit.param
         longer_parabolic_fit_curve = longer_parabolic_fit_parameters[1] .+ (longer_parabolic_fit_parameters[2] ./ fit_temperatures) .+ (longer_parabolic_fit_parameters[3] ./ fit_temperatures.^2)
-        # plot!(tau_fits_graph, fit_temperatures, longer_parabolic_fit_curve, label="Parabolic Fit", linestyle=:dash, color=alex_blue, linewidth=3)
+        plot!(squares_only_tau_fits_graph, fit_temperatures, longer_parabolic_fit_curve, label="Parabolic Fit", linestyle=:dash, color=alex_blue, linewidth=3)
 
-        print("Longer Parabolic Parameters: ", longer_parabolic_fit_parameters)
+        println("Longer Parabolic Parameters: ", longer_parabolic_fit_parameters)
+        # println("Longer Parabolic Residuals", longer_parabolic_fit.resid)
+        # println("Longer Parabolic Covariance Matrix", vcov(longer_parabolic_fit))
+        # println("Longer Parabolic Standard Errors", stderror(longer_parabolic_fit))
+        # println("Longer Parabolic Margin Error: ", margin_error(longer_parabolic_fit))
+        # println("Longer Confdience Intervals", confint(longer_parabolic_fit))
+
+        combined_parabolic_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T) .+ (p[3] ./ T.^2), combined_fitted_temperatures, combined_log_tau_beta_by_temperature, [0.1, 0.1, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf])
+        combined_parabolic_fit_parameters = combined_parabolic_fit.param
+        combined_parabolic_fit_curve = combined_parabolic_fit_parameters[1] .+ (combined_parabolic_fit_parameters[2] ./ fit_temperatures) .+ (combined_parabolic_fit_parameters[3] ./ fit_temperatures.^2)
+        plot!(tau_fits_graph, fit_temperatures, combined_parabolic_fit_curve, label="Parabolic Fit", linestyle=:dash, color=alex_blue, linewidth=3)
+
+        println("Combined Parabolic Parameters: ", combined_parabolic_fit_parameters)
+        # println("Combined Parabolic Residuals", combined_parabolic_fit.resid)
+        # println("Combined Parabolic Covariance Matrix", vcov(combined_parabolic_fit))
+        # println("Combined Parabolic Standard Errors", stderror(combined_parabolic_fit))
+        # println("Combined Parabolic Margin Error: ", margin_error(combined_parabolic_fit))
+        # println("Combined Confdience Intervals", confint(combined_parabolic_fit))
 
 
 
         # Parabolic data over temperatures < 1.4
-        alt_parabolic_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T) .+ (p[3] ./ T.^2), sample_temperatures[1:findlast(x -> x < 1.4, sample_temperatures)], log_tau_beta_by_temperature[1:findlast(x -> x < 1.4, sample_temperatures)], [0.1, 0.1, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf])
+        alt_parabolic_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T) .+ (p[3] ./ T.^2), fitted_temperatures[1:findlast(x -> x < 1.4, fitted_temperatures)], log_tau_beta_by_temperature[1:findlast(x -> x < 1.4, fitted_temperatures)], [0.1, 0.1, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf])
         alt_parabolic_fit_parameters = alt_parabolic_fit.param
         alt_parabolic_fit_curve = alt_parabolic_fit_parameters[1] .+ (alt_parabolic_fit_parameters[2] ./ fit_temperatures) .+ (alt_parabolic_fit_parameters[3] ./ fit_temperatures.^2)
-        lowest_confidence_interval_alt_parabolic_curve = confint(alt_parabolic_fit, level=conf_int)[1][1] .+ (confint(alt_parabolic_fit, level=conf_int)[2][1] ./ fit_temperatures) .+ (confint(alt_parabolic_fit, level=conf_int)[3][1] ./ fit_temperatures.^2)
-        highest_confidence_interval_alt_parabolic_curve = confint(alt_parabolic_fit, level=conf_int)[1][2] .+ (confint(alt_parabolic_fit, level=conf_int)[2][2] ./ fit_temperatures) .+ (confint(alt_parabolic_fit, level=conf_int)[3][2] ./ fit_temperatures.^2)
-        # plot!(tau_fits_graph, fit_temperatures, alt_parabolic_fit_curve, label="Parabolic Fit", color=alex_green, ribbon=(alt_parabolic_fit_curve .- lowest_confidence_interval_alt_parabolic_curve, highest_confidence_interval_alt_parabolic_curve .- alt_parabolic_fit_curve), fc=:green, fa=0.05)
-        plot!(tau_fits_graph, fit_temperatures, alt_parabolic_fit_curve, label="Parabolic Fit", linestyle=:dash, color=alex_orange, linewidth=3)
+        plot!(circles_only_tau_fits_graph, fit_temperatures, alt_parabolic_fit_curve, label="Parabolic Fit", linestyle=:dash, color=alex_orange, linewidth=3)
 
         println("")
         println("")
         println("Alternative Parabolic Parameters: ", alt_parabolic_fit_parameters)
-        println("Alternative Parabolic Residuals", alt_parabolic_fit.resid)
-        println("Alternative Parabolic Covariance Matrix", vcov(alt_parabolic_fit))
-        println("Alternative Parabolic Standard Errors", stderror(alt_parabolic_fit))
-        println("Alternative Parabolic Margin Error: ", margin_error(alt_parabolic_fit))
-        println("Alternative Parabolic Confidence Intervals", confint(alt_parabolic_fit))
+        # println("Alternative Parabolic Residuals", alt_parabolic_fit.resid)
+        # println("Alternative Parabolic Covariance Matrix", vcov(alt_parabolic_fit))
+        # println("Alternative Parabolic Standard Errors", stderror(alt_parabolic_fit))
+        # println("Alternative Parabolic Margin Error: ", margin_error(alt_parabolic_fit))
+        # println("Alternative Parabolic Confidence Intervals", confint(alt_parabolic_fit))
 
-        longer_alt_parabolic_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T) .+ (p[3] ./ T.^2), sample_temperatures[1:findlast(x -> x < 1.4, sample_temperatures)], longer_log_tau_beta_by_temperature[1:findlast(x -> x < 1.4, sample_temperatures)], [0.1, 0.1, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf])
+        longer_alt_parabolic_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T) .+ (p[3] ./ T.^2), fitted_temperatures[1:findlast(x -> x < 1.4, fitted_temperatures)], longer_log_tau_beta_by_temperature[1:findlast(x -> x < 1.4, fitted_temperatures)], [0.1, 0.1, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf])
         longer_alt_parabolic_fit_parameters = longer_alt_parabolic_fit.param
         longer_alt_parabolic_fit_curve = longer_alt_parabolic_fit_parameters[1] .+ (longer_alt_parabolic_fit_parameters[2] ./ fit_temperatures) .+ (longer_alt_parabolic_fit_parameters[3] ./ fit_temperatures.^2)
-        # plot!(tau_fits_graph, fit_temperatures, longer_alt_parabolic_fit_curve, label="Parabolic Fit", linestyle=:dash, color=alex_orange, linewidth=3)
+        plot!(squares_only_tau_fits_graph, fit_temperatures, longer_alt_parabolic_fit_curve, label="Parabolic Fit", linestyle=:dash, color=alex_orange, linewidth=3)
 
         print("Longer Alternative Parabolic Parameters: ", longer_alt_parabolic_fit_parameters)
+        # println("Longer Alternative Parabolic Residuals", longer_alt_parabolic_fit.resid)
+        # println("Longer Alternative Parabolic Covariance Matrix", vcov(longer_alt_parabolic_fit))
+        # println("Longer Alternative Parabolic Standard Errors", stderror(longer_alt_parabolic_fit))
+        # println("Longer Alternative Parabolic Margin Error: ", margin_error(longer_alt_parabolic_fit))
+        # println("Longer Alternative Parabolic Confidence Intervals", confint(longer_alt_parabolic_fit))
+
+        combined_alt_parabolic_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ T) .+ (p[3] ./ T.^2), combined_fitted_temperatures[1:findlast(x -> x < 1.4, combined_fitted_temperatures)], combined_log_tau_beta_by_temperature[1:findlast(x -> x < 1.4, combined_fitted_temperatures)], [0.1, 0.1, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf])
+        combined_alt_parabolic_fit_parameters = combined_alt_parabolic_fit.param
+        combined_alt_parabolic_fit_curve = combined_alt_parabolic_fit_parameters[1] .+ (combined_alt_parabolic_fit_parameters[2] ./ fit_temperatures) .+ (combined_alt_parabolic_fit_parameters[3] ./ fit_temperatures.^2)
+        plot!(tau_fits_graph, fit_temperatures, combined_alt_parabolic_fit_curve, label="Parabolic Fit", linestyle=:dash, color=alex_orange, linewidth=3)
+
+        print("Combined Alternative Parabolic Parameters: ", combined_alt_parabolic_fit_parameters)
+        # println("Combined Alternative Parabolic Residuals", combined_alt_parabolic_fit.resid)
+        # println("Combined Alternative Parabolic Covariance Matrix", vcov(combined_alt_parabolic_fit))
+        # println("Combined Alternative Parabolic Standard Errors", stderror(combined_alt_parabolic_fit))
+        # println("Combined Alternative Parabolic Margin Error: ", margin_error(combined_alt_parabolic_fit))
+        # println("Combined Alternative Parabolic Confidence Intervals", confint(combined_alt_parabolic_fit))
+
+
 
 
         # VFT fit
-        vft_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ (T .- p[3])), sample_temperatures, log_tau_beta_by_temperature, [1.0, 1.0, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf], show_trace=true, maxIter=100)
+        vft_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ (T .- p[3])), fitted_temperatures, log_tau_beta_by_temperature, [1.0, 1.0, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf], show_trace=true, maxIter=100)
         vft_fit_parameters = vft_fit.param
         vft_fit_curve = vft_fit_parameters[1] .+ (vft_fit_parameters[2] ./ (fit_temperatures .- vft_fit_parameters[3]))
-        lowest_confidence_interval_vft_curve = confint(vft_fit, level=conf_int)[1][1] .+ (confint(vft_fit, level=conf_int)[2][1] ./ (fit_temperatures .- confint(vft_fit, level=conf_int)[3][1]))
-        highest_confidence_interval_vft_curve = confint(vft_fit, level=conf_int)[1][2] .+ (confint(vft_fit, level=conf_int)[2][2] ./ (fit_temperatures .- confint(vft_fit, level=conf_int)[3][2]))
-        # plot!(tau_fits_graph, fit_temperatures, vft_fit_curve, label="VFT Fit", color=alex_orange, ribbon=(vft_fit_curve .- lowest_confidence_interval_vft_curve, highest_confidence_interval_vft_curve .- vft_fit_curve), fc=:blue, fa=0.05) # with confidence intervals
-        plot!(tau_fits_graph, fit_temperatures, vft_fit_curve, label="VFT Fit", color=alex_green, linewidth=3)
+        plot!(circles_only_tau_fits_graph, fit_temperatures, vft_fit_curve, label="VFT Fit", color=alex_green, linewidth=3)
 
         println("")
         println("")
         println("VFT Parameters: ", vft_fit_parameters)
-        println("VFT Residuals", vft_fit.resid)
-        println("VFT Covariance Matrix", vcov(vft_fit))
-        println("VFT Standard Errors", stderror(vft_fit))
-        println("VFT Margin Error: ", margin_error(vft_fit))
-        println("Confdience Intervals", confint(vft_fit))
+        # println("VFT Residuals", vft_fit.resid)
+        # println("VFT Covariance Matrix", vcov(vft_fit))
+        # println("VFT Standard Errors", stderror(vft_fit))
+        # println("VFT Margin Error: ", margin_error(vft_fit))
+        # println("Confdience Intervals", confint(vft_fit))
 
 
-        longer_vft_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ (T .- p[3])), sample_temperatures, longer_log_tau_beta_by_temperature, [1.0, 1.0, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf], show_trace=true, maxIter=100)
+        longer_vft_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ (T .- p[3])), fitted_temperatures, longer_log_tau_beta_by_temperature, [1.0, 1.0, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf], show_trace=true, maxIter=100)
         longer_vft_fit_parameters = longer_vft_fit.param
         longer_vft_fit_curve = longer_vft_fit_parameters[1] .+ (longer_vft_fit_parameters[2] ./ (fit_temperatures .- longer_vft_fit_parameters[3]))
-        # plot!(tau_fits_graph, fit_temperatures, longer_vft_fit_curve, label="VFT Fit", color=alex_green, linewidth=3)
+        plot!(squares_only_tau_fits_graph, fit_temperatures, longer_vft_fit_curve, label="VFT Fit", color=alex_green, linewidth=3)
 
         print("Longer VFT Parameters: ", longer_vft_fit_parameters)
+        # println("Longer VFT Residuals", longer_vft_fit.resid)
+        # println("Longer VFT Covariance Matrix", vcov(longer_vft_fit))
+        # println("Longer VFT Standard Errors", stderror(longer_vft_fit))
+        # println("Longer VFT Margin Error: ", margin_error(longer_vft_fit))
+        # println("Longer Confdience Intervals", confint(longer_vft_fit))
+
+        combined_vft_fit = curve_fit((T, p) -> p[1] .+ (p[2] ./ (T .- p[3])), combined_fitted_temperatures, combined_log_tau_beta_by_temperature, [1.0, 1.0, 0.1], lower=[-Inf, -Inf, -Inf], upper=[Inf, Inf, Inf], show_trace=true, maxIter=100)
+        combined_vft_fit_parameters = combined_vft_fit.param
+        combined_vft_fit_curve = combined_vft_fit_parameters[1] .+ (combined_vft_fit_parameters[2] ./ (fit_temperatures .- combined_vft_fit_parameters[3]))
+        plot!(tau_fits_graph, fit_temperatures, combined_vft_fit_curve, label="VFT Fit", color=alex_green, linewidth=3)
+
+        print("Combined VFT Parameters: ", combined_vft_fit_parameters)
+        # println("Combined VFT Residuals", combined_vft_fit.resid)
+        # println("Combined VFT Covariance Matrix", vcov(combined_vft_fit))
+        # println("Combined VFT Standard Errors", stderror(combined_vft_fit))
+        # println("Combined VFT Margin Error: ", margin_error(combined_vft_fit))
+        # println("Combined Confdience Intervals", confint(combined_vft_fit))
 
 
         #--- FRAGILITY INSET DATA ---
-        scatter!(tau_fits_graph, [1/T for T in sample_temperatures], log_tau_beta_by_temperature,
+        scatter!(tau_fits_graph, [1/T for T in fitted_temperatures], log_tau_beta_by_temperature,
         color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2,
-        xlabel=L"1/T", ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5])
+        xlabel=L"1/T", ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:circle, alpha=0.8)
+        scatter!(circles_only_tau_fits_graph, [1/T for T in fitted_temperatures], log_tau_beta_by_temperature,
+        color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2,
+        xlabel=L"1/T", ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:circle, alpha=0.8)
+
+        scatter!(tau_fits_graph, [1/T for T in fitted_temperatures], longer_log_tau_beta_by_temperature,
+        color=alex_red, legend=false, subplot=2, xlabel=L"1/T",
+        ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:square, alpha=0.8)
+        scatter!(squares_only_tau_fits_graph, [1/T for T in fitted_temperatures], longer_log_tau_beta_by_temperature,
+        color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2, xlabel=L"1/T",
+        ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:square, alpha=0.8)
+
 
         # Plot fits in inset too
         # plot!(tau_fits_graph, [1/T for T in fit_temperatures], arrhenius_fit_curve,color=alex_orange, label="Arrhenius Fit", linestyle=:dash, subplot=2)
-        plot!(tau_fits_graph, [1/T for T in fit_temperatures], parabolic_fit_curve,color=alex_blue, label="Parabolic Fit", linestyle=:dash, linewidth=3, subplot=2)
-        plot!(tau_fits_graph, [1/T for T in fit_temperatures], alt_parabolic_fit_curve,color=alex_orange, label="Parabolic Fit", linestyle=:dash, linewidth=3, subplot=2)
-        plot!(tau_fits_graph, [1/T for T in fit_temperatures], vft_fit_curve,color=alex_green, label="VFT Fit", linewidth=3, subplot=2)
+        
+        plot!(circles_only_tau_fits_graph, [1/T for T in fit_temperatures], parabolic_fit_curve,color=alex_blue, label="Parabolic Fit", linestyle=:dash, linewidth=3, subplot=2)
+        plot!(circles_only_tau_fits_graph, [1/T for T in fit_temperatures], alt_parabolic_fit_curve,color=alex_orange, label="Parabolic Fit", linestyle=:dash, linewidth=3, subplot=2)
+        plot!(circles_only_tau_fits_graph, [1/T for T in fit_temperatures], vft_fit_curve,color=alex_green, label="VFT Fit", linewidth=3, subplot=2)
 
+        plot!(squares_only_tau_fits_graph, [1/T for T in fit_temperatures], longer_parabolic_fit_curve,color=alex_blue, label="Parabolic Fit", linestyle=:dash, linewidth=3, subplot=2)
+        plot!(squares_only_tau_fits_graph, [1/T for T in fit_temperatures], longer_alt_parabolic_fit_curve,color=alex_orange, label="Parabolic Fit", linestyle=:dash, linewidth=3, subplot=2)
+        plot!(squares_only_tau_fits_graph, [1/T for T in fit_temperatures], longer_vft_fit_curve,color=alex_green, label="VFT Fit", linewidth=3, subplot=2)
+
+        # Combined graph
+        plot!(tau_fits_graph, [1/T for T in fit_temperatures], combined_parabolic_fit_curve,color=alex_blue, label="Parabolic Fit", linestyle=:dash, linewidth=3, subplot=2)
+        plot!(tau_fits_graph, [1/T for T in fit_temperatures], combined_alt_parabolic_fit_curve,color=alex_orange, label="Parabolic Fit", linestyle=:dash, linewidth=3, subplot=2)
+        plot!(tau_fits_graph, [1/T for T in fit_temperatures], combined_vft_fit_curve,color=alex_green, label="VFT Fit", linewidth=3, subplot=2)
 
         # --- BETA INSET DATA ---
-        plot!(tau_fits_graph, sample_temperatures, beta_by_temperature,
-        color=alex_pink, marker=:circle, legend=false, inset=bbox(0.23,0.05,0.3,0.35), subplot=3,
-        xlabel=L"T", ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3)
-
         # Plot longer beta data
-        # plot!(tau_fits_graph, sample_temperatures, longer_beta_by_temperature,
-        # color=alex_pink, marker=:square, legend=false, subplot=3)
+        scatter!(tau_fits_graph, fitted_temperatures, longer_beta_by_temperature,
+        color=alex_pink, marker=:square, legend=false, inset=bbox(0.23,0.05,0.3,0.35), subplot=3, xlabel=L"T", 
+        ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3)
+        scatter!(squares_only_tau_fits_graph, fitted_temperatures, longer_beta_by_temperature,
+        color=alex_pink, marker=:square, legend=false, inset=bbox(0.23,0.05,0.3,0.35), subplot=3, xlabel=L"T",
+        ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3)
+
+        # Plot the shorter beta data
+        scatter!(tau_fits_graph, fitted_temperatures, beta_by_temperature,
+        color=alex_pink, marker=:circle, legend=false,  subplot=3)
+        scatter!(circles_only_tau_fits_graph, fitted_temperatures, beta_by_temperature,
+        color=alex_pink, marker=:circle, legend=false,  inset=bbox(0.23,0.05,0.3,0.35), subplot=3)
 
         savefig(tau_fits_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_relaxation_time_fits.png"))
         savefig(tau_fits_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_relaxation_time_fits.svg"))
         display(tau_fits_graph)
+
+        savefig(circles_only_tau_fits_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_relaxation_time_fits_circles_only.png"))
+        savefig(circles_only_tau_fits_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_relaxation_time_fits_circles_only.svg"))
+        display(circles_only_tau_fits_graph)
+
+        savefig(squares_only_tau_fits_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_relaxation_time_fits_squares_only.png"))
+        savefig(squares_only_tau_fits_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_relaxation_time_fits_squares_only.svg"))
+        display(squares_only_tau_fits_graph)
 
     end
 end

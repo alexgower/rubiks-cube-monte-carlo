@@ -166,6 +166,10 @@ end
     return -12*cube.L*(cube.L - 1)
 end
 
+@inline function solved_configuration_energy(L::Int64)::Float64
+    return solved_configuration_energy(RubiksCube(L))
+end
+
 # Function (just for convenience) to get infinite temperature energy of RubiksCube of this size
 # This is equal to 1/6 * the solved configuration energy as each nearest neighbour pair has a 1/6 chance of being
 # a bond (i.e. having both facelets be the same spin value = colour)

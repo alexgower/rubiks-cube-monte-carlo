@@ -25,7 +25,8 @@ include("code/experiments/relaxed_anneal_experiment.jl")
 
 println("Running experiment")
 
-experiment_name = "L_$(L)_trial_$(trial_number)"
+# experiment_name = "L_$(L)_trial_$(trial_number)"
+experiment_name = "test"
 
 T_swap = 3.0
 T_1 = 10.0

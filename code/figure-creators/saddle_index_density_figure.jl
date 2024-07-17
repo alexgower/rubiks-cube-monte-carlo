@@ -5,9 +5,11 @@ using StatsBase
 using Plots.PlotMeasures
 using Colors
 
+using LsqFit
+
 include("../core/rubiks_cube.jl")
 
-function saddle_index_density_figure(simulation_name::String; neighbour_order_to_measure_to::Int64=1)
+function saddle_index_density_figure(simulation_name::String; neighbour_order_to_measure_to::Int64=1, fitting::Bool=false)
 
 
     ### --- SET UP DEFAULT PARAMETERS ---
@@ -113,6 +115,33 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
     color=alex_green,
     )
 
+    if fitting 
+        # Do exponential fit Ae^(bE) on 
+        # average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap] against
+        # -1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]/-solved_configuration_energy(cube))
+        # and plot the fit
+        fit = curve_fit((x, p) -> p[1]*exp.(p[2]*x), 
+            -1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]/-solved_configuration_energy(cube)), 
+            average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap], 
+            [1.0, 1.0])
+
+        test_energies = range(minimum(-1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]/-solved_configuration_energy(cube))), 
+            maximum(-1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]/-solved_configuration_energy(cube))), length=1000)
+
+        plot!(average_saddle_index_densities_graph,
+            test_energies, 
+            fit.param[1]*exp.(fit.param[2]*test_energies),
+            # label="$(round(fit.param[1], digits=2))e^{ $(round(fit.param[2], digits=2)) \\epsilon}",
+            label="",
+            color=:red,
+            linestyle=:dash,
+            linewidth=3)
+            
+        println("Exponential Fit Parameters For Swap-Move Cube: ", fit.param)
+
+
+    end
+
     ## -- SLICE PLOTTING --
 
     # Plot the average saddle index densities against E0
@@ -160,6 +189,34 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
     annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"\epsilon^*", 12, :black))])
     
 
+    if fitting
+        # Do exponential fit Ae^(bE) on 
+        # average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice] against
+        # -1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube))
+        # and plot the fit
+        fit = curve_fit((x, p) -> p[1]*exp.(p[2]*x), 
+            -1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube)), 
+            average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice], 
+            [1.0, 1.0])
+
+        test_energies = range(minimum(-1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube))), 
+            maximum(-1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube))), length=1000)
+
+        plot!(average_saddle_index_densities_graph,
+            test_energies, 
+            fit.param[1]*exp.(fit.param[2]*test_energies),
+            # label="$(round(fit.param[1], digits=2))e^{ $(round(fit.param[2], digits=2)) \\epsilon}",
+            label="",
+            color=:black,
+            linestyle=:dash,
+            linewidth=3)
+            
+        println("Exponential Fit Parameters For Slice-Rotation Cube: ", fit.param)
+
+
+    end
+
+
     #####
 
 
@@ -187,8 +244,82 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
     # annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"E^*", 12, :black))])
        
 
+    if fitting
+        # Do linear fit Ax + B on 
+        # log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap]) against
+        # -1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]/-solved_configuration_energy(cube))
+        # and plot the fit
+        fit = curve_fit((x, p) -> p[1]*x .+ p[2], 
+            -1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]/-solved_configuration_energy(cube)), 
+            log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap]), 
+            [1.0, 1.0])
+
+        test_energies = range(minimum(-1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]/-solved_configuration_energy(cube))),
+            maximum(-1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]/-solved_configuration_energy(cube))), length=1000)
+
+        plot!(average_saddle_index_densities_graph,
+            test_energies, 
+            fit.param[1]*test_energies .+ fit.param[2],
+            # label="$(round(fit.param[1], digits=2))x + $(round(fit.param[2], digits=2))",
+            label="",
+            color=:red,
+            linestyle=:dash,
+            linewidth=3, subplot=2)
+        
+        println("Linear Fit Parameters For Swap-Move Cube: ", fit.param)
+
+        # Also plot on main graph as exponential
+        # plot!(average_saddle_index_densities_graph,
+        #     test_energies, 
+        #     exp.(fit.param[1]*test_energies .+ fit.param[2]),
+        #     # label="$(round(fit.param[1], digits=2))e^{ $(round(fit.param[2], digits=2)) \\epsilon}",
+        #     label="",
+        #     color=:red,
+        #     linestyle=:dash,
+        #     linewidth=3)
+
+    end
+
+    if fitting
+        # Do linear fit Ax + B on 
+        # log.(average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice]) against
+        # -1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube))
+        # and plot the fit
+        fit = curve_fit((x, p) -> p[1]*x .+ p[2], 
+            -1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube)), 
+            log.(average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice]), 
+            [1.0, 1.0])
+
+        test_energies = range(minimum(-1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube))),
+            maximum(-1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube))), length=1000)
+
+        plot!(average_saddle_index_densities_graph,
+            test_energies, 
+            fit.param[1]*test_energies .+ fit.param[2],
+            # label="$(round(fit.param[1], digits=2))x + $(round(fit.param[2], digits=2))",
+            label="",
+            color=:black,
+            linestyle=:dash,
+            linewidth=3, subplot=2)
+        
+        println("Linear Fit Parameters For Slice-Rotation Cube: ", fit.param)
+
+        # Also plot on main graph as exponential
+        # plot!(average_saddle_index_densities_graph,
+        #     test_energies, 
+        #     exp.(fit.param[1]*test_energies .+ fit.param[2]),
+        #     # label="$(round(fit.param[1], digits=2))e^{ $(round(fit.param[2], digits=2)) \\epsilon}",
+        #     label="",
+        #     color=:black,
+        #     linestyle=:dash,
+        #     linewidth=3)
+
+    end
+
     ### --- SAVE AND DISPLAY GRAPH ---
-    savefig(average_saddle_index_densities_graph, "results/final_paper_results/$(simulation_name)_average_saddle_index_densities.svg")
-    savefig(average_saddle_index_densities_graph, "results/final_paper_results/$(simulation_name)_average_saddle_index_densities.png")
+    extra = fitting ? "_fitting" : ""
+
+    savefig(average_saddle_index_densities_graph, "results/final_paper_results/$(simulation_name)_average_saddle_index_densities$(extra).png")
+    savefig(average_saddle_index_densities_graph, "results/final_paper_results/$(simulation_name)_average_saddle_index_densities$(extra).pdf")
     display(average_saddle_index_densities_graph)
 end

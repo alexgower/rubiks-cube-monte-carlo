@@ -34,7 +34,7 @@ function annotatewithbox!(
 end
 
 # Main function
-function energy_connectivity_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, bin_diagonal_graph::Bool=false)
+function energy_connectivity_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, bin_diagonal_graph::Bool=false, bin_horizontal_graph::Bool=false)
 
     # E_star = -0.39015151515151514
     E_star = -0.376098787878788
@@ -91,6 +91,8 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
             mask = energy_connections_data_matrix[:,1] .== bin_edges_x[i]
             biases[mask] .= 1.0 / slice_sum
         end
+        # Print the slice sum for each E_0 slice
+        println("E_0 = $(bin_edges_x[i]): $(slice_sum)")
     end
 
     E0_values = energy_connections_data_matrix[:,1]./-solved_configuration_energy(cube)
@@ -161,35 +163,60 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
 
         # Add title as annotated text in top right corner
         if connectivity=="Slice-Rotation"
-            annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
+            annotate!(graph, [(xlims(graph)[1]+0.12, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
         else
             annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
         end
 
-    ### --- PLOT IMAGE ON GRAPH ---
-    if connectivity == "Slice-Rotation" && neighbour_order_to_measure_to == 1
-        img = load("results/final_paper_results/spiral.png")
+    # ### --- PLOT SPIRAL IMAGES ON GRAPH ---
+    # if connectivity == "Slice-Rotation" && neighbour_order_to_measure_to == 1
+    #     ## -- SLICE SPIRAL --
+    #     slice_spiral_image = load("results/final_paper_results/spiral.png")
 
-        # Determine the desired width and height on the graph
-        # Here you set one dimension, and calculate the other to preserve the aspect ratio
-        desired_width = 0.4
-        aspect_ratio = size(img, 2) / size(img, 1) # width / height
-        desired_height = (desired_width / aspect_ratio)
+    #     # Determine the desired width and height on the graph
+    #     # Here you set one dimension, and calculate the other to preserve the aspect ratio
+    #     desired_width = 0.4
+    #     aspect_ratio = size(slice_spiral_image, 2) / size(slice_spiral_image, 1) # width / height
+    #     desired_height = (desired_width / aspect_ratio)
 
-        # Determine the location on the graph where you want the image's bottom-left corner
-        x_location = 0.13
-        y_location = 0.065
+    #     # Determine the location on the graph where you want the image's bottom-left corner
+    #     x_location = 0.13
+    #     y_location = 0.065
 
-        # Plot the image with the specified dimensions and location
-        plot!(graph, reverse(img; dims=1), yflip=false, inset=bbox(x_location,y_location,desired_width-0.1,desired_height), subplot=2, aspect_ratio=:auto, axis=false, grid=false, framestyle=:box, legend=false, ticks=nothing, border=:none, plot_bgcolor=:transparent)
+    #     # Plot the image with the specified dimensions and location
+    #     plot!(graph, reverse(slice_spiral_image; dims=1), yflip=false, inset=bbox(x_location,y_location,desired_width-0.1,desired_height), subplot=2, aspect_ratio=:auto, axis=false, grid=false, framestyle=:box, legend=false, ticks=nothing, border=:none, plot_bgcolor=:transparent)
 
-    end
+
+    #     ## -- SWAP SPIRAL --
+    #     swap_spiral_image = load("results/final_paper_results/swap-spiral.png")
+
+    #     # Determine the desired width and height on the graph
+    #     # Here you set one dimension, and calculate the other to preserve the aspect ratio
+    #     desired_width = 0.4
+    #     aspect_ratio = size(swap_spiral_image, 2) / size(swap_spiral_image, 1) # width / height
+    #     desired_height = (desired_width / aspect_ratio)
+
+    #     # Determine the location on the graph where you want the image's bottom-left corner
+    #     x_location = 0.73
+    #     y_location = 0.5
+
+    #     # Plot the image with the specified dimensions and location
+    #     plot!(graph, reverse(swap_spiral_image; dims=1), yflip=false, inset=bbox(x_location,y_location,desired_width-0.1,desired_height), subplot=2, aspect_ratio=:auto, axis=false, grid=false, framestyle=:box, legend=false, ticks=nothing, border=:none, plot_bgcolor=:transparent)
+
+    # end
 
     ### -- Save and display the graphs --
     println("Saving diagonal graph...")
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.svg")
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.png")
-    display(graph)
+    if connectivity=="Slice-Rotation"
+        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_raw.svg")
+        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_raw.png")
+        display(graph)
+    else
+        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.svg")
+        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.png")
+        display(graph)
+    end
+    
 
     end
 
@@ -219,6 +246,9 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
 
 
     ## -- HORIZONTAL GRAPH --
+    if bin_horizontal_graph
+        return
+    end
 
     # Determine the bin edges based on the data
     bin_edges_x = 0:1:-solved_configuration_energy(cube)
