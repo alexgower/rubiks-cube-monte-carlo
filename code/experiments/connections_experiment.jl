@@ -8,7 +8,7 @@ include("../tools/neighbour_graphs_plotter.jl")
 
 
 
-@inbounds @fastmath function connections_experiment(simulation_name::String, L::Int64, swap_move_probability::Float64, N_T::Int64, sample_temperatures::Vector{Float64}; verbose_metropolis_swap::Bool=false, relaxation_iterations::Int64=Int(0), connections_to_measure::Union{String,Nothing}="slice", connections_per_configuration_sample_size::Int64=0, neighbour_order_to_measure_to::Int64=1, average_sample_size_per_temperature::Int64=100, inherent_disorder::Bool=false, T_1::Float64=10.0, T_0::Float64=0.09, T_swap::Float64=3.0, initial_cube_configuration=nothing, parallel_anneals::Int64=1, collect_energy_saddle_index_densities::Bool=true, bin_energy_connections::Bool=false)
+@inbounds @fastmath function connections_experiment(simulation_name::String, L::Int64, swap_move_probability::Float64, N_T::Int64, sample_temperatures::Vector{Float64}; verbose_metropolis_swap::Bool=false, relaxation_iterations::Int64=Int(0), connections_to_measure::Union{String,Nothing}="slice", connections_per_configuration_sample_size::Int64=0, neighbour_order_to_measure_to::Int64=1, average_sample_size_per_temperature::Int64=100, inherent_disorder::Bool=false, T_1::Float64=10.0, T_0::Float64=0.09, T_swap::Float64=3.0, initial_cube_configuration=nothing, parallel_anneals::Int64=1, collect_energy_saddle_index_densities::Bool=true, bin_energy_connections::Bool=false, disorder_average::Bool=false)
 
     temperature_vector::Vector{Float64} = [T_1*(T_0/T_1)^(m/N_T) for m in 0:N_T]
     temperature_vector = [temperature_vector; sample_temperatures]
@@ -54,6 +54,16 @@ include("../tools/neighbour_graphs_plotter.jl")
         energy_minima_tuples = SharedArray{Tuple{Float64,Bool},1}((size_energy_minima,))
 
         @sync @distributed for trial in 1:parallel_anneals
+
+            # Initialize the cube with different inherent disorder per trial if disorder_average
+            if disorder_average
+                facelets = reduce(vcat, [fill(i,L^2) for i in 1:6])
+                shuffle!(facelets)
+                new_faces = reshape(facelets, 6, L, L)
+                for i in 1:6
+                    cube.configuration[i][:,:] .= new_faces[i,:,:]
+                end
+            end
 
             printstyled("Trial: $trial \n", color=:light_blue)
 

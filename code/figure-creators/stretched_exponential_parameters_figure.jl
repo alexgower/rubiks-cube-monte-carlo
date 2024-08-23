@@ -76,7 +76,7 @@ function stretched_exponential_parameters_figure(simulation_name::String)
 
     ### --- SAVING GRAPHS ---
     savefig(graph, joinpath("results/final_paper_results",simulation_name*"_streched_exponential_parameters_graph.png"))
-    savefig(graph, joinpath("results/final_paper_results",simulation_name*"_streched_exponential_parameters_graph.svg"))
+    savefig(graph, joinpath("results/final_paper_results",simulation_name*"_streched_exponential_parameters_graph.pdf"))
     display(graph)
 
 

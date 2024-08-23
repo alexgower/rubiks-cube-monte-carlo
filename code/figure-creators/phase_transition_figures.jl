@@ -5,7 +5,7 @@ using StatsBase
 using Plots.PlotMeasures
 using Colors
 
-using Images
+using LsqFit
 
 include("../core/rubiks_cube.jl")
 
@@ -75,10 +75,11 @@ function phase_transition_figures()
     end
 
 
+
     ### --- PLOT SPECIFIC HEAT CAPACITIES DATA ---
     color_index = 1
     for model in models
-        graph = plot(title="", xlabel="Temperature, "*L"T", legend=:topright, yaxis="Heat Capacity, "*L"\langle C \rangle = \frac{\langle  E^2 \rangle - \langle\! E \rangle^2}{T^2}", margin=3mm, ylabelfontsize=10, xlabelfontsize=10)
+        graph = plot(title="", xlabel="Temperature, "*L"T", legend=:bottomright, yaxis="Heat Capacity, "*L"\langle C \rangle = \frac{\langle  E^2 \rangle - \langle\! E \rangle^2}{T^2}", margin=3mm, ylabelfontsize=10, xlabelfontsize=10)
 
 
         if model=="clean"
@@ -110,17 +111,48 @@ function phase_transition_figures()
                 plot!(graph,temperatures, average_specific_heat_capacities, label=label, color=colors[mod1(color_index,length(colors))], linestyle=linestyle)
 
                 # Also plot a dashed line at the height of the maximum
-                max_specific_heat_capacity = maximum(average_specific_heat_capacities)
-                hline!([max_specific_heat_capacity], color=colors[mod1(color_index,length(colors))], linestyle=:dash, label="")
+                # max_specific_heat_capacity = maximum(average_specific_heat_capacities)
+                # hline!([max_specific_heat_capacity], color=colors[mod1(color_index,length(colors))], linestyle=:dash, label="")
             end
             color_index += 1
         end
 
-        ### --- SAVE GRAPH ---
+
+        # # Plot an inset with the maximum specific heat capacity per L against L
+        # max_specific_heat_capacities = [maximum(results_dictionary[(model, L, 1.0, "average_specific_heat_capacities")]) for L in Ls]
+        # # plot!(graph, Ls, max_specific_heat_capacities, label="", inset=bbox(0.4,0.15,0.3,0.4), subplot=2, xlabel=L"L", ylabel=L"\langle C \rangle_{\rm{max}}", yguidefontsize=12,xguidefontsize=12, color=colors[mod1(color_index,length(colors))])
+        # scatter!(graph, Ls.^2, max_specific_heat_capacities, label="", inset=bbox(0.4,0.15,0.3,0.4), subplot=2, xlabel=L"L^2", ylabel=L"\langle C \rangle_{\rm{max}}", yguidefontsize=12,xguidefontsize=12, color=colors[mod1(color_index,length(colors))])
+
+
+        max_specific_heat_capacities = Float64[]
+        max_temperatures = Float64[]
+        for L in Ls
+            temperatures = results_dictionary[(model, L, 1.0, "temperatures")]
+            average_specific_heat_capacities = results_dictionary[(model, L, 1.0, "average_specific_heat_capacities")]
+            
+            max_c, max_t = fit_gaussian_peak(temperatures, average_specific_heat_capacities)
+            push!(max_specific_heat_capacities, max_c)
+            push!(max_temperatures, max_t)
+
+            println("L = $L, max_C = $max_c, max_T = $max_t")
+        end
+        scatter!(graph, Ls.^2, max_specific_heat_capacities, label="", inset=bbox(0.4,0.15,0.3,0.4), subplot=2, xlabel=L"L^2", ylabel=L"\langle C \rangle_{\rm{max}}", yguidefontsize=12,xguidefontsize=12, color=colors[mod1(color_index,length(colors))])
+
+
+        ### --- SAVE GRAPH --- 
         savefig(graph, "results/final_paper_results/specific_heat_capacity_L_scaling_$(model).png")
         savefig(graph, "results/final_paper_results/specific_heat_capacity_L_scaling_$(model).pdf")
         display(graph)
     end
+
+
+
+
+
+
+
+
+
 
     ### --- PLOT BINDER CUMULANTS DATA ---
     color_index = 1
@@ -204,23 +236,27 @@ end
 
 
 
-   # ### --- PLOT ROTATIONS IMAGE ON GRAPH ---
-    # img = load("results/final_paper_results/slice-rotations.png")
+function fit_gaussian_peak(x, y)
+    gaussian(x, p) = p[1] * exp.(-(x .- p[2]).^2 ./ (2 * p[3]^2)) .+ p[4]
 
-    # # Determine the desired width and height on the graph
-    # # Here you set one dimension, and calculate the other to preserve the aspect ratio
-    # desired_width = 0.55
-    # aspect_ratio = size(img, 2) / size(img, 1) # width / height
-    # desired_height = (desired_width / aspect_ratio)
-
-    # # Determine the location on the graph where you want the image's bottom-left corner
-    # x_location = 0.26
-    # y_location = 0.21
-
-    # # Calculate x and y ranges for the image placement
-    # xrange = [x_location, x_location - desired_width]
-    # yrange = [y_location, y_location - desired_height]
-
-    # # Plot the image with the specified dimensions and location
-    # # plot!(graph, xrange, yrange, reverse(img; dims=1), yflip=false, inset=bbox(x_location,y_location,desired_width,desired_height), subplot=2, aspect_ratio=:auto, axis=false, grid=false, framestyle=:none, legend=false, ticks=nothing, border=:none, plot_bgcolor=:transparent)
-
+    # Find the initial guess for the peak
+    max_index = argmax(y)
+    max_y = y[max_index]
+    max_x = x[max_index]
+    
+    # Initial parameters: [amplitude, mean, std_dev, offset]
+    p0 = [max_y - minimum(y), max_x, (x[end] - x[1])/10, minimum(y)]
+    
+    # Fit only around the peak (e.g., ±20% of the x range)
+    x_range = x[end] - x[1]
+    fit_range = (x .>= max_x - 0.2*x_range) .& (x .<= max_x + 0.2*x_range)
+    
+    # Perform the fit
+    fit = curve_fit(gaussian, x[fit_range], y[fit_range], p0)
+    
+    # Extract the fitted parameters
+    amplitude, mean, std_dev, offset = fit.param
+    
+    # The maximum of the Gaussian is at the mean
+    return amplitude + offset, mean
+end

@@ -187,7 +187,7 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
     # Add E^* vertical line
     vline!(average_saddle_index_densities_graph, [E_star], linecolor=:green, linestyle=:dash, linewidth=2, label="")
     annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"\epsilon^*", 12, :black))])
-    
+
 
     if fitting
         # Do exponential fit Ae^(bE) on 

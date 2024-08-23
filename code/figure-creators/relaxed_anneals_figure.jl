@@ -89,6 +89,16 @@ function relaxed_anneal_figure(output_name::String; extraction::Bool=false)
         end
     end
 
+    if "clean" in models 
+        # Print average epsilon at highest temperature value 
+        # for L=11, swap_move_probability=1.0 and L=11, swap_move_probability=0.0
+
+        println("Clean epsilon at highest temperature value")
+        println("L=11, swap_move_probability=1.0: $(results_dictionary[("clean", 11, 1.0, "average_energy_densities")][1])")
+        println("L=11, swap_move_probability=0.0: $(results_dictionary[("clean", 11, 0.0, "average_energy_densities")][1])")
+    end
+
+
     ### --- PLOT DATA ---
     graph = plot(title="", xlabel="Temperature, "*L"T", legend=:bottomright, yaxis="Average Energy Density, "*L"\langle\! \epsilon \rangle = \langle\! E/|\!\!E_s|\!\rangle", ylims=(-1.0,-0.1))
 
@@ -131,26 +141,42 @@ function relaxed_anneal_figure(output_name::String; extraction::Bool=false)
     ### --- ADD ANNOTATIONS TO GRAPH ---
 
     if "inherent_disorder" in models
-        annotate!(graph, [(0.35, ylims(graph)[2]-0.24, Plots.text(L"\bar{\epsilon}^*", 12, alex_red, ))])
+        # annotate!(graph, [(0.35, ylims(graph)[2]-0.24, Plots.text(L"\bar{\epsilon}^*", 12, alex_red, ))])
 
         T_star = 0.79
+        T_on = 2.25
+
         println("T* Inherent Disorder = $T_star")
+        println("T_on Inherent Disorder = $T_on")
         println("epsilon at T* Inherent Disorder = $(results_dictionary[("inherent_disorder", 11, 0.0, "average_energy_densities")][argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")].-T_star))])")
-        annotate!(graph, [(T_star+0.2, ylims(graph)[2]-0.2, Plots.text(L"\bar{T}^*", 12, alex_red))])
+        annotate!(graph, [(0.45, ylims(graph)[2]-0.2, Plots.text(L"(\bar{T}^{\!\!\!*}\!\!\!\!,\bar{\epsilon}^{\!\!\!*}\!\!)", 12, alex_red))])
+        annotate!(graph, [(T_on + 0.2, ylims(graph)[2]-0.06, Plots.text(L"(\bar{T}^{on}\!\!\!\!,\bar{\epsilon}^{on})", 12, alex_red))])
+
+
+        # Add dot at (T_star, inherent_disorder average_energy_densities at T nearest to T_star)
+        inherent_disorder_average_energy_densities = results_dictionary[("inherent_disorder", 11, 0.0, "average_energy_densities")]
+        scatter!([T_star], [inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")].-T_star))]], color=alex_red, label="", markersize=1.5)
+                
+
+        # Get \epsilon_on as the average energy density  at T_on
+        inherent_disorder_epsilon_on = inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")].-T_on))]
+        println("Inherent Disorder epsilon_on = $inherent_disorder_epsilon_on")        
+        # Add dot at (T_on, inherent_disorder average_energy_densities at T nearest to T_on)
+        scatter!([T_on], [inherent_disorder_epsilon_on], color=alex_red, label="", markersize=1.5)
+
         if extraction
-            # Add dot at (T_star, inherent_disorder average_energy_densities at T nearest to T_star)
-            inherent_disorder_average_energy_densities = results_dictionary[("inherent_disorder", 11, 0.0, "average_energy_densities")]
-            scatter!([T_star], [inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")].-T_star))]], color=alex_red, label="", markersize=1.5)
-        
+
             # Add dot at (lowest T value with average_energy_densities values, inherent_disorder average_energy_densities at T nearest to 0)
-            scatter!([minimum(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")])], [inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")]))]], color=alex_red, label="", markersize=1.5)
+            # scatter!([minimum(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")])], [inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")]))]], color=alex_red, label="", markersize=1.5)
 
             inherent_disorder_epsilon_star_avg = minimum(results_dictionary[("inherent_disorder", 11, 0.0, "average_energy_densities")])
             inherent_disorder_epsilon_0_avg = minimum(results_dictionary[("inherent_disorder", 11, 1.0, "average_energy_densities")])
 
             println("Inherent Disorder epsilon^* = $inherent_disorder_epsilon_star_avg")
             println("Inherent Disorder epsilon_0 = $inherent_disorder_epsilon_0_avg")
-        
+
+
+
         end
     end
 

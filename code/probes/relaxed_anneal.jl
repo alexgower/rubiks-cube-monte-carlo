@@ -197,10 +197,8 @@ include("../core/monte_carlo.jl")
 
                 # CONNECTION MEASUREMENTS
                 if collecting_connections && insorted(T, sample_temperatures)
-                    println("Collecting connections at T = $T") # TODO delete
                     # If neighbour_per_configuration_sample_size=0 (default) then just collect all neighbours, otherwise collect a random sample of neighbours
                     if connections_per_configuration_sample_size==0
-                        println("Collecting all connections") # TODO delete
                         energy_connections_sample = all_energy_connections(cube, collecting_swap_move_connections, keep_energy_deltas_only=false, neighbour_order_to_measure_to=neighbour_order_to_measure_to)
                         saddle_index_density = sum([x[2]<x[1] for x in energy_connections_sample]/length(energy_connections_sample))
                     else

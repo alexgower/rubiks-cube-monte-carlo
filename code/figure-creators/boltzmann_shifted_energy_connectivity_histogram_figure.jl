@@ -29,7 +29,6 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
     header_line = readlines(joinpath(filename))[1]
     energy_connections_data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=2)
 
-
     ### --- SET UP DEFAULT PARAMETERS ---
 
     match_obj = match(r"L=(\d+)", header_line)
@@ -92,6 +91,7 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
 
     boltzmann_shifted_weights = zeros(size(hist_2d.weights))
 
+
     # Apply the Boltzmann factor to the weights
     for i in 1:size(hist_2d.weights, 1)
         for j in 1:size(hist_2d.weights, 2)
@@ -139,7 +139,8 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
     smoothing_window = 60
     mean_j_minus_i_smoothed = [mean(mean_j_minus_i[i:i+smoothing_window]) for i in 1:smoothing_window:length(mean_j_minus_i)-smoothing_window]
     # Dont plot 0.0s
-    graph = scatter(-1 .+ (bin_edges_x[1:end-1][mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i[mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube)), label=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle", xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle", title="", legend=false, xtickfontsize=16, ytickfontsize=16, xguidefontsize=20, yguidefontsize=20, margin=5mm)
+    yticks = connectivity == "Slice-Rotation" ? [0,0.006,0.012] : [-0.001,0.,0.001]
+    graph = scatter(-1 .+ (bin_edges_x[1:end-1][mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i[mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube)), label=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle", xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle", title="", legend=false, xtickfontsize=30, ytickfontsize=30, xguidefontsize=30, yguidefontsize=30, margin=5mm, xticks=[-0.3,-0.5,-0.7], yticks=yticks)
 
     # Do smoothed line
     plot!(graph, -1 .+ (bin_edges_x[1:end-1][1:smoothing_window:end-smoothing_window][mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i_smoothed[mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube)), line=:solid, color=:orange, lw=3, xlims=(-0.71,-0.25), xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle")
@@ -163,7 +164,7 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
     end
 
     savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.png")
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.svg")
+    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.pdf")
     display(graph)
 
 end

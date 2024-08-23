@@ -34,7 +34,7 @@ function annotatewithbox!(
 end
 
 # Main function
-function energy_connectivity_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, bin_diagonal_graph::Bool=false, bin_horizontal_graph::Bool=false)
+function energy_connectivity_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, bin_diagonal_graph::Bool=false, bin_horizontal_graph::Bool=false, prediction::Bool=false)
 
     # E_star = -0.39015151515151514
     E_star = -0.376098787878788
@@ -93,6 +93,12 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
         end
         # Print the slice sum for each E_0 slice
         println("E_0 = $(bin_edges_x[i]): $(slice_sum)")
+
+        # Also print the proportion of connections between +1 and +10 avoe this E_0
+        mask = (energy_connections_data_matrix[:,1] .== bin_edges_x[i]) .& (energy_connections_data_matrix[:,2] .> bin_edges_x[i] .+ 1) .& (energy_connections_data_matrix[:,2] .<= bin_edges_x[i] .+ 10)
+        proportion = sum(mask) / slice_sum
+        println("Proportion of connections between +1 and +10 above this E_0: $(proportion)")
+
     end
 
     E0_values = energy_connections_data_matrix[:,1]./-solved_configuration_energy(cube)
@@ -159,6 +165,7 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
         E_star_plot = 1+E_star
         vline!(graph, [E_star_plot], line=:dash, color=:green, lw=2, label="")
         annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.05, Plots.text(L"\epsilon^*", 12, :black))])
+
     end
 
         # Add title as annotated text in top right corner
@@ -208,11 +215,13 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
     ### -- Save and display the graphs --
     println("Saving diagonal graph...")
     if connectivity=="Slice-Rotation"
-        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_raw.svg")
-        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_raw.png")
+        extra = prediction ? "_prediction" : ""
+
+        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_raw$(extra).pdf")
+        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_raw$(extra).png")
         display(graph)
     else
-        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.svg")
+        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.pdf")
         savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.png")
         display(graph)
     end
@@ -295,7 +304,7 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
     graph = histogram2d(
         E0_values, 
         E_difference_values, 
-        # color=:bluesreds, # TODO readd
+        color=:bluesreds,
         show_empty_bins=false,
         normalize=:pdf, 
         bins=((bin_edges_x./-solved_configuration_energy(cube)), bin_edges_y./-solved_configuration_energy(cube)), 
@@ -354,14 +363,27 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
         E_star_plot = 1+E_star
         vline!(graph, [E_star_plot], line=:dash, color=:green, lw=2, label="")
         annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.005, Plots.text(L"\epsilon^*", 10, :black))])
+
+        if prediction
+            x = range(minimum(E0_values), stop=maximum(E0_values), length=100) 
+            energy_densities = x .- 1
+            # Plot the function (+|\epsilon|*(2*4*L) - (1/6)*(2*4*11))/|solved_configuration_energy(cube)|
+            y = (abs.(energy_densities).*(2*4*L) .- (1/6)*(2*4*11)) ./ abs(solved_configuration_energy(cube))
+            plot!(graph, x, y, line=:dash, color=:red, lw=2, label="")
+
+            y = (abs.(energy_densities).*(4*L) .- (1/6)*(4*11)) ./ abs(solved_configuration_energy(cube))
+            plot!(graph, x, y, line=:dash, color=:pink, lw=2, label="")
+
+        end
     end
 
 
 
     ### -- Save and display the graph --
     println("Saving horizontal graph...")
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram.svg")
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram.png")
+    extra = prediction ? "_prediction" : ""
+    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram$(extra).pdf")
+    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram$(extra).png")
     display(graph)
 
 end
