@@ -48,8 +48,10 @@ include("../tools/neighbour_graphs_plotter.jl")
         size_energy_saddle_index_density = length(sample_temperatures) * samples_per_temperature_per_anneal * parallel_anneals
         size_energy_minima = length(sample_temperatures) * samples_per_temperature_per_anneal * parallel_anneals
 
+        println("Size of energy connections: $size_energy_connections")
+
         # Initialize SharedArrays with the correct sizes
-        energy_connections_data = cumulative_connections_measurement ? SharedArray{Float64,2}((length(sample_temperatures)*average_sample_size_per_temperature*number_of_connections, neighbour_order_to_measure_to+1))        : SharedArray{Tuple{Float64,Float64},1}((size_energy_connections,))
+        energy_connections_data = cumulative_connections_measurement ? SharedArray{Float64,2}((size_energy_connections, neighbour_order_to_measure_to+1))        : SharedArray{Tuple{Float64,Float64},1}((size_energy_connections,))
         energy_saddle_index_density_tuples = SharedArray{Tuple{Float64,Float64},1}((size_energy_saddle_index_density,))
         energy_minima_tuples = SharedArray{Tuple{Float64,Bool},1}((size_energy_minima,))
 
@@ -78,7 +80,7 @@ include("../tools/neighbour_graphs_plotter.jl")
                 if !cumulative_connections_measurement
                     energy_connections_data[(trial-1)*length(trial_energy_connections_data)+1:trial*length(trial_energy_connections_data)] .= trial_energy_connections_data[:]
                 else
-                    energy_connections_data[(trial-1)*length(trial_energy_connections_data)+1:trial*length(trial_energy_connections_data),:] .= trial_energy_connections_data
+                    energy_connections_data[(trial-1)*size(trial_energy_connections_data,1)+1:trial*size(trial_energy_connections_data,1),:] .= trial_energy_connections_data
                 end
             end
 
