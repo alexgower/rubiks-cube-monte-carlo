@@ -868,22 +868,33 @@ end
 #     end
 # end
 
-function all_energy_connections(cube::RubiksCube, including_swap_moves::Bool; keep_energy_deltas_only::Bool=false, neighbour_order_to_measure_to::Int64=1)
+function all_energy_connections(cube::RubiksCube, including_swap_moves::Bool; keep_energy_deltas_only::Bool=false, neighbour_order_to_measure_to::Int64=1, cumulative::Bool=false)
 
     # Make empty array of neighbour energy deltas for neighbour order that are neighbour_order_to_measure_to moves away, i.e. exluding any immediate 'backward steps'
     # For Z = degree of network, this is equal to Z*(Z-1)^(neighbour_order_to_measure_to-1) since we have Z choices for the first move, and then Z-1 choices for each subsequent move
     Z = configuration_network_degree(cube.L, including_swap_moves)
-    energy_connections = fill((0.0,0.0),Z*(Z-1)^(neighbour_order_to_measure_to-1))
+    number_of_neighbours = Z*(Z-1)^(neighbour_order_to_measure_to-1)
 
     if including_swap_moves
         throw("Recursive all_swap_move_neighbour_energies function not implemented yet")
         # @views all_swap_move_neighbour_energy_deltas!(cube, neighbour_energies[:]) # TODO turn into recursive too and energies not deltas
     else
-        @views all_slice_rotation_energy_connections!(cube, energy_connections[:]; recursive_neighbour_order_to_measure_to=neighbour_order_to_measure_to, excluded_slice_rotation=(0,0,0))
+        if !cumulative 
+            energy_connections = fill((0.0,0.0),number_of_neighbours)
+            @views all_slice_rotation_energy_connections!(cube, energy_connections[:]; recursive_neighbour_order_to_measure_to=neighbour_order_to_measure_to)
+        else
+            energy_connections = zeros(number_of_neighbours, neighbour_order_to_measure_to+1)
+            @views cumulative_all_slice_rotation_energy_connections!(cube, energy_connections; neighbour_order_to_measure_to=neighbour_order_to_measure_to)
+        end
+    
     end
 
     if keep_energy_deltas_only
-        energy_connections = [(x[1],x[2]-x[1]) for x in energy_connections]
+        if !cumulative
+            energy_connections = [(x[1],x[2]-x[1]) for x in energy_connections]
+        else
+            energy_connections = [(x[1],x[end]-x[1]) for x in energy_connections]
+        end
     end
 
     return energy_connections
@@ -892,7 +903,12 @@ end
 
 # --- RANDOM NEIGHBOURS ---
 
-function sample_energy_connections(cube::RubiksCube, including_swap_moves::Bool, neighbour_sample_size::Int64; keep_energy_deltas_only::Bool=false, neighbour_order_to_measure_to::Int64=1)
+function sample_energy_connections(cube::RubiksCube, including_swap_moves::Bool, neighbour_sample_size::Int64; keep_energy_deltas_only::Bool=false, neighbour_order_to_measure_to::Int64=1, cumulative::Bool=false)
+
+    # TODO implement cumulative later on if needed
+    if cumulative
+        throw("Cumulative not implemented yet")
+    end
 
     # Note this function DOES NOT include trivial final move reversals (i.e. where the final move is a trivial reversal of the second to last move) in measuring energy connections
     # However reversals can happen along the way 

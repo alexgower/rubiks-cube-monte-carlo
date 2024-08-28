@@ -126,7 +126,7 @@ function saddle_index_proportions_figure(simulation_name::String; neighbour_orde
     # Add E^on vertical line
     if !isnothing(E_on)
         vline!(k_saddle_proportions_graph, [E_on], linecolor=:red, linestyle=:dash, linewidth=2, label="")
-        annotate!(k_saddle_proportions_graph, [(E_on+0.023, ylims(k_saddle_proportions_graph)[1]+0.58, Plots.text(L"\epsilon^{on}", 12, :black))])
+        annotate!(k_saddle_proportions_graph, [(E_on+0.023, ylims(k_saddle_proportions_graph)[1]+0.58, Plots.text(L"\epsilon^{\rm on}", 12, :black))])
     end
 
     # Save and display the graphs
@@ -163,7 +163,7 @@ function saddle_index_proportions_figure(simulation_name::String; neighbour_orde
     # Add E^on vertical line
     if !isnothing(E_on)
         vline!(k_saddle_proportions_graph_2, [E_on], linecolor=:red, linestyle=:dash, linewidth=2, label="")
-        annotate!(k_saddle_proportions_graph_2, [(E_on+0.023, ylims(k_saddle_proportions_graph_2)[1]+50, Plots.text(L"\epsilon^{on}", 12, :black))])
+        annotate!(k_saddle_proportions_graph_2, [(E_on+0.023, ylims(k_saddle_proportions_graph_2)[1]+50, Plots.text(L"\epsilon^{\rm on}", 12, :black))])
     end
 
     # Save and display the graphs
@@ -201,7 +201,7 @@ function saddle_index_proportions_figure(simulation_name::String; neighbour_orde
     # Add E^on vertical line
     if !isnothing(E_on)
         vline!(k_saddle_proportions_graph_3, [E_on], linecolor=:red, linestyle=:dash, linewidth=2, label="")
-        annotate!(k_saddle_proportions_graph_3, [(E_on+0.023, ylims(k_saddle_proportions_graph_3)[1]+50, Plots.text(L"\epsilon^{on}", 12, :black))])
+        annotate!(k_saddle_proportions_graph_3, [(E_on+0.023, ylims(k_saddle_proportions_graph_3)[1]+50, Plots.text(L"\epsilon^{\rm on}", 12, :black))])
     end
 
     # Save and display the graphs

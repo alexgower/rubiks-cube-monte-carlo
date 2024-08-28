@@ -20,6 +20,8 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
 
     # E_star = -0.39015151515151514
     E_star = -0.376098787878788
+    E_on = -0.23134348484848488
+
 
     ### --- READ IN DATA ---
     energy_saddle_index_densities_data_matrix_slice = readdlm(joinpath("results/final_paper_results",simulation_name*"_energy_saddle_index_densities_slice"), ',', Float64, '\n', skipstart=3)    
@@ -188,6 +190,9 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
     vline!(average_saddle_index_densities_graph, [E_star], linecolor=:green, linestyle=:dash, linewidth=2, label="")
     annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"\epsilon^*", 12, :black))])
 
+    # Add E_on vertical line
+    vline!(average_saddle_index_densities_graph, [E_on], linecolor=:red, linestyle=:dash, linewidth=2, label="")
+    annotate!(average_saddle_index_densities_graph, [(E_on+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"\epsilon^{\rm on}", 12, :black))])
 
     if fitting
         # Do exponential fit Ae^(bE) on 
@@ -243,6 +248,8 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
     vline!(average_saddle_index_densities_graph, [E_star], linecolor=:green, linestyle=:dash, linewidth=2, label="", subplot=2)
     # annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"E^*", 12, :black))])
        
+    # Add E_on vertical line
+    vline!(average_saddle_index_densities_graph, [E_on], linecolor=:red, linestyle=:dash, linewidth=2, label="", subplot=2)
 
     if fitting
         # Do linear fit Ax + B on 

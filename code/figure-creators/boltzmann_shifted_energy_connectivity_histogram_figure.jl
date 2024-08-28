@@ -21,7 +21,8 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
 
     # E_star = -0.39015151515151514
     E_star = -0.376098787878788
-    
+    E_on = -0.23134348484848488
+
 
     ### --- READ IN THE DATA ---
     filename = "results/final_paper_results",simulation_name*"_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_energy_connections"
@@ -153,6 +154,11 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
         vline!(graph, [E_star], line=:dash, color=:green, lw=2, label="")
     end
 
+    # Plot E_on line
+    if connectivity == "Slice-Rotation"
+        vline!(graph, [E_on], line=:dash, color=:red, lw=2, label="")
+    end
+
         
 
     # Add title as annotated text in top right corner
@@ -166,7 +172,6 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
     savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.png")
     savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.pdf")
     display(graph)
-
 end
 
 function remove_bad_rows(data::Array{Float64,2}, L::Int64)::Array{Float64,2}

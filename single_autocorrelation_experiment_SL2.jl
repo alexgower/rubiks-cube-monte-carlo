@@ -44,10 +44,10 @@ println("Running autocorrelation experiment")
 # starting_configurations = [starting_configuration_L_5, starting_configuration_L_7, starting_configuration_L_9, starting_configuration_L_11]
 
 
-experiment_name = "L_11_T_$(sample_temperature)_t_$(autocorrelation_window_length)"
+experiment_name = "swap_L_11_T_$(sample_temperature)_t_$(autocorrelation_window_length)"
 
 annealing_swap_move_probability = 1.0
-autocorrelation_swap_move_probability = 0.0
+autocorrelation_swap_move_probability = 1.0 # SWAP MOVE CORRELATION FUNCTION TESTING
 
 average_sample_size_per_temperature = 100
 n_procs = 100

@@ -38,6 +38,8 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
 
     # E_star = -0.39015151515151514
     E_star = -0.376098787878788
+    E_on = -0.23134348484848488
+
 
     ### --- READ IN THE DATA ---
     filename = "results/final_paper_results",simulation_name*"_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_energy_connections"
@@ -362,7 +364,11 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
     if connectivity == "Slice-Rotation"
         E_star_plot = 1+E_star
         vline!(graph, [E_star_plot], line=:dash, color=:green, lw=2, label="")
-        annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.005, Plots.text(L"\epsilon^*", 10, :black))])
+        annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.003, Plots.text(L"\epsilon^*", 10, :black))])
+
+        E_on_plot = 1+E_on
+        vline!(graph, [E_on_plot], line=:dash, color=:red, lw=2, label="")
+        annotate!(graph, [(E_on_plot-0.02, ylims(graph)[1]+0.003, Plots.text(L"\epsilon^{\rm on}", 10, :black))])
 
         if prediction
             x = range(minimum(E0_values), stop=maximum(E0_values), length=100) 

@@ -530,3 +530,52 @@ function all_slice_rotation_energy_connections!(cube::RubiksCube, energy_connect
 
 end
 
+
+function cumulative_all_slice_rotation_energy_connections!(cube::RubiksCube, energy_connections; neighbour_order_to_measure_to::Int64=1, cumulative_energy_connection::Union{Vector{Float64},Nothing}=nothing, order_index::Int64=0, connection_index::Int64=1, excluded_slice_rotation=(0,0,0), verbose::Bool=false
+)
+    # If cumulative_energy_connection=nothing then set it as empty vector of length neighbour_order_to_measure_to+1
+    if isnothing(cumulative_energy_connection)
+        cumulative_energy_connection = zeros(neighbour_order_to_measure_to+1)
+    end
+
+    # Add this energy to the cumulative energy connection
+    cumulative_energy_connection[order_index+1] = energy(cube)
+
+    # Do additional neighbour steps if required (and keep building up the cumulate energy connection)
+    if order_index < neighbour_order_to_measure_to
+        # For all slice rotation neighbours
+        for f in 1:6
+            for l in 0:floor(Int,(cube.L/2)-1)
+                for o in 0:1
+                    # Do not include excluded slice rotation (which will correspond to immediately undo-ing the previous slice rotation when we are in a recursive call)
+                    if (f,l,o) != excluded_slice_rotation
+                        # Do rotation
+                        rotate!(cube, f, l, o)
+
+                        # Recurse
+                        connection_index = cumulative_all_slice_rotation_energy_connections!(
+                            cube, 
+                            energy_connections; 
+                            neighbour_order_to_measure_to=neighbour_order_to_measure_to, 
+                            cumulative_energy_connection=cumulative_energy_connection, 
+                            order_index=order_index+1, 
+                            connection_index=connection_index, 
+                            excluded_slice_rotation=(f,l,mod(o+1,2))
+                        )
+
+                        # Undo rotation
+                        rotate!(cube, f, l, mod(o+1,2))
+                    end
+                end
+            end
+        end
+    # If we've reached the order to measure to then store the complete cumulative energy connection
+    else
+        if connection_index <= size(energy_connections, 1)
+            energy_connections[connection_index,:] .= cumulative_energy_connection
+            connection_index += 1
+        end
+    end
+
+    return connection_index
+end
