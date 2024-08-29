@@ -1,11 +1,13 @@
 using Distributed
-addprocs(100)
+addprocs(50)
 
 @everywhere using Pkg
 @everywhere Pkg.activate(".")
 @everywhere Pkg.instantiate()
 
 @everywhere include("code/experiments/autocorrelation_experiment.jl")
+
+
 
 
 
@@ -32,8 +34,6 @@ println("Autocorrelation Window Length: ", autocorrelation_window_length)
 
 
 
-
-
 println("Running autocorrelation experiment")
 
 # Not using starting configuration now as doing disorder average
@@ -49,7 +49,7 @@ experiment_name = "swap_L_11_T_$(sample_temperature)_t_$(autocorrelation_window_
 annealing_swap_move_probability = 1.0
 autocorrelation_swap_move_probability = 1.0 # SWAP MOVE CORRELATION FUNCTION TESTING
 
-average_sample_size_per_temperature = 100
-n_procs = 100
+average_sample_size_per_temperature = 50
+n_procs = 50
     
 autocorrelation_experiment(experiment_name, 11, annealing_swap_move_probability, autocorrelation_swap_move_probability, 10.0, 0.1, 60, [sample_temperature], 10000, average_sample_size_per_temperature, autocorrelation_window_length; verbose_annealing=true, inherent_disorder_average=true, parallel_anneals=n_procs, lag_limit=lag_limit)
