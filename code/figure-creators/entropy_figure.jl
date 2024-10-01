@@ -54,9 +54,9 @@ function entropy_figure()
 
                 actual_number_of_trials=0
                 for trial in 1:trials
-                    filename = "results/final_paper_results/relaxed_anneal_results/" * model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
+                    filename = "results/relaxed_anneal_results/data/" * model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
 
-                    try
+                    # try
                         data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=3)
                         
                         temperatures .= data_matrix[:,1]
@@ -64,9 +64,9 @@ function entropy_figure()
                         running_total_specific_heat_capacities .+= data_matrix[:,5] 
 
                         actual_number_of_trials += 1
-                    catch e
-                        push!(filenames_that_do_not_exist, filename)
-                    end
+                    # catch e
+                    #     push!(filenames_that_do_not_exist, filename)
+                    # end
                 
                 end
 
@@ -112,8 +112,11 @@ function entropy_figure()
                 temperature_sorted_energies = average_energies[temperature_sorted_indices]
 
                 spline_specific_heat_capacity_from_temperature = CubicSpline(sorted_temperatures, temperature_sorted_specific_heat_capacities, extrapl=[1,], extrapr=[1,])
+                println("Spline specific heat capacity from temperature at 0.1: $(spline_specific_heat_capacity_from_temperature(0.1))")
                 spline_energy_from_temperature = CubicSpline(sorted_temperatures, temperature_sorted_energies, extrapl=[1,], extrapr=[1,])
+                println("Spline energy from temperature at 0.1: $(spline_energy_from_temperature(0.1))")
                 spline_absolute_energy_from_temperature = CubicSpline(sorted_temperatures, temperature_sorted_energies .+ abs(minimum(temperature_sorted_energies)), extrapl=[1,], extrapr=[1,])
+                println("Spline absolute energy from temperature at 0.1: $(spline_absolute_energy_from_temperature(0.1))")
 
                 energy_sorted_indices = sortperm(average_energies)
                 sorted_absolute_energies = average_energies[energy_sorted_indices] .+ abs(minimum(average_energies))
@@ -164,9 +167,9 @@ function entropy_figure()
 
 
                 # PLOT S(T) Combined
-                entropy_temperature_graph = plot(test_temperatures, entropy_ala_heat_capacity_by_test_temperature, label="Specific Heat Capacity Entropy", color=:red, linestyle=:solid, xlabel="Temperature", ylabel="Entropy")
-                plot!(entropy_temperature_graph, test_temperatures, spline_entropy_ala_energy_from_absolute_energy(spline_absolute_energy_from_temperature(test_temperatures)), label="Energy Entropy", color=:blue, linestyle=:solid, xlabel="Temperature", ylabel="Entropy")
-                display(entropy_temperature_graph)
+                # entropy_temperature_graph = plot(test_temperatures, entropy_ala_heat_capacity_by_test_temperature, label="Specific Heat Capacity Entropy", color=:red, linestyle=:solid, xlabel="Temperature", ylabel="Entropy")
+                # plot!(entropy_temperature_graph, test_temperatures, spline_entropy_ala_energy_from_absolute_energy(spline_absolute_energy_from_temperature(test_temperatures)), label="Energy Entropy", color=:blue, linestyle=:solid, xlabel="Temperature", ylabel="Entropy")
+                # display(entropy_temperature_graph)
 
                 # PLOT S(E) Combined
                 entropy_energy_graph = plot(spline_absolute_energy_from_temperature(test_temperatures), spline_entropy_ala_heat_capacity_from_temperature(test_temperatures), label="Specific Heat Capacity Entropy", color=:red, linestyle=:solid, xlabel="Energy", ylabel="Entropy")
@@ -182,9 +185,9 @@ function entropy_figure()
 
 
                 if model == "clean"
-                    maximum_energy_to_fit_to = 750
+                    maximum_energy_to_fit_to = 600
                 else
-                    maximum_energy_to_fit_to = 200
+                    maximum_energy_to_fit_to = 600
                 end
 
                 indices_to_fit_to = findall(x -> x < maximum_energy_to_fit_to, spline_absolute_energy_from_temperature(test_temperatures))
@@ -211,18 +214,14 @@ function entropy_figure()
 
                 display(final_graph)
 
-                savefig(final_graph, "results/final_paper_results/entropy_figure_L_$(L)_$(model).png")
-                savefig(final_graph, "results/final_paper_results/entropy_figure_L_$(L)_$(model).pdf")
+                savefig(final_graph, "results/relaxed_anneal_results/entropy_figure_L_$(L)_$(model).png")
+                savefig(final_graph, "results/relaxed_anneal_results/entropy_figure_L_$(L)_$(model).pdf")
 
 
             end
             color_index += 1
         end
 
-        ### --- SAVE GRAPH ---
-        # savefig(graph, "results/final_paper_results/specific_heat_capacity_L_scaling_$(model).png")
-        # savefig(graph, "results/final_paper_results/specific_heat_capacity_L_scaling_$(model).pdf")
-        # display(graph)
     end
 
 

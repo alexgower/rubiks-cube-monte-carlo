@@ -9,23 +9,47 @@ using LsqFit
 
 include("../core/rubiks_cube.jl")
 
-function saddle_index_density_figure(simulation_name::String; neighbour_order_to_measure_to::Int64=1, fitting::Bool=false)
+function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fitting::Bool=false)
 
+    simulation_name = "L=11_combined"
 
-    ### --- SET UP DEFAULT PARAMETERS ---
-    header_line = readlines(joinpath("results/final_paper_results",simulation_name*"_energy_saddle_index_densities_slice"))[1]
+    ### -- SET UP DEFAULT PARAMETERS --
+    header_line = readlines(joinpath("results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/combined_disorder_average_connections_L=11_inherent_disorder_E0_E1_slice_E0_E1_energy_saddle_index_densities"))[1]
     match_obj = match(r"L=(\d+)", header_line)
     L = parse(Int, match_obj.captures[1])
     cube = RubiksCube(L)
 
-    # E_star = -0.39015151515151514
-    E_star = -0.376098787878788
-    E_on = -0.23134348484848488
-
-
     ### --- READ IN DATA ---
-    energy_saddle_index_densities_data_matrix_slice = readdlm(joinpath("results/final_paper_results",simulation_name*"_energy_saddle_index_densities_slice"), ',', Float64, '\n', skipstart=3)    
-    energy_saddle_index_densities_data_matrix_swap = readdlm(joinpath("results/final_paper_results",simulation_name*"_energy_saddle_index_densities_swap"), ',', Float64, '\n', skipstart=3)
+    energy_saddle_index_densities_data_matrix_slice = readdlm(joinpath("results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/combined_disorder_average_connections_L=11_inherent_disorder_E0_E1_slice_E0_E1_energy_saddle_index_densities"), ',', Float64, '\n', skipstart=3)
+
+    # Remove any rows with energy values larger than e10
+    energy_saddle_index_densities_data_matrix_slice = energy_saddle_index_densities_data_matrix_slice[energy_saddle_index_densities_data_matrix_slice[:,1] .< 1e10, :]
+    # or with energy values >=0.0
+    energy_saddle_index_densities_data_matrix_slice = energy_saddle_index_densities_data_matrix_slice[energy_saddle_index_densities_data_matrix_slice[:,1] .< abs(solved_configuration_energy(L)), :]
+    # or with energy values <= e-100
+    energy_saddle_index_densities_data_matrix_slice = energy_saddle_index_densities_data_matrix_slice[energy_saddle_index_densities_data_matrix_slice[:,1] .> -1e-10, :]
+    # or with density values <= e-100
+    energy_saddle_index_densities_data_matrix_slice = energy_saddle_index_densities_data_matrix_slice[energy_saddle_index_densities_data_matrix_slice[:,2] .> -1e-10, :]
+
+
+
+
+
+    energy_saddle_index_densities_data_matrix_swap = readdlm(joinpath("results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/",simulation_name*"_energy_saddle_index_densities_swap"), ',', Float64, '\n', skipstart=3)
+
+    # Remove any rows with energy values larger than e10
+    energy_saddle_index_densities_data_matrix_swap = energy_saddle_index_densities_data_matrix_swap[energy_saddle_index_densities_data_matrix_swap[:,1] .< 1e10, :]
+    # or with energy values >=0.0
+    energy_saddle_index_densities_data_matrix_swap = energy_saddle_index_densities_data_matrix_swap[energy_saddle_index_densities_data_matrix_swap[:,1] .< abs(solved_configuration_energy(L)), :]
+    # or with energy values <= e-100
+    energy_saddle_index_densities_data_matrix_swap = energy_saddle_index_densities_data_matrix_swap[energy_saddle_index_densities_data_matrix_swap[:,1] .> -1e-10, :]
+
+    # E_star = -0.39015151515151514
+    # E_star = -0.376098787878788
+    E_star = -0.3859651515151515
+    # E_on = -0.23134348484848488
+    E_on = -0.24010378787878783
+
 
     ### --- COLOURS ---
     alex_red = RGB(227/255, 11/255, 92/255)
@@ -97,7 +121,7 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
         yguidefontsize=12,  # Y-axis label font size
         margin=1mm,         # Margin around the plot
         xlabel="Energy Density, "*L"\epsilon = E/|\!\!E_s|",
-        ylabel="Average Saddle Index Density, "*L"\langle k \rangle", 
+        ylabel="Average Saddle Index Density, "*L"\overline{\langle k \rangle}", 
         title = neighbour_order_to_measure_to>1 ? "Second Nearest Neighbours" : "",
         titlefontsize=12,
     )
@@ -188,11 +212,11 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
 
     # Add E^* vertical line
     vline!(average_saddle_index_densities_graph, [E_star], linecolor=:green, linestyle=:dash, linewidth=2, label="")
-    annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"\epsilon^*", 12, :black))])
+    annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"\bar\epsilon^*", 12, :black))])
 
     # Add E_on vertical line
-    vline!(average_saddle_index_densities_graph, [E_on], linecolor=:red, linestyle=:dash, linewidth=2, label="")
-    annotate!(average_saddle_index_densities_graph, [(E_on+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"\epsilon^{\rm on}", 12, :black))])
+    vline!(average_saddle_index_densities_graph, [E_on], linecolor=alex_red, linestyle=:dash, linewidth=2, label="")
+    annotate!(average_saddle_index_densities_graph, [(E_on+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"\bar\epsilon^{\rm on}", 12, :black))])
 
     if fitting
         # Do exponential fit Ae^(bE) on 
@@ -234,8 +258,13 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
     [log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap]),
     log.(average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice])]; 
     color=[alex_blue alex_orange], legend=false, inset=bbox(0.25,0.25,0.3,0.4), subplot=2,
-    xlabel=L"\epsilon", ylabel=L"\ln\langle k \rangle", yguidefontsize=12,xguidefontsize=12)
+    xlabel=L"\epsilon", ylabel=L"\ln\overline{\langle k \rangle}", yguidefontsize=12,xguidefontsize=12, ylims=(-11,0))
 
+
+    println("Maximum of log slice data: ", maximum(log.(average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice])))
+    println("Maximum of log swap data: ", maximum(log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap])))
+    println("Minimum of log slice data: ", minimum(log.(average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice])))
+    println("Minimum of log swap data: ", minimum(log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap])))
 
     # Pink slice inset data
     scatter!(average_saddle_index_densities_graph, 
@@ -249,7 +278,7 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
     # annotate!(average_saddle_index_densities_graph, [(E_star+0.025, ylims(average_saddle_index_densities_graph)[1]+0.66, Plots.text(L"E^*", 12, :black))])
        
     # Add E_on vertical line
-    vline!(average_saddle_index_densities_graph, [E_on], linecolor=:red, linestyle=:dash, linewidth=2, label="", subplot=2)
+    vline!(average_saddle_index_densities_graph, [E_on], linecolor=alex_red, linestyle=:dash, linewidth=2, label="", subplot=2)
 
     if fitting
         # Do linear fit Ax + B on 
@@ -326,7 +355,12 @@ function saddle_index_density_figure(simulation_name::String; neighbour_order_to
     ### --- SAVE AND DISPLAY GRAPH ---
     extra = fitting ? "_fitting" : ""
 
-    savefig(average_saddle_index_densities_graph, "results/final_paper_results/$(simulation_name)_average_saddle_index_densities$(extra).png")
-    savefig(average_saddle_index_densities_graph, "results/final_paper_results/$(simulation_name)_average_saddle_index_densities$(extra).pdf")
+    savefig(average_saddle_index_densities_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(simulation_name)_average_saddle_index_densities$(extra).png")
+    savefig(average_saddle_index_densities_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(simulation_name)_average_saddle_index_densities$(extra).pdf")
     display(average_saddle_index_densities_graph)
 end
+
+
+saddle_index_density_figure()
+
+saddle_index_density_figure(fitting=true)

@@ -13,21 +13,34 @@ using Plots.PlotMeasures
 include("../core/rubiks_cube.jl")
 
 
-function saddle_index_proportions_figure(simulation_name::String; neighbour_order_to_measure_to::Int64=1)
+function saddle_index_proportions_figure(connectivity="Slice-Rotation", neighbour_order_to_measure_to::Int64=1)
+    simulation_name = "L=11_combined"
+
+    simulation_name = simulation_name*"_energy_saddle_index_densities_slice"
 
     # E_star = -0.39015151515151514 
-    E_star = -0.376098787878788
-    E_on = -0.23134348484848488
+    # E_star = -0.376098787878788
+    E_star = -0.3859651515151515
+    # E_on = -0.23134348484848488
+    E_on = -0.24010378787878783
 
 
     ### -- SET UP DEFAULT PARAMETERS --
-    header_line = readlines(joinpath("results/final_paper_results",simulation_name))[1]
+    header_line = readlines(joinpath("results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/combined_disorder_average_connections_L=11_inherent_disorder_E0_E1_slice_E0_E1_energy_saddle_index_densities"))[1]
     match_obj = match(r"L=(\d+)", header_line)
     L = parse(Int, match_obj.captures[1])
     cube = RubiksCube(L)
 
     ### --- READ IN DATA ---
-    energy_saddle_index_densities_data_matrix = readdlm(joinpath("results/final_paper_results",simulation_name), ',', Float64, '\n', skipstart=3)
+    energy_saddle_index_densities_data_matrix = readdlm(joinpath("results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/combined_disorder_average_connections_L=11_inherent_disorder_E0_E1_slice_E0_E1_energy_saddle_index_densities"), ',', Float64, '\n', skipstart=3)
+
+    # Remove any rows with energy values larger than e10
+    energy_saddle_index_densities_data_matrix = energy_saddle_index_densities_data_matrix[abs.(energy_saddle_index_densities_data_matrix[:,1]) .< 1e10, :]
+    # or with energy values >=0.0
+    energy_saddle_index_densities_data_matrix = energy_saddle_index_densities_data_matrix[energy_saddle_index_densities_data_matrix[:,1] .< abs(solved_configuration_energy(L)), :]
+    # or with energy values < 0
+    energy_saddle_index_densities_data_matrix = energy_saddle_index_densities_data_matrix[energy_saddle_index_densities_data_matrix[:,1] .> 0, :]
+
 
     ### --- COLOURS ---
     alex_red = RGB(227/255, 11/255, 92/255)
@@ -50,6 +63,7 @@ function saddle_index_proportions_figure(simulation_name::String; neighbour_orde
     neighbours_saddle_indices_shared_between = Z^(neighbour_order_to_measure_to-1)
 
     K_60 = 0
+    K_0 = 0
 
     total = 0
     for (i, E0) in pairs(E0_bin_values)
@@ -57,6 +71,7 @@ function saddle_index_proportions_figure(simulation_name::String; neighbour_orde
         E0_saddle_indices = [round((normalization_factor*energy_saddle_index_densities_data_matrix[j,2])/(neighbours_saddle_indices_shared_between)) for j in 1:size(energy_saddle_index_densities_data_matrix,1) if energy_saddle_index_densities_data_matrix[j,1] == E0] 
         
         K_60 += sum(E0_saddle_indices .== 60)
+        K_0 += sum(E0_saddle_indices .== 0)
         total += length(E0_saddle_indices)
 
 
@@ -68,6 +83,7 @@ function saddle_index_proportions_figure(simulation_name::String; neighbour_orde
     end
 
     println("K=60 Maxima Saddles: ", K_60)
+    println("K=0 Minima Saddles: ", K_0)
     println("Total Saddles: ", total)
 
     # Plot the k saddle proportions against E0
@@ -99,7 +115,7 @@ function saddle_index_proportions_figure(simulation_name::String; neighbour_orde
         -1.0 .+ (E0_bin_values./-solved_configuration_energy(cube)),
         k_saddle_proportions[:, 1],
         xlabel="Energy Density, "*L"\epsilon = E/|\!\!E_s|",
-        ylabel="Saddle Index, "*L"K"*", Proportions",
+        ylabel="Saddle Index, "*L"K"*", Proportions, "*L"\bar p_{K}(\epsilon)",
         # title="L=$L $connectivity Cube Saddle Index Proportions",
         # titlefontsize=10,   # Title font size
 
@@ -107,7 +123,7 @@ function saddle_index_proportions_figure(simulation_name::String; neighbour_orde
         label="",
         xguidefontsize=12,   # X-axis label font size
         yguidefontsize=12,   # Y-axis label font size
-        margin=0mm,          # Margin around the plot
+        margin=1mm,          # Margin around the plot
         legend=:left,
         color=alex_blue,
     )
@@ -116,98 +132,39 @@ function saddle_index_proportions_figure(simulation_name::String; neighbour_orde
     scatter!(k_saddle_proportions_graph, [], [], label="K≥$(2+neighbour_order_to_measure_to-1)", color=alex_green)
 
 
-    
-    # Add E^* vertical line
-    if !isnothing(E_star)
-        vline!(k_saddle_proportions_graph, [E_star], linecolor=:green, linestyle=:dash, linewidth=2, label="")
-        annotate!(k_saddle_proportions_graph, [(E_star+0.023, ylims(k_saddle_proportions_graph)[1]+0.58, Plots.text(L"\epsilon^*", 12, :black))])
-    end
+    if connectivity=="Slice-Rotation"
 
-    # Add E^on vertical line
-    if !isnothing(E_on)
-        vline!(k_saddle_proportions_graph, [E_on], linecolor=:red, linestyle=:dash, linewidth=2, label="")
-        annotate!(k_saddle_proportions_graph, [(E_on+0.023, ylims(k_saddle_proportions_graph)[1]+0.58, Plots.text(L"\epsilon^{\rm on}", 12, :black))])
+        # Add E^* vertical line
+        if !isnothing(E_star)
+            vline!(k_saddle_proportions_graph, [E_star], linecolor=:green, linestyle=:dash, linewidth=2, label="")
+            annotate!(k_saddle_proportions_graph, [(E_star+0.023, ylims(k_saddle_proportions_graph)[1]+0.58, Plots.text(L"\bar\epsilon^*", 12, :black))])
+        end
+
+        # Add E^on vertical line
+        if !isnothing(E_on)
+            vline!(k_saddle_proportions_graph, [E_on], linecolor=alex_red, linestyle=:dash, linewidth=2, label="")
+            annotate!(k_saddle_proportions_graph, [(E_on+0.023, ylims(k_saddle_proportions_graph)[1]+0.58, Plots.text(L"\bar\epsilon^{\rm on}", 12, :black))])
+        end
+
     end
 
     # Save and display the graphs
     # Remove string "_energy_saddle_index_densities" from simulation_name to get save_name
     save_name = replace(simulation_name, "_energy_saddle_index_densities" => "")
 
-    # savefig(k_saddle_proportions_graph, "results/final_paper_results/$(save_name)_k_saddle_proportions.pdf")
-    # savefig(k_saddle_proportions_graph, "results/final_paper_results/$(save_name)_k_saddle_proportions.png")
+
+    if connectivity=="Slice-Rotation"
+        savefig(k_saddle_proportions_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(save_name)_k_saddle_proportions.pdf")
+        savefig(k_saddle_proportions_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(save_name)_k_saddle_proportions.png")
+    else 
+        savefig(k_saddle_proportions_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(save_name)_k_saddle_proportions_$(connectivity).pdf")
+        savefig(k_saddle_proportions_graph, "results/neighbour_initial_and_final_energies_distribution_results/$(save_name)_k_saddle_proportions_$(connectivity).png")
+    end
+    
+    
     display(k_saddle_proportions_graph)
 
-
-    # Make another graph of just K>=2 divided by K=0 with same vertical lines added
-
-    k_saddle_proportions_graph_2 = scatter(
-        -1.0 .+ (E0_bin_values./-solved_configuration_energy(cube)),
-        k_saddle_proportions[:, 4] ./ k_saddle_proportions[:, 1],
-        xlabel="Energy Density, "*L"\epsilon = E/|\!\!E_s|",
-        ylabel="Saddle Index, "*L"K"*"≥2/K=0",
-        # titlefontsize=10,   # Title font size
-        label="K≥2/K=0",
-        xguidefontsize=12,   # X-axis label font size
-        yguidefontsize=12,   # Y-axis label font size
-        margin=0mm,          # Margin around the plot
-        legend=:left,
-        color=alex_green,
-    )
-
-    # Add E^* vertical line
-    if !isnothing(E_star)
-        vline!(k_saddle_proportions_graph_2, [E_star], linecolor=:green, linestyle=:dash, linewidth=2, label="")
-        annotate!(k_saddle_proportions_graph_2, [(E_star+0.023, ylims(k_saddle_proportions_graph_2)[1]+100, Plots.text(L"\epsilon^*", 12, :black))])
-    end
-
-    # Add E^on vertical line
-    if !isnothing(E_on)
-        vline!(k_saddle_proportions_graph_2, [E_on], linecolor=:red, linestyle=:dash, linewidth=2, label="")
-        annotate!(k_saddle_proportions_graph_2, [(E_on+0.023, ylims(k_saddle_proportions_graph_2)[1]+50, Plots.text(L"\epsilon^{\rm on}", 12, :black))])
-    end
-
-    # Save and display the graphs
-    # savefig(k_saddle_proportions_graph_2, "results/final_paper_results/$(save_name)_k_saddle_proportions_2.pdf")  
-    # savefig(k_saddle_proportions_graph_2, "results/final_paper_results/$(save_name)_k_saddle_proportions_2.png")
-    display(k_saddle_proportions_graph_2)
-
-
-
-
-
-
-
-    # Make graph of K=0 proportion divded by K=2 proportion
-    k_saddle_proportions_graph_3 = scatter(
-        -1.0 .+ (E0_bin_values./-solved_configuration_energy(cube)),
-        k_saddle_proportions[:, 1] ./ k_saddle_proportions[:, 4],
-        xlabel="Energy Density, "*L"\epsilon = E/|\!\!E_s|",
-        ylabel="Saddle Index, "*L"K"*"=0/K≥2",
-        # titlefontsize=10,   # Title font size
-        label="K=0/K≥2",
-        xguidefontsize=12,   # X-axis label font size
-        yguidefontsize=12,   # Y-axis label font size
-        margin=0mm,          # Margin around the plot
-        legend=:left,
-        color=alex_green,
-    )
-
-    # Add E^* vertical line
-    if !isnothing(E_star)
-        vline!(k_saddle_proportions_graph_3, [E_star], linecolor=:green, linestyle=:dash, linewidth=2, label="")
-        annotate!(k_saddle_proportions_graph_3, [(E_star+0.023, ylims(k_saddle_proportions_graph_3)[1]+500, Plots.text(L"\epsilon^*", 12, :black))])
-    end
-
-    # Add E^on vertical line
-    if !isnothing(E_on)
-        vline!(k_saddle_proportions_graph_3, [E_on], linecolor=:red, linestyle=:dash, linewidth=2, label="")
-        annotate!(k_saddle_proportions_graph_3, [(E_on+0.023, ylims(k_saddle_proportions_graph_3)[1]+50, Plots.text(L"\epsilon^{\rm on}", 12, :black))])
-    end
-
-    # Save and display the graphs
-    # savefig(k_saddle_proportions_graph_3, "results/final_paper_results/$(save_name)_k_saddle_proportions_3.pdf")
-    # savefig(k_saddle_proportions_graph_3, "results/final_paper_results/$(save_name)_k_saddle_proportions_3.png")
-    display(k_saddle_proportions_graph_3)
-
-
 end
+
+
+saddle_index_proportions_figure()

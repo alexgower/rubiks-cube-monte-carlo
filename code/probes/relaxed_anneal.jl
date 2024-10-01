@@ -75,6 +75,7 @@ include("../core/monte_carlo.jl")
 
     measured_relaxation_iterations_by_temperature = zeros(length(temperature_vector))
     accepted_candidates_by_temperature = zeros(length(temperature_vector))
+    accepted_tuple_candidates_by_temperature = zeros(length(temperature_vector))
     final_configuration_correlation_function_by_temperature = zeros(length(temperature_vector))
 
     energy_connections_data = nothing
@@ -138,7 +139,7 @@ include("../core/monte_carlo.jl")
                 swap_move_probability_at_this_temperature = 0.0
             end
 
-            relaxation_converged, final_configuration_correlation_function, final_iteration_number, final_accepted_candidates_number = run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=Int(ceil(2*relaxation_iterations_vector[temperature_index])), verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-2))
+            relaxation_converged, final_configuration_correlation_function, final_iteration_number, final_accepted_candidates_number, final_accepted_tuple_candidates_number,  = run_metropolis_swap_algorithm!(cube, beta, swap_move_probability=swap_move_probability_at_this_temperature, maximum_iterations=Int(ceil(2*relaxation_iterations_vector[temperature_index])), verbose=verbose_metropolis_swap, configuration_correlation_convergence_criteria=exp(-2))
 
 
 
@@ -237,6 +238,7 @@ include("../core/monte_carlo.jl")
 
             measured_relaxation_iterations_by_temperature[temperature_index] = final_iteration_number/2 # (divide by 2 as relaxation stage uses 2 relaxation_iterations before stopping)
             accepted_candidates_by_temperature[temperature_index] = final_accepted_candidates_number/2 # (divide by 2 as relaxation stage uses 2 relaxation_iterations before stopping)
+            accepted_tuple_candidates_by_temperature[temperature_index] = final_accepted_tuple_candidates_number/2 # (divide by 2 as relaxation stage uses 2 relaxation_iterations before stopping)
             final_configuration_correlation_function_by_temperature[temperature_index] = final_configuration_correlation_function # This should be e^-2 for relaxed anneal with out current set-up
 
             # Print current temperature and average energy if verbose_annealing mode activated
@@ -251,6 +253,7 @@ include("../core/monte_carlo.jl")
                 println("-Average Energy/Solved Configuration Energy: $(-E_average_by_temperature[temperature_index]/solved_configuration_energy(cube))")
                 println("Relaxation Iterations to e^-2 Correlation Function: $final_iteration_number")
                 println("Accepted Candidates: $final_accepted_candidates_number")
+                println("Accepted Tuple Candidates: $final_accepted_tuple_candidates_number")
                 println("Acceptance Rate: $((final_accepted_candidates_number/final_iteration_number)*100) %")
                 println("Relaxation Converged?: $relaxation_converged")
                 println("Final Configuration Correlation Function (for t=2*tau): $final_configuration_correlation_function")
@@ -290,5 +293,5 @@ include("../core/monte_carlo.jl")
     end
 
     # Return results as dictionary
-    return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, M_average_by_temperature, M_2_average_by_temperature, M_4_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature, energy_connections_data, energy_saddle_index_densities_tuple, energy_minima_tuple
+    return temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, M_average_by_temperature, M_2_average_by_temperature, M_4_average_by_temperature, measured_relaxation_iterations_by_temperature, accepted_candidates_by_temperature, accepted_tuple_candidates_by_temperature, final_configuration_correlation_function_by_temperature, energy_connections_data, energy_saddle_index_densities_tuple, energy_minima_tuple
 end

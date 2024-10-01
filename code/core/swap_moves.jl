@@ -485,8 +485,8 @@ end
     # With (cube, reverse=true, candidate_reversing_information) as arguments, it simply undoes the previous swap_move
 
     # Currently we have a perfect uniform distribution of suggesting each type of swap move, but we can bias some classes of swap moves over others using the variables below
-    bias_of_coupled_subsystem_two_cycles_over_three_cycles_or_opposite_orientation_rotations = -0.6 
-    # bias_of_coupled_subsystem_two_cycles_over_three_cycles_or_opposite_orientation_rotations = -1.0 # TODO remove
+    # bias_of_coupled_subsystem_two_cycles_over_three_cycles_or_opposite_orientation_rotations = -0.6 
+    bias_of_coupled_subsystem_two_cycles_over_three_cycles_or_opposite_orientation_rotations = -1.0 # TODO remove
     bias_of_three_cycles_over_opposite_orientation_rotations = 0.0
 
 
@@ -516,7 +516,6 @@ end
             end
 
         end
-
 
     else # Reversing case
 

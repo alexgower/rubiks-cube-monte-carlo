@@ -1,5 +1,3 @@
-
-
 using Distributed
 number_of_processors = parse(Int, ARGS[2])
 addprocs(number_of_processors)

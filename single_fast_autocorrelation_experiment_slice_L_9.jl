@@ -27,9 +27,9 @@ println("Running autocorrelation experiment")
 # starting_configurations = [starting_configuration_L_5, starting_configuration_L_7, starting_configuration_L_9, starting_configuration_L_11]
 
 
-experiment_name = "L_11_T_$(sample_temperature)_t_$(autocorrelation_window_length)_trial_$(trial_number)_swap"
+experiment_name = "L_9_T_$(sample_temperature)_t_$(autocorrelation_window_length)_trial_$(trial_number)_slice"
 
 annealing_swap_move_probability = 1.0
-autocorrelation_swap_move_probability = 1.0 # DOING SWAP MOVES NOW
+autocorrelation_swap_move_probability = 0.0 # DOING SLICE-ROTATIONS NOW
 
-fast_autocorrelation_experiment(experiment_name, 11, annealing_swap_move_probability, autocorrelation_swap_move_probability, 10.0, 0.1, 100, sample_temperature, 10000, autocorrelation_window_length; inherent_disorder=true, lag_limit=lag_limit)
+fast_autocorrelation_experiment(experiment_name, 9, annealing_swap_move_probability, autocorrelation_swap_move_probability, 10.0, 0.1, 100, sample_temperature, 10000, autocorrelation_window_length; inherent_disorder=true, lag_limit=lag_limit)

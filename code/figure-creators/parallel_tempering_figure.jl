@@ -3,8 +3,8 @@ using Plots
 using LaTeXStrings
 
 function parallel_tempering_figure()
-    no_pt_file = "results/final_paper_results/no_PT_swap_moves.csv"
-    pt_file = "results/final_paper_results/PT_moves.csv"
+    no_pt_file = "results/relaxed_anneal_results/no_PT_swap_moves.csv"
+    pt_file = "results/relaxed_anneal_results/PT_moves.csv"
 
     # Read the CSV files into arrays, skipping the header line # i.e. the Ollie Data
     no_pt_data = readdlm(no_pt_file, ',', Float64, skipstart=1)
@@ -37,13 +37,13 @@ function parallel_tempering_figure()
     model = "clean"
     L = 9
     swap_move_probability = 0.0
-    N_T = 100
+    N_T = 200
     temperatures = zeros(N_T)
     running_total_average_energy_densities_by_temperature = zeros(N_T)
     trials = 50
     actual_number_of_trials=0
     for trial in 1:trials
-        filename = "results/final_paper_results/relaxed_anneal_results/"* model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
+        filename = "results/relaxed_anneal_results/"* model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
         try
             data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=3)
             
@@ -65,13 +65,13 @@ function parallel_tempering_figure()
     model = "clean"
     L = 9
     swap_move_probability = 1.0
-    N_T = 100
+    N_T = 200
     temperatures = zeros(N_T)
     running_total_average_energy_densities_by_temperature = zeros(N_T)
     trials = 50
     actual_number_of_trials=0
     for trial in 1:trials
-        filename = "results/final_paper_results/relaxed_anneal_results/"* model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
+        filename = "results/relaxed_anneal_results/"* model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
         try
             data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=3)
             
@@ -150,7 +150,7 @@ function parallel_tempering_figure()
     display(current())
 
     # Optionally, save the plot
-    savefig("results/final_paper_results/parallel_tempering.png")
-    savefig("results/final_paper_results/parallel_tempering.pdf")
+    savefig("results/relaxed_anneal_results/parallel_tempering.png")
+    savefig("results/relaxed_anneal_results/parallel_tempering.pdf")
 
 end

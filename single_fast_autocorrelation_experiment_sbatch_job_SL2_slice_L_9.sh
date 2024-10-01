@@ -68,4 +68,4 @@ echo "Running on master node: `hostname`"
 echo "Current directory: `pwd`"
 echo "Arguments passed to SLURM script: $@"
 
-julia single_fast_autocorrelation_experiment.jl "$@"
+julia single_fast_autocorrelation_experiment_slice_L_9.jl "$@"

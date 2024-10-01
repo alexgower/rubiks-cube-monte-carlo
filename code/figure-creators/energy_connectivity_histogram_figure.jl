@@ -9,7 +9,6 @@ using Colors
 # using ColorTypes, ColorSchemes
 using Plots.PlotMeasures
 
-using Images
 
 include("../core/rubiks_cube.jl")
 
@@ -33,19 +32,53 @@ function annotatewithbox!(
     fig
 end
 
+
 # Main function
-function energy_connectivity_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, bin_diagonal_graph::Bool=false, bin_horizontal_graph::Bool=false, prediction::Bool=false)
+function energy_connectivity_histogram_figure(connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, bin_diagonal_graph::Bool=false, bin_horizontal_graph::Bool=false, prediction::Bool=false)
+
+    simulation_name = connectivity=="Slice-Rotation" ? "combined_L=11_inherent_disorder_slice" : "combined_L=11_inherent_disorder_swap"
 
     # E_star = -0.39015151515151514
-    E_star = -0.376098787878788
-    E_on = -0.23134348484848488
+    # E_star = -0.376098787878788
+    E_star = -0.3859651515151515
+    # E_on = -0.23134348484848488
+    E_on = -0.24010378787878783
+
+    ### --- COLOURS ---
+    Plots.default(dpi = 300)
+
+    alex_red = RGB(227/255, 11/255, 92/255)
+    alex_pink = RGB(255/255, 105/255, 180/255)
+    alex_orange = RGB(255/255, 165/255, 0/255)
+    alex_green = RGB(23/255,177/255,105/255) # RGB(159/255, 226/255, 191/255)
+    alex_blue = RGB(100/255, 149/255, 237/255)
+    alex_grey = RGB(113/255, 121/255, 126/255)
+
+    alex_alt_blue = RGB(4/255, 57/255, 94/255)
 
 
     ### --- READ IN THE DATA ---
-    filename = "results/final_paper_results",simulation_name*"_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_energy_connections"
+    if connectivity=="Slice-Rotation"
+        if neighbour_order_to_measure_to == 2
+            filename = "results/neighbour_initial_and_final_energies_distribution_results/E2_E0_results/combined_data/combined_disorder_average_connections_L=11_inherent_disorder_E0_E1_E2_slice_energy_connections"
+        elseif neighbour_order_to_measure_to == 1
+            filename = "results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/combined_disorder_average_connections_L=11_inherent_disorder_E0_E1_slice_E0_E1_energy_connections"
+        end
+    elseif connectivity=="Swap-Move"
+        # TODO
+        filename = "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_energy_connections"
+    else
+        error("Invalid connectivity: $connectivity")
+    end
+
 
     header_line = readlines(joinpath(filename))[1]
     energy_connections_data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=2)
+
+    if neighbour_order_to_measure_to == 2
+        # Ignore column 1 and move column 3/2 into column 2/1
+        energy_connections_data_matrix = hcat(energy_connections_data_matrix[:,2], energy_connections_data_matrix[:,3])
+    end
 
 
     ### --- SET UP DEFAULT PARAMETERS ---
@@ -63,8 +96,6 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
 
 
     ### --- HISTOGRAM GENERAL CALCULATIONS ---
-
-    ## -- DIAGONAL GRAPH --
 
     # Determine the bin edges based on the data
     bin_edges_x = 0:1:-solved_configuration_energy(cube)
@@ -97,14 +128,31 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
         println("E_0 = $(bin_edges_x[i]): $(slice_sum)")
 
         # Also print the proportion of connections between +1 and +10 avoe this E_0
-        mask = (energy_connections_data_matrix[:,1] .== bin_edges_x[i]) .& (energy_connections_data_matrix[:,2] .> bin_edges_x[i] .+ 1) .& (energy_connections_data_matrix[:,2] .<= bin_edges_x[i] .+ 10)
-        proportion = sum(mask) / slice_sum
-        println("Proportion of connections between +1 and +10 above this E_0: $(proportion)")
+        # mask = (energy_connections_data_matrix[:,1] .== bin_edges_x[i]) .& (energy_connections_data_matrix[:,2] .> bin_edges_x[i] .+ 1) .& (energy_connections_data_matrix[:,2] .<= bin_edges_x[i] .+ 10)
+        # proportion = sum(mask) / slice_sum
+        # println("Proportion of connections between +1 and +10 above this E_0: $(proportion)")
 
     end
 
     E0_values = energy_connections_data_matrix[:,1]./-solved_configuration_energy(cube)
     E1_values = energy_connections_data_matrix[:,2]./-solved_configuration_energy(cube)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    ## -- DIAGONAL GRAPH --
+
 
     if bin_diagonal_graph==false
 
@@ -125,16 +173,19 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
     graph = histogram2d(
         E0_values, 
         E1_values, 
-        color=:bluesreds, 
+        # color=cgrad([alex_blue, :white], [0.0, 0.15, 0.3]),
+        # color=cgrad([:blue, :white], [0.0, 0.15, 0.3]),
+        # color = connectivity == "Slice-Rotation" ? cgrad([:blue, :white], [0.0, 0.15, 0.3]) : cgrad([:blue, :white], [0.0, 0.05, 0.1]),
+        color = connectivity == "Slice-Rotation" ? cgrad([:darkblue, :white], [0.0, 0.15, 0.3]) : cgrad([:blue, :white], [0.0, 0.05, 0.1]),
         show_empty_bins=false,
-        normalize=:pdf, 
+        # normalize=:pdf, 
         bins=(bin_edges_x./-solved_configuration_energy(cube), bin_edges_y./-solved_configuration_energy(cube)), 
         weights=biases, 
         ylabel=diagonal_ylabel, 
         xlabel=diagonal_xlabel, 
         # title="$connectivity Cube", 
-        xlims=(minimum(E0_values), maximum(E0_values)), 
-        ylims=(minimum(E1_values), maximum(E1_values)),
+        xlims=(minimum(E0_values)+0.03, maximum(E0_values)-0.03), 
+        ylims=(minimum(E1_values)+0.03, maximum(E1_values)-0.03),
         colorbar_title="",
         # titlefontsize=10,   # Title font size
         xguidefontsize=12,   # X-axis label font size
@@ -145,7 +196,7 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
         # background_color=:white,
         # grid=false
     )
-    annotate!(1.115 * maximum(E0_values), 0.5 * (minimum(E1_values) + maximum(E1_values)), text("Sampled Frequency", 10, :center, :center, rotation=90))
+    # annotate!(1.115 * maximum(E0_values), 0.5 * (minimum(E1_values) + maximum(E1_values)), text("Sampled Frequency", 10, :center, :center, rotation=90))
 
     # Add E_0 = E1 lines to graph
     if neighbour_order_to_measure_to==2
@@ -166,65 +217,30 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
     if connectivity == "Slice-Rotation"
         E_star_plot = 1+E_star
         vline!(graph, [E_star_plot], line=:dash, color=:green, lw=2, label="")
-        annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.05, Plots.text(L"\epsilon^*", 12, :black))])
+        annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.05, Plots.text(L"\bar\epsilon^*", 12, :black))])
 
     end
 
         # Add title as annotated text in top right corner
         if connectivity=="Slice-Rotation"
-            annotate!(graph, [(xlims(graph)[1]+0.12, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
+            annotate!(graph, [(xlims(graph)[1]+0.1, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
         else
             annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.25, Plots.text("$(connectivity) Cube", 10, :black))])
         end
 
-    # ### --- PLOT SPIRAL IMAGES ON GRAPH ---
-    # if connectivity == "Slice-Rotation" && neighbour_order_to_measure_to == 1
-    #     ## -- SLICE SPIRAL --
-    #     slice_spiral_image = load("results/final_paper_results/spiral.png")
 
-    #     # Determine the desired width and height on the graph
-    #     # Here you set one dimension, and calculate the other to preserve the aspect ratio
-    #     desired_width = 0.4
-    #     aspect_ratio = size(slice_spiral_image, 2) / size(slice_spiral_image, 1) # width / height
-    #     desired_height = (desired_width / aspect_ratio)
-
-    #     # Determine the location on the graph where you want the image's bottom-left corner
-    #     x_location = 0.13
-    #     y_location = 0.065
-
-    #     # Plot the image with the specified dimensions and location
-    #     plot!(graph, reverse(slice_spiral_image; dims=1), yflip=false, inset=bbox(x_location,y_location,desired_width-0.1,desired_height), subplot=2, aspect_ratio=:auto, axis=false, grid=false, framestyle=:box, legend=false, ticks=nothing, border=:none, plot_bgcolor=:transparent)
-
-
-    #     ## -- SWAP SPIRAL --
-    #     swap_spiral_image = load("results/final_paper_results/swap-spiral.png")
-
-    #     # Determine the desired width and height on the graph
-    #     # Here you set one dimension, and calculate the other to preserve the aspect ratio
-    #     desired_width = 0.4
-    #     aspect_ratio = size(swap_spiral_image, 2) / size(swap_spiral_image, 1) # width / height
-    #     desired_height = (desired_width / aspect_ratio)
-
-    #     # Determine the location on the graph where you want the image's bottom-left corner
-    #     x_location = 0.73
-    #     y_location = 0.5
-
-    #     # Plot the image with the specified dimensions and location
-    #     plot!(graph, reverse(swap_spiral_image; dims=1), yflip=false, inset=bbox(x_location,y_location,desired_width-0.1,desired_height), subplot=2, aspect_ratio=:auto, axis=false, grid=false, framestyle=:box, legend=false, ticks=nothing, border=:none, plot_bgcolor=:transparent)
-
-    # end
 
     ### -- Save and display the graphs --
     println("Saving diagonal graph...")
     if connectivity=="Slice-Rotation"
         extra = prediction ? "_prediction" : ""
 
-        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_raw$(extra).pdf")
-        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_raw$(extra).png")
+        savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_raw$(extra).pdf")
+        savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal_raw$(extra).png")
         display(graph)
     else
-        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.pdf")
-        savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.png")
+        savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.pdf")
+        savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram_diagonal.png")
         display(graph)
     end
     
@@ -303,31 +319,34 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
         error("Invalid neighbour_order_to_measure_to value for x/y labels: $neighbour_order_to_measure_to")
     end
 
+
     graph = histogram2d(
         E0_values, 
         E_difference_values, 
-        color=:bluesreds,
+        # color=cgrad(:blues, scale = :exp, rev=true),
+        # color=cgrad([alex_blue, :white], [0.0, 0.15, 0.3]),
+        # color=cgrad([:blue, :white], [0.0, 0.15, 0.3]),
+        color = connectivity == "Slice-Rotation" ? cgrad([:darkblue, :white], [0.0, 0.15, 0.3]) : cgrad([:blue, :white], [0.0, 0.05, 0.1]),
         show_empty_bins=false,
-        normalize=:pdf, 
         bins=((bin_edges_x./-solved_configuration_energy(cube)), bin_edges_y./-solved_configuration_energy(cube)), 
         weights=biases, 
         ylabel=horizontal_ylabel, 
         xlabel=horizontal_xlabel,
-        xlims=(minimum(E0_values), maximum(E0_values)), 
+        xlims= neighbour_order_to_measure_to == 1 ? (minimum(E0_values)+0.03, maximum(E0_values)-0.03) :  (minimum(E0_values)+0.01, maximum(E0_values)),
         ylims=(minimum(E_difference_values), maximum(E_difference_values)),
         colorbar_title="",
         xguidefontsize=8,   # X-axis label font size
         yguidefontsize=8,   # Y-axis label font size
-        margin=5mm,          # Margin around the plot
+        margin=3mm,          # Margin around the plot
         # title="$connectivity Cube",
         # titlefontsize=10,   # Title font size
         xticks=(0.4:0.1:0.8, -1.0 .+ 0.4:0.1:0.8),
     )
-    annotate!(1.115 * maximum(E0_values), 0.5 * (minimum(E_difference_values) + maximum(E_difference_values)), text("Sampled Frequency", 8, :center, :center, rotation=90))
+    # annotate!(1.08 * maximum(E0_values), 0.5 * (minimum(E_difference_values) + maximum(E_difference_values)), text("Sampled Frequency", 8, :center, :center, rotation=90))
 
     # Add title as annotated text in top right corner
     if connectivity=="Slice-Rotation"
-        annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.012, Plots.text("$(connectivity) Cube", 10, :black))])
+        # annotate!(graph, [(xlims(graph)[2]-0.11, ylims(graph)[2]-0.012, Plots.text("$(connectivity) Cube", 10, :black))])
     else
         annotate!(graph, [(xlims(graph)[2]-0.1, ylims(graph)[2]-0.012, Plots.text("$(connectivity) Cube", 10, :black))])
     end
@@ -362,13 +381,15 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
 
     # Add E_star vertical lines to graphs if we are slice rotation cube
     if connectivity == "Slice-Rotation"
-        E_star_plot = 1+E_star
-        vline!(graph, [E_star_plot], line=:dash, color=:green, lw=2, label="")
-        annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.003, Plots.text(L"\epsilon^*", 10, :black))])
+        if !prediction
+            E_star_plot = 1+E_star
+            vline!(graph, [E_star_plot], line=:dash, color=:green, lw=2, label="")
+            annotate!(graph, [(E_star_plot+0.02, ylims(graph)[1]+0.003, Plots.text(L"\bar\epsilon^*", 10, :black))])
 
-        E_on_plot = 1+E_on
-        vline!(graph, [E_on_plot], line=:dash, color=:red, lw=2, label="")
-        annotate!(graph, [(E_on_plot-0.02, ylims(graph)[1]+0.003, Plots.text(L"\epsilon^{\rm on}", 10, :black))])
+            E_on_plot = 1+E_on
+            vline!(graph, [E_on_plot], line=:dash, color=alex_red, lw=2, label="")
+            annotate!(graph, [(E_on_plot-0.02, ylims(graph)[1]+0.003, Plots.text(L"\bar\epsilon^{\rm on}", 10, :black))])
+        end
 
         if prediction
             x = range(minimum(E0_values), stop=maximum(E0_values), length=100) 
@@ -388,8 +409,8 @@ function energy_connectivity_histogram_figure(simulation_name::String, connectiv
     ### -- Save and display the graph --
     println("Saving horizontal graph...")
     extra = prediction ? "_prediction" : ""
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram$(extra).pdf")
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram$(extra).png")
+    savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram$(extra).pdf")
+    savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_histogram$(extra).png")
     display(graph)
 
 end
@@ -400,3 +421,13 @@ function remove_bad_rows(data::Array{Float64,2}, L::Int64)::Array{Float64,2}
     # Return the data without rows containing NaN
     return data[non_bad_rows, :]
 end
+
+# energy_connectivity_histogram_figure("Slice-Rotation"; neighbour_order_to_measure_to=1, bin_diagonal_graph=true, bin_horizontal_graph=false, prediction=false)
+energy_connectivity_histogram_figure("Slice-Rotation"; neighbour_order_to_measure_to=1, bin_diagonal_graph=false, bin_horizontal_graph=true, prediction=false)
+# energy_connectivity_histogram_figure("Slice-Rotation"; neighbour_order_to_measure_to=1, bin_diagonal_graph=false, bin_horizontal_graph=false, prediction=false)
+
+energy_connectivity_histogram_figure("Slice-Rotation"; neighbour_order_to_measure_to=2, bin_diagonal_graph=true, bin_horizontal_graph=false, prediction=false)
+
+energy_connectivity_histogram_figure("Swap-Move"; neighbour_order_to_measure_to=1, bin_diagonal_graph=true, bin_horizontal_graph=false, prediction=false)
+
+energy_connectivity_histogram_figure("Slice-Rotation"; neighbour_order_to_measure_to=1, bin_diagonal_graph=true, bin_horizontal_graph=false, prediction=true)

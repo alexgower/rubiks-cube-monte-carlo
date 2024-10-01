@@ -14,10 +14,10 @@ function phase_transition_figures()
     # --- All L Figure ---
     # models = ["clean", "inherent_disorder"]
     models = ["clean","inherent_disorder"]
-    Ls = [11, 9,7,5,3]
+    Ls = [11,9,7,5,3]
     swap_move_probabilities = [1.0]
     trials = 50
-    N_T = 100
+    N_T = 200
 
 
     ### --- COLOURS ---
@@ -41,18 +41,25 @@ function phase_transition_figures()
         for L in Ls
             for swap_move_probability in swap_move_probabilities
 
+                if L==11 && swap_move_probability == 1.0 && model == "inherent_disorder"
+                    N_T = 100
+                else
+                    N_T = 200
+                end
+
                 temperatures = zeros(N_T)
                 running_total_specific_heat_capacities = zeros(N_T)
                 running_total_binder_cumulants = zeros(N_T)
 
                 actual_number_of_trials=0
                 for trial in 1:trials
-                    filename = "results/final_paper_results/relaxed_anneal_results/" * model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
-                    if model == "clean" && L==11
-                        filename = filename * "_old"
-                    end
+                    # filename = "results/final_paper_results/relaxed_anneal_results/" * model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
+                    filename = "results/relaxed_anneal_results/" * model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
+
 
                     try
+                        println("Reading in data from: ", filename)
+                        println("Using N_T = $(N_T)")
                         data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=3)
                         
                         temperatures .= data_matrix[:,1]
@@ -66,6 +73,8 @@ function phase_transition_figures()
                     end
                 
                 end
+
+                println("Actual number of trials for $(model) L = $L: ", actual_number_of_trials)
 
                 results_dictionary[(model, L, swap_move_probability, "temperatures")] = temperatures
                 results_dictionary[(model, L, swap_move_probability, "average_specific_heat_capacities")] = running_total_specific_heat_capacities/actual_number_of_trials
@@ -129,6 +138,8 @@ function phase_transition_figures()
         for L in Ls
             temperatures = results_dictionary[(model, L, 1.0, "temperatures")]
             average_specific_heat_capacities = results_dictionary[(model, L, 1.0, "average_specific_heat_capacities")]
+
+            println("Average specific heat capacities for L = $L: ", average_specific_heat_capacities)
             
             max_c, max_t = fit_gaussian_peak(temperatures, average_specific_heat_capacities)
             push!(max_specific_heat_capacities, max_c)
@@ -140,8 +151,10 @@ function phase_transition_figures()
 
 
         ### --- SAVE GRAPH --- 
-        savefig(graph, "results/final_paper_results/specific_heat_capacity_L_scaling_$(model).png")
-        savefig(graph, "results/final_paper_results/specific_heat_capacity_L_scaling_$(model).pdf")
+        # savefig(graph, "results/final_paper_results/specific_heat_capacity_L_scaling_$(model).png")
+        # savefig(graph, "results/final_paper_results/specific_heat_capacity_L_scaling_$(model).pdf")
+        savefig(graph, "results/relaxed_anneal_results/specific_heat_capacity_L_scaling_$(model)_inset.png")
+        savefig(graph, "results/relaxed_anneal_results/specific_heat_capacity_L_scaling_$(model)_inset.pdf")
         display(graph)
     end
 
@@ -193,8 +206,8 @@ function phase_transition_figures()
         end
 
         ### --- SAVE GRAPH ---
-        savefig(graph, "results/final_paper_results/binder_cumulant_L_scaling_$(model).png")
-        savefig(graph, "results/final_paper_results/binder_cumulant_L_scaling_$(model).pdf")
+        savefig(graph, "results/relaxed_anneal_results/binder_cumulant_L_scaling_$(model).png")
+        savefig(graph, "results/relaxed_anneal_results/binder_cumulant_L_scaling_$(model).pdf")
         display(graph)
     end
 

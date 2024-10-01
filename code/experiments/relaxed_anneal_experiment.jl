@@ -2,7 +2,6 @@ using Plots
 using DelimitedFiles
 
 include("../probes/relaxed_anneal.jl")
-include("../tools/relaxed_anneal_graphs_plotter.jl")
 
 
 
@@ -58,7 +57,7 @@ include("../tools/relaxed_anneal_graphs_plotter.jl")
         relaxation_iterations_vector = relaxation_iterations==0 ? nothing : [relaxation_iterations for T in temperature_vector]
 
         # Run anneal
-        temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, M_average_by_temperature, M_2_average_by_temperature, M_4_average_by_temperature, relaxation_iterations_by_temperature, accepted_candidates_by_temperature, final_configuration_correlation_function_by_temperature = relaxed_anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, relaxation_iterations_vector = relaxation_iterations_vector, mixing_p_swap=mixing_p_swap)
+        temperature_vector, E_average_by_temperature, E_squared_average_by_temperature, M_average_by_temperature, M_2_average_by_temperature, M_4_average_by_temperature, relaxation_iterations_by_temperature, accepted_candidates_by_temperature, accepted_tuple_candidates_by_temperature, final_configuration_correlation_function_by_temperature = relaxed_anneal!(cube, temperature_vector; swap_move_probability=swap_move_probability, T_swap=T_swap, verbose_annealing=true, verbose_metropolis_swap=verbose_metropolis_swap, relaxation_iterations_vector = relaxation_iterations_vector, mixing_p_swap=mixing_p_swap)
 
         println("Final Configuration:")
         println(cube.configuration)
@@ -80,11 +79,11 @@ include("../tools/relaxed_anneal_graphs_plotter.jl")
 
             open(joinpath("results/relaxed_anneal_results",simulation_name_to_use), "w") do simulation_file
                 write(simulation_file, "Simulation:L=$L, P_s=$swap_move_probability, T_swap=$T_swap, T_1=$T_1, T_0=$T_0, N_T=$N_T \n")
-                write(simulation_file, "Temperature T, <E>(T), <-E/E_0>(T), <E^2>(T), c(T), <M>, <M^2>, <M^4> Relaxation Iterations=tau(T), Accepted Candidates A(T), Final Configuration Correlation Function Value \n")
+                write(simulation_file, "Temperature T, <E>(T), <-E/E_0>(T), <E^2>(T), c(T), <M>, <M^2>, <M^4> Relaxation Iterations=tau(T), Accepted Candidates A(T), Accepted Tuple Candidates A_T(T), Final Configuration Correlation Function Value \n")
                 write(simulation_file, "Initial Configuration: $(initial_cube_configuration) \n")
 
                 for temperature_index in 1:N_T
-                    write(simulation_file, "$(temperature_vector[temperature_index]), $(E_average_by_temperature[temperature_index]), $(array_normalised_E_average_by_temperature[index][temperature_index]), $(E_squared_average_by_temperature[temperature_index]), $(array_specific_heat_capacities_by_temperature[index][temperature_index]), $(array_M_average_by_temperature[index][temperature_index]), $(array_M_2_average_by_temperature[index][temperature_index]), $(array_M_4_average_by_temperature[index][temperature_index]), $(relaxation_iterations_by_temperature[temperature_index]), $(accepted_candidates_by_temperature[temperature_index]), $(final_configuration_correlation_function_by_temperature[temperature_index]) \n")
+                    write(simulation_file, "$(temperature_vector[temperature_index]), $(E_average_by_temperature[temperature_index]), $(array_normalised_E_average_by_temperature[index][temperature_index]), $(E_squared_average_by_temperature[temperature_index]), $(array_specific_heat_capacities_by_temperature[index][temperature_index]), $(array_M_average_by_temperature[index][temperature_index]), $(array_M_2_average_by_temperature[index][temperature_index]), $(array_M_4_average_by_temperature[index][temperature_index]), $(relaxation_iterations_by_temperature[temperature_index]), $(accepted_candidates_by_temperature[temperature_index]), $(accepted_tuple_candidates_by_temperature[temperature_index]), $(final_configuration_correlation_function_by_temperature[temperature_index]) \n")
                 end
 
                 # write(simulation_file, "\n")

@@ -8,13 +8,6 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
 
     current_energy = energy(cube)
 
-    # TODO remove ASAP
-    # if current_energy == -900
-    #     println("CURRENT ENERGY IS -900")
-    #     println("CURRENT CONFIGURATION IS: ")
-    #     println(cube.configuration)
-    # end
-
 
     if verbose
         println("Current Configuration: ")
@@ -24,6 +17,7 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
     # Generate candidate configuration and calculate it's energy
     # This function just returns 'candidate_reversing_information' after modifying cube so we know how to reverse modification
     candidate_reversing_information = candidate_generating_function!(cube)
+
 
     candidate_energy = energy(cube)
 
@@ -58,12 +52,12 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
         candidate_generating_function!(cube;reverse=true,candidate_reversing_information=candidate_reversing_information)
 
         # Also return accepted_candidates_increase = 0
-        return 0
+        return 0, 0 # TODO remove
     end
 
     # Bypass probability stuff if beta=0
     if beta == 0.0
-        return 1
+        return 1, candidate_reversing_information isa Tuple ? 1 : 0 # TODO remove
     end
     
     alpha = exp(beta * (current_energy - candidate_energy))
@@ -79,14 +73,14 @@ function monte_carlo_timestep!(cube::RubiksCube, candidate_generating_function!:
         end
 
         # Also return accepted_candidates_increase = 1
-        return 1
+        return 1, candidate_reversing_information isa Tuple ? 1 : 0 # TODO remove
     else
 
         # Otherwise we reject the candidate configuration and revert it to the original configuraiton
         candidate_generating_function!(cube;reverse=true,candidate_reversing_information=candidate_reversing_information)
 
         # Also return accepted_candidates_increase = 0
-        return 0
+        return 0, 0 # TODO remove
     end
 end
 
@@ -101,6 +95,7 @@ function run_metropolis_swap_algorithm!(cube::RubiksCube, beta::Float64; swap_mo
     # Make initial count variable and variable to count accepted candidates
     current_iteration = 0
     accepted_candidates = 0
+    accepted_tuple_candidates = 0 # TODO remove
 
     # Make initial configuration correlation function convergence scheme parameters
     initial_cube = RubiksCube(cube.L)
@@ -128,11 +123,13 @@ function run_metropolis_swap_algorithm!(cube::RubiksCube, beta::Float64; swap_mo
         end
 
         # Now do a Monte Carlo timestep using this candidate configuration at this beta
-        accepted_candidates_increase = monte_carlo_timestep!(cube, candidate_generating_function!, beta; verbose=verbose)
+        # TODO changed
+        accepted_candidates_increase, accepted_tuple_candidates_increase = monte_carlo_timestep!(cube, candidate_generating_function!, beta; verbose=verbose)
 
         # Update iteration number, accepted_candidates and configuration correlation function and go to next iteration
         current_iteration += 1
         accepted_candidates += accepted_candidates_increase
+        accepted_tuple_candidates += accepted_tuple_candidates_increase # TODO remove
         current_configuration_correlation_function_value = configuration_correlation_function(cube, initial_cube)
     end
 
@@ -147,5 +144,8 @@ function run_metropolis_swap_algorithm!(cube::RubiksCube, beta::Float64; swap_mo
     end
 
     # Return some useful information
-    return (converged, current_configuration_correlation_function_value, current_iteration, accepted_candidates)
+    return (converged, current_configuration_correlation_function_value, current_iteration, accepted_candidates, accepted_tuple_candidates) # TODO remove
 end
+
+
+

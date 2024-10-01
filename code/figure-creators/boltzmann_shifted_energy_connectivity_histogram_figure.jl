@@ -17,18 +17,38 @@ include("../core/rubiks_cube.jl")
 
 
 # Main function
-function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name::String, connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, temperature_shift::Float64=0.0)
+function boltzmann_shifted_energy_connectivity_histogram_figure(connectivity::String="Slice-Rotation"; neighbour_order_to_measure_to::Int64=1, temperature_shift::Float64=0.0)
 
     # E_star = -0.39015151515151514
-    E_star = -0.376098787878788
-    E_on = -0.23134348484848488
+    # E_star = -0.376098787878788
+    E_star = -0.3859651515151515
+    # E_on = -0.23134348484848488
+    E_on = -0.24010378787878783
 
 
     ### --- READ IN THE DATA ---
-    filename = "results/final_paper_results",simulation_name*"_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_energy_connections"
+    if connectivity=="Slice-Rotation"
+        simulation_name = "combined_L=11_inherent_disorder_slice"
+        filename = "results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/combined_disorder_average_connections_L=11_inherent_disorder_E0_E1_slice_E0_E1_energy_connections"
+    elseif connectivity=="Swap-Move"
+        simulation_name = "combined_L=11_inherent_disorder_swap"
+        filename = "results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/",simulation_name*"_E0_E1_energy_connections"
+    end
 
     header_line = readlines(joinpath(filename))[1]
     energy_connections_data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=2)
+
+
+    # # Remove any rows with energy values larger than e10
+    # energy_connections_data_matrix = energy_connections_data_matrix[energy_connections_data_matrix[:,1] .< 1e10, :]
+    # # or with energy values >=0.0
+    # energy_connections_data_matrix = energy_connections_data_matrix[energy_connections_data_matrix[:,1] .< abs(solved_configuration_energy(L)), :]
+    # # or with energy values <= e-100
+    # energy_connections_data_matrix = energy_connections_data_matrix[energy_connections_data_matrix[:,1] .> -1e-10, :]
+    # # or with density values <= e-100
+    # energy_connections_data_matrix = energy_connections_data_matrix[energy_connections_data_matrix[:,2] .> -1e-10, :]
+
+
 
     ### --- SET UP DEFAULT PARAMETERS ---
 
@@ -140,11 +160,16 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
     smoothing_window = 60
     mean_j_minus_i_smoothed = [mean(mean_j_minus_i[i:i+smoothing_window]) for i in 1:smoothing_window:length(mean_j_minus_i)-smoothing_window]
     # Dont plot 0.0s
-    yticks = connectivity == "Slice-Rotation" ? [0,0.006,0.012] : [-0.001,0.,0.001]
-    graph = scatter(-1 .+ (bin_edges_x[1:end-1][mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i[mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube)), label=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle", xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle", title="", legend=false, xtickfontsize=30, ytickfontsize=30, xguidefontsize=30, yguidefontsize=30, margin=5mm, xticks=[-0.3,-0.5,-0.7], yticks=yticks)
+    yticks = connectivity == "Slice-Rotation" ? [0,0.005,0.01] : [-0.001,0.,0.001]
+    graph = scatter(-1 .+ (bin_edges_x[1:end-1][mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i[mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube)), label=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", title="", legend=false, xtickfontsize=30, ytickfontsize=30, xguidefontsize=30, yguidefontsize=30, margin=5mm, xticks=[-0.3,-0.5,-0.7], yticks=yticks)
+
 
     # Do smoothed line
-    plot!(graph, -1 .+ (bin_edges_x[1:end-1][1:smoothing_window:end-smoothing_window][mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i_smoothed[mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube)), line=:solid, color=:orange, lw=3, xlims=(-0.71,-0.25), xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \epsilon^{(1)} - \epsilon^{(0)} \rangle")
+    if connectivity=="Swap-Move"
+        plot!(graph, -1 .+ (bin_edges_x[1:end-1][1:smoothing_window:end-smoothing_window][mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i_smoothed[mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube)), line=:solid, color=:orange, lw=3, xlims=(-0.71,-0.25), xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", ylims=(minimum(yticks), maximum(yticks)))
+    elseif connectivity=="Slice-Rotation"
+        plot!(graph, -1 .+ (bin_edges_x[1:end-1][1:smoothing_window:end-smoothing_window][mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i_smoothed[mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube)), line=:solid, color=:orange, lw=3, xlims=(-0.71,-0.25), xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", ylims=(minimum(yticks)-0.003, maximum(yticks)+0.001))
+    end
 
     # Plot 0.0 line
     hline!(graph, [0.0], line=:dash, color=:red, lw=2, label="")
@@ -169,8 +194,8 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(simulation_name:
         annotate!(graph, [(xlims(graph)[1]+250, ylims(graph)[2]-0.25, Plots.text("Temperature Shift: $temperature_shift", 10, :black))])
     end
 
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.png")
-    savefig(graph, "results/final_paper_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.pdf")
+    savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.png")
+    savefig(graph, "results/neighbour_initial_and_final_energies_distribution_results/$(simulation_name)_E$(neighbour_order_to_measure_to-1)_E$(neighbour_order_to_measure_to)_boltzmann_shifted.pdf")
     display(graph)
 end
 
@@ -180,3 +205,7 @@ function remove_bad_rows(data::Array{Float64,2}, L::Int64)::Array{Float64,2}
     # Return the data without rows containing NaN
     return data[non_bad_rows, :]
 end
+
+
+boltzmann_shifted_energy_connectivity_histogram_figure("Slice-Rotation")
+boltzmann_shifted_energy_connectivity_histogram_figure("Swap-Move")
