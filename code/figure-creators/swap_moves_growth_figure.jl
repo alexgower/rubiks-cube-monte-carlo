@@ -6,7 +6,7 @@ using Plots.PlotMeasures
 
 function swap_moves_growth_figure()
     ### --- COLOURS ---
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
@@ -73,12 +73,12 @@ function swap_moves_growth_figure()
     plot!(graph_odd, x_fit_odd, y_fit_odd, label=L"\ln(N_s) \approx 1.70 + 0.70 L^2", lw=2, color=alex_red, xlabel=L"L^2", ylabel=L"\ln(N_s)", legend=:bottomright, margin=5mm)
     
     display(graph)
-    savefig(graph, "results/final_paper_results/swap_moves_growth_figure.png")
-    savefig(graph, "results/final_paper_results/swap_moves_growth_figure.pdf")
+    savefig(graph, "results/miscellaneous/swap_moves_growth_figure.png")
+    savefig(graph, "results/miscellaneous/swap_moves_growth_figure.pdf")
 
     display(graph_odd)
-    savefig(graph_odd, "results/final_paper_results/swap_moves_growth_figure_odd.png")
-    savefig(graph_odd, "results/final_paper_results/swap_moves_growth_figure_odd.pdf")
+    savefig(graph_odd, "results/miscellaneous/swap_moves_growth_figure_odd.png")
+    savefig(graph_odd, "results/miscellaneous/swap_moves_growth_figure_odd.pdf")
     
     # Print the fitted parameters
     println("Fitted parameters:")
@@ -96,7 +96,7 @@ end
 
 function configurations_growth_figure()
     ### --- COLOURS ---
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
@@ -154,12 +154,12 @@ function configurations_growth_figure()
 
 
     display(graph)
-    savefig(graph, "results/final_paper_results/configurations_growth_figure.png")
-    savefig(graph, "results/final_paper_results/configurations_growth_figure.pdf")
+    savefig(graph, "results/miscellaneous/configurations_growth_figure.png")
+    savefig(graph, "results/miscellaneous/configurations_growth_figure.pdf")
 
     display(graph_odd)
-    savefig(graph_odd, "results/final_paper_results/configurations_growth_figure_odd.png")
-    savefig(graph_odd, "results/final_paper_results/configurations_growth_figure_odd.pdf")
+    savefig(graph_odd, "results/miscellaneous/configurations_growth_figure_odd.png")
+    savefig(graph_odd, "results/miscellaneous/configurations_growth_figure_odd.pdf")
 
     # Print the fitted parameters
     println("Fitted parameters for N_tot:")

@@ -1,9 +1,13 @@
+using Pkg
+Pkg.activate("/home/apg59/rubiks-cube-monte-carlo")
+
 using LaTeXStrings
 using DelimitedFiles
 using Plots
 using StatsBase
 using Plots.PlotMeasures
 using Colors
+using Statistics
 
 using LsqFit
 
@@ -52,6 +56,9 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
 
 
     ### --- COLOURS ---
+    Plots.default(dpi = 600)
+
+
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
     alex_orange = RGB(255/255, 165/255, 0/255)
@@ -74,6 +81,7 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
     # For each E0 value, find all saddle index densities and average them
     average_saddle_index_densities_slice_including_K_1_slice = zeros(Float64, length(E0_bin_values_slice))
     average_saddle_index_densities_slice_excluding_K_1_slice = zeros(Float64, length(E0_bin_values_slice))
+    sem_saddle_index_densities_slice_including_K_1_slice = zeros(Float64, length(E0_bin_values_slice))
     for (i, E0) in pairs(E0_bin_values_slice)
         # Get the saddle index densities for the current E0 slice
         saddle_index_densities_including_K_1_slice = [energy_saddle_index_densities_data_matrix_slice[j,2] for j in 1:size(energy_saddle_index_densities_data_matrix_slice,1) if energy_saddle_index_densities_data_matrix_slice[j,1] == E0] 
@@ -83,6 +91,7 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
         end
 
         average_saddle_index_densities_slice_including_K_1_slice[i] = mean(saddle_index_densities_including_K_1_slice)
+        sem_saddle_index_densities_slice_including_K_1_slice[i] = std(saddle_index_densities_including_K_1_slice) / sqrt(length(saddle_index_densities_including_K_1_slice))
     
         
         saddle_index_densities_excluding_K_1_slice = saddle_index_densities_including_K_1_slice[round.((saddle_index_densities_including_K_1_slice*normalization_factor)/neighbours_saddle_indices_shared_between) .!= 1.0]
@@ -98,10 +107,12 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
 
     # For each E0 value, find all saddle index densities and average them
     average_saddle_index_densities_swap = zeros(Float64, length(E0_bin_values_swap))
+    sem_saddle_index_densities_swap = zeros(Float64, length(E0_bin_values_swap))
     for (i, E0) in pairs(E0_bin_values_swap)
         # Get the saddle index densities for the current E0 swap
         saddle_index_densities_swap = [energy_saddle_index_densities_data_matrix_swap[j,2] for j in 1:size(energy_saddle_index_densities_data_matrix_swap,1) if energy_saddle_index_densities_data_matrix_swap[j,1] == E0] 
         average_saddle_index_densities_swap[i] = mean(saddle_index_densities_swap)
+        sem_saddle_index_densities_swap[i] = std(saddle_index_densities_swap) / sqrt(length(saddle_index_densities_swap))
     end
 
 
@@ -130,6 +141,7 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
     scatter!(average_saddle_index_densities_graph,
     -1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]/-solved_configuration_energy(cube)), 
     average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap], 
+    yerror=sem_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap],
     label="Swap-Move Cube",
     color=alex_blue,
     )
@@ -137,6 +149,7 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
     scatter!(average_saddle_index_densities_graph,
     -1.0 .+ (E0_bin_values_swap[zero_saddle_index_densities_swap_indices]/-solved_configuration_energy(cube)), 
     zeros(Float64, length(zero_saddle_index_densities_swap_indices)), 
+    yerror=sem_saddle_index_densities_swap[zero_saddle_index_densities_swap_indices],
     label="",
     color=alex_green,
     )
@@ -168,7 +181,7 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
 
     end
 
-    ## -- SLICE PLOTTING --
+    ## -- SLICE PLOTTING --
 
     # Plot the average saddle index densities against E0
     # But plot all values where the average saddle index = 0.0 in red
@@ -184,6 +197,7 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
     scatter!(average_saddle_index_densities_graph,
         -1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube)), 
         average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice], 
+        yerror=sem_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice],
         label="Slice-Rotation Cube",
         color=alex_orange,
     )
@@ -191,6 +205,7 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
     scatter!(average_saddle_index_densities_graph,
     -1.0 .+ (E0_bin_values_slice[zero_saddle_index_densities_excluding_K_1_indices]/-solved_configuration_energy(cube)), 
     average_saddle_index_densities_slice_including_K_1_slice[zero_saddle_index_densities_excluding_K_1_indices], 
+    yerror=sem_saddle_index_densities_slice_including_K_1_slice[zero_saddle_index_densities_excluding_K_1_indices],
     label="",
     color=alex_pink,
     )
@@ -206,6 +221,7 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
     scatter!(average_saddle_index_densities_graph,
     -1.0 .+ (E0_bin_values_slice[zero_saddle_index_densities_including_K_1_indices]/-solved_configuration_energy(cube)), 
     zeros(Float64, length(zero_saddle_index_densities_including_K_1_indices)), 
+    yerror=sem_saddle_index_densities_slice_including_K_1_slice[zero_saddle_index_densities_including_K_1_indices],
     label="",
     color=alex_red,
     )
@@ -251,15 +267,22 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
 
     ### --- LOG-LINEAR INSET GRAPH ---
 
-    # Main inset data
+    # Main inset data - swap data
+    # Note: For log-scale error bars, we convert SEM to relative error by dividing by the mean
+    # This is because d(ln(y))/dy = 1/y, so the error in ln(y) is approximately (error in y)/y
     scatter!(average_saddle_index_densities_graph, 
-    [-1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]./-solved_configuration_energy(cube)), 
-    -1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube))],
-    [log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap]),
-    log.(average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice])]; 
-    color=[alex_blue alex_orange], legend=false, inset=bbox(0.25,0.25,0.3,0.4), subplot=2,
+    -1.0 .+ (E0_bin_values_swap[non_zero_saddle_index_densities_indices_swap]./-solved_configuration_energy(cube)),
+    log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap]); 
+    # yerror=sem_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap] ./ average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap],
+    color=alex_blue, legend=false, inset=bbox(0.25,0.25,0.3,0.4), subplot=2,
     xlabel=L"\epsilon", ylabel=L"\ln\overline{\langle k \rangle}", yguidefontsize=12,xguidefontsize=12, ylims=(-11,0))
 
+    # Main inset data - slice data
+    scatter!(average_saddle_index_densities_graph, 
+    -1.0 .+ (E0_bin_values_slice[non_zero_saddle_index_densities_indices_slice]/-solved_configuration_energy(cube)),
+    log.(average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice]); 
+    # yerror=sem_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice] ./ average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice],
+    color=alex_orange, subplot=2)
 
     println("Maximum of log slice data: ", maximum(log.(average_saddle_index_densities_slice_including_K_1_slice[non_zero_saddle_index_densities_indices_slice])))
     println("Maximum of log swap data: ", maximum(log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap])))
@@ -267,9 +290,11 @@ function saddle_index_density_figure(neighbour_order_to_measure_to::Int64=1; fit
     println("Minimum of log swap data: ", minimum(log.(average_saddle_index_densities_swap[non_zero_saddle_index_densities_indices_swap])))
 
     # Pink slice inset data
+    # Same relative error conversion for log scale
     scatter!(average_saddle_index_densities_graph, 
         -1.0 .+ (E0_bin_values_slice[zero_saddle_index_densities_excluding_K_1_indices]/-solved_configuration_energy(cube)),
         log.(average_saddle_index_densities_slice_including_K_1_slice[zero_saddle_index_densities_excluding_K_1_indices]); 
+        # yerror=sem_saddle_index_densities_slice_including_K_1_slice[zero_saddle_index_densities_excluding_K_1_indices] ./ average_saddle_index_densities_slice_including_K_1_slice[zero_saddle_index_densities_excluding_K_1_indices],
         color=alex_pink, subplot=2)
    
 

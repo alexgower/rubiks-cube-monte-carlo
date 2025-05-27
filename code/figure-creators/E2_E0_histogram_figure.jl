@@ -9,7 +9,7 @@ using Colors
 # using ColorTypes, ColorSchemes
 using Plots.PlotMeasures
 
-using Images
+# using Images
 
 include("../core/rubiks_cube.jl")
 
@@ -36,7 +36,7 @@ function E2_E0_histogram_figure()
     connectivity = "Slice-Rotation"
 
     ### --- COLOURS ---
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
@@ -70,7 +70,6 @@ function E2_E0_histogram_figure()
 
     # Remove NaNs and overflow # TODO how exist?
     energy_connections_data_matrix = remove_bad_rows(energy_connections_data_matrix, L)
-    Plots.default(dpi = 300)
 
 
 
@@ -159,8 +158,7 @@ function E2_E0_histogram_figure()
         E_difference_values, 
         # color=:bluesreds,
         # color=cgrad([alex_blue, :white], [0.0, 0.15, 0.3]),
-        color = connectivity == "Slice-Rotation" ? cgrad([:blue, :white], [0.0, 0.15, 0.3]) : cgrad([:blue, :white], [0.0, 0.05, 0.1]),
-        show_empty_bins=false,
+        color = connectivity == "Slice-Rotation" ? cgrad([:darkblue, :white], [0.0, 0.15, 0.3]) : cgrad([:darkblue, :white], [0.0, 0.05, 0.1]),        show_empty_bins=false,
         # normalize=:pdf, 
         bins=((bin_edges_x./-solved_configuration_energy(cube)), bin_edges_y./-solved_configuration_energy(cube)), 
         weights=biases, 
@@ -171,7 +169,7 @@ function E2_E0_histogram_figure()
         colorbar_title="",
         xguidefontsize=12,   # X-axis label font size
         yguidefontsize=12,   # Y-axis label font size
-        margin=7mm,          # Margin around the plot
+        margin=5mm,          # Margin around the plot
         # title="$connectivity Cube",
         # titlefontsize=10,   # Title font size
         xticks=(0.4:0.1:0.8, -1.0 .+ 0.4:0.1:0.8),

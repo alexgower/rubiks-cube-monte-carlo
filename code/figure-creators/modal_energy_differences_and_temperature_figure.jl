@@ -9,7 +9,6 @@ using Colors
 # using ColorTypes, ColorSchemes
 using Plots.PlotMeasures
 
-using Images
 
 include("../core/rubiks_cube.jl")
 
@@ -43,9 +42,11 @@ function modal_energy_differences_and_temperature_figure()
 
 
     ### --- READ IN THE DATA ---
-    slice_filename = "results/final_paper_results/combined_L=11_inherent_disorder_slice_E0_E1_energy_connections"
-    swap_filename = "results/final_paper_results/combined_L=11_inherent_disorder_swap_E0_E1_energy_connections"
+    # slice_filename = "results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/combined_L=11_inherent_disorder_slice_E0_E1_energy_connections"
+    swap_filename = "results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/combined_L=11_inherent_disorder_swap_E0_E1_energy_connections"
 
+    slice_filename = "results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/combined_disorder_average_connections_L=11_inherent_disorder_E0_E1_slice_E0_E1_energy_connections"
+    # swap_filename = "results/neighbour_initial_and_final_energies_distribution_results/E1_E0_results/combined_data/combined_disorder_average_connections_L=11_inherent_disorder_E0_E1_swap_E0_E1_energy_connections"
 
     header_line = readlines(joinpath(slice_filename))[1]
 
@@ -65,7 +66,7 @@ function modal_energy_differences_and_temperature_figure()
     
 
     ### --- COLOURS ---
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
@@ -98,6 +99,16 @@ function modal_energy_differences_and_temperature_figure()
     slice_E0_unique, slice_modal_E1_E0 = calculate_modal_difference(slice_energy_connections_data_matrix[:,1], slice_energy_connections_data_matrix[:,2])
     swap_E0_unique, swap_modal_E1_E0 = calculate_modal_difference(swap_energy_connections_data_matrix[:,1], swap_energy_connections_data_matrix[:,2])
 
+    # Remove all data points with E < 400
+    slice_indices = findall(x -> x > 400, slice_E0_unique)
+    slice_E0_unique = slice_E0_unique[slice_indices]
+    slice_modal_E1_E0 = slice_modal_E1_E0[slice_indices]
+    
+    swap_indices = findall(x -> x > 400, swap_E0_unique)
+    swap_E0_unique = swap_E0_unique[swap_indices]
+    swap_modal_E1_E0 = swap_modal_E1_E0[swap_indices]
+
+
     # Create a new plot for modal E1 - E0 against E0
     modal_graph = plot(
         slice_E0_unique, 
@@ -108,10 +119,10 @@ function modal_energy_differences_and_temperature_figure()
         linewidth=2,
         color=alex_red,
         title="",
-        xlims=(minimum(slice_energy_connections_data_matrix[:,1]), maximum(slice_energy_connections_data_matrix[:,1])),
+        xlims=(400, maximum(slice_energy_connections_data_matrix[:,1])),
         xguidefontsize=12,
         yguidefontsize=12,
-        margin=5mm
+        margin=5mm,
     )
 
     # Add the modal E1 - E0 against E0 for the swap-move data
@@ -136,6 +147,12 @@ function modal_energy_differences_and_temperature_figure()
     average_energy_densities_by_temperature = average_energy_densities_by_temperature[sortperm(average_energy_densities_by_temperature)]
     average_energies_from_ground_energy_by_temperature = (average_energy_densities_by_temperature .+ 1.0) .* abs(solved_configuration_energy(cube))
 
+    # Only do for energies from ground > 400
+    temperatures = temperatures[average_energies_from_ground_energy_by_temperature .> 400]
+    average_energy_densities_by_temperature = average_energy_densities_by_temperature[average_energies_from_ground_energy_by_temperature .> 400]
+    average_energies_from_ground_energy_by_temperature = average_energies_from_ground_energy_by_temperature[average_energies_from_ground_energy_by_temperature .> 400]
+    
+
     # Plot the temperatures (y) against the average energies (x) for each temperature on the same graph
     plot!(modal_graph, average_energies_from_ground_energy_by_temperature, temperatures, color=alex_green, label="Equilibrium Temperature", linewidth=3)
 
@@ -143,8 +160,8 @@ function modal_energy_differences_and_temperature_figure()
     hline!(modal_graph, [0], line=:dash, color=:black, label="")
 
     # Save and display the new graph
-    savefig(modal_graph, "results/final_paper_results/L=11_inherent_disorder_modal_energy_differences_and_temperatures.pdf")
-    savefig(modal_graph, "results/final_paper_results/L=11_inherent_disorder_modal_energy_differences_and_temperatures.png")
+    savefig(modal_graph, "results/miscellaneous/L=11_inherent_disorder_modal_energy_differences_and_temperatures.pdf")
+    savefig(modal_graph, "results/miscellaneous/L=11_inherent_disorder_modal_energy_differences_and_temperatures.png")
     display(modal_graph)
 
 

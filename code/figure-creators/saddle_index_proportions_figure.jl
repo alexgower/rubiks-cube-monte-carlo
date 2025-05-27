@@ -1,3 +1,6 @@
+using Pkg
+Pkg.activate("/home/apg59/rubiks-cube-monte-carlo")
+
 using DelimitedFiles
 using Plots
 
@@ -43,6 +46,8 @@ function saddle_index_proportions_figure(connectivity="Slice-Rotation", neighbou
 
 
     ### --- COLOURS ---
+    Plots.default(dpi = 600)
+
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
     alex_orange = RGB(255/255, 165/255, 0/255)
@@ -57,6 +62,7 @@ function saddle_index_proportions_figure(connectivity="Slice-Rotation", neighbou
     # Now gather the proportion of minima (saddle index K=0), K=1, K=2  and K>2 for each energy value
     # and store in a new matrix against energy
     k_saddle_proportions = zeros(Float64, length(E0_bin_values), 4)
+    k_saddle_errors = zeros(Float64, length(E0_bin_values), 4)  # New error array
 
     Z = 6*(L-1)
     normalization_factor = Z*(Z-1)^(neighbour_order_to_measure_to-1)
@@ -74,12 +80,19 @@ function saddle_index_proportions_figure(connectivity="Slice-Rotation", neighbou
         K_0 += sum(E0_saddle_indices .== 0)
         total += length(E0_saddle_indices)
 
+        N = length(E0_saddle_indices)
 
         # Calculate the proportion of minima
-        k_saddle_proportions[i, 1] = sum(E0_saddle_indices .== 0) / length(E0_saddle_indices)
-        k_saddle_proportions[i, 2] = sum(E0_saddle_indices .== 1) / length(E0_saddle_indices)
-        k_saddle_proportions[i, 3] = sum(E0_saddle_indices .== 2) / length(E0_saddle_indices)
-        k_saddle_proportions[i, 4] = sum(E0_saddle_indices .> 1) / length(E0_saddle_indices)
+        k_saddle_proportions[i, 1] = sum(E0_saddle_indices .== 0) / N
+        k_saddle_proportions[i, 2] = sum(E0_saddle_indices .== 1) / N
+        k_saddle_proportions[i, 3] = sum(E0_saddle_indices .== 2) / N
+        k_saddle_proportions[i, 4] = sum(E0_saddle_indices .> 1) / N
+        
+        # Calculate standard errors for proportions
+        for j in 1:4
+            p = k_saddle_proportions[i, j]
+            k_saddle_errors[i, j] = sqrt(p * (1 - p) / N)
+        end
     end
 
     println("K=60 Maxima Saddles: ", K_60)
@@ -93,6 +106,7 @@ function saddle_index_proportions_figure(connectivity="Slice-Rotation", neighbou
     scatter!(k_saddle_proportions_graph,
         -1.0 .+ (E0_bin_values./-solved_configuration_energy(cube)),
     k_saddle_proportions[:, 4],
+    yerror=k_saddle_errors[:, 4],
     label="",
     color=alex_green,
     )
@@ -100,6 +114,7 @@ function saddle_index_proportions_figure(connectivity="Slice-Rotation", neighbou
     scatter!(k_saddle_proportions_graph,
         -1.0 .+ (E0_bin_values./-solved_configuration_energy(cube)),
         k_saddle_proportions[:, 2],
+        yerror=k_saddle_errors[:, 2],
         label="K=$(1+neighbour_order_to_measure_to-1)",
         color=alex_pink,
     )
@@ -107,6 +122,7 @@ function saddle_index_proportions_figure(connectivity="Slice-Rotation", neighbou
     scatter!(k_saddle_proportions_graph,
         -1.0 .+ (E0_bin_values./-solved_configuration_energy(cube)),
         k_saddle_proportions[:, 3],
+        yerror=k_saddle_errors[:, 3],
         label="K=$(2+neighbour_order_to_measure_to-1)",
         color=alex_orange,
     )
@@ -114,6 +130,7 @@ function saddle_index_proportions_figure(connectivity="Slice-Rotation", neighbou
     scatter!(k_saddle_proportions_graph,
         -1.0 .+ (E0_bin_values./-solved_configuration_energy(cube)),
         k_saddle_proportions[:, 1],
+        yerror=k_saddle_errors[:, 1],
         xlabel="Energy Density, "*L"\epsilon = E/|\!\!E_s|",
         ylabel="Saddle Index, "*L"K"*", Proportions, "*L"\bar p_{K}(\epsilon)",
         # title="L=$L $connectivity Cube Saddle Index Proportions",

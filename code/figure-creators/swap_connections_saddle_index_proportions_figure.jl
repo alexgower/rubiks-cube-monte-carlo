@@ -40,6 +40,8 @@ function saddle_index_proportions_figure(N::Int64, neighbour_order_to_measure_to
     energy_saddle_index_densities_data_matrix = energy_saddle_index_densities_data_matrix[energy_saddle_index_densities_data_matrix[:,1] .> 0, :]
 
     ### --- COLOURS ---
+    Plots.default(dpi = 600)
+
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
     alex_orange = RGB(255/255, 165/255, 0/255)
@@ -186,6 +188,8 @@ function combined_swap_connections_saddle_index_proportions_figure(N_values::Arr
     addon = include_K1_in_K0 ? "_with_K1_in_K0" : ""
 
     ### --- COLOURS ---
+    Plots.default(dpi = 600)
+
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
     alex_orange = RGB(255/255, 165/255, 0/255)
@@ -308,3 +312,5 @@ end
 # saddle_index_proportions_figure(500)
 # saddle_index_proportions_figure(1000)
 # saddle_index_proportions_figure(2000)
+
+combined_swap_connections_saddle_index_proportions_figure([100, 500, 1000, 2000], include_K1_in_K0=false)

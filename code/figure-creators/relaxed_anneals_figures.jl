@@ -1,25 +1,21 @@
+import Pkg
+Pkg.activate("/home/apg59/rubiks-cube-monte-carlo")
+
 using LaTeXStrings
 using DelimitedFiles
 using Plots
 using Plots.PlotMeasures
 using Colors
-
-
-using Images
-
+using Statistics
 using LsqFit
-
 using Distributions
-
-
 
 include("../core/rubiks_cube.jl")
 
 linear_model(x, p) = p[1] .* x .+ p[2]
 
-function relaxed_anneal_figure(extraction::Bool=false, annotations=true)
+function relaxed_anneal_figure(extraction::Bool=false, annotations=false)
 
-   
     output_name = "L=11_relaxed_anneal_figure_raw"
 
     # --- L=11 Figure ---
@@ -31,7 +27,7 @@ function relaxed_anneal_figure(extraction::Bool=false, annotations=true)
 
 
     ### --- COLOURS ---
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
@@ -39,14 +35,11 @@ function relaxed_anneal_figure(extraction::Bool=false, annotations=true)
     alex_green = RGB(23/255,177/255,105/255) # RGB(159/255, 226/255, 191/255)
     alex_blue = RGB(100/255, 149/255, 237/255)
     alex_grey = RGB(113/255, 121/255, 126/255)
-
     alex_alt_blue = RGB(4/255, 57/255, 94/255)
 
 
     ### --- READ IN DATA ---
     filenames_that_do_not_exist=[]
-    custom_epsilon_star = []
-    custom_epsilon_0 = []
 
     results_dictionary = Dict()
     for model in models
@@ -60,26 +53,19 @@ function relaxed_anneal_figure(extraction::Bool=false, annotations=true)
 
 
                 temperatures = zeros(N_T)
-                running_total_average_energy_densities_by_temperature = zeros(N_T)
+                running_total_energy_densities_by_temperature = zeros(N_T)
+                running_total_squared_energies_by_temperature = zeros(N_T)
+
 
                 actual_number_of_trials=0
                 for trial in 1:trials
-                    # filename = "results/final_paper_results/relaxed_anneal_results/", model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
                     filename = "results/relaxed_anneal_results/data/", model * "_L_" * string(L) * "_trial_" * string(trial) * "_$(swap_move_probability)"
                     try
                         data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=3)
                         
                         temperatures .= data_matrix[:,1]
-                        running_total_average_energy_densities_by_temperature .+= data_matrix[:,3]
-
-                        if model=="custom"
-                            if swap_move_probability == 0.0
-                                push!(custom_epsilon_star, minimum(data_matrix[:,3]))
-                            elseif swap_move_probability == 1.0
-                                push!(custom_epsilon_0, minimum(data_matrix[:,3]))
-                            end
-
-                        end
+                        running_total_energy_densities_by_temperature .+= data_matrix[:,3]
+                        running_total_squared_energies_by_temperature .+= data_matrix[:,4]
                         
                         actual_number_of_trials += 1
                     catch e
@@ -89,21 +75,20 @@ function relaxed_anneal_figure(extraction::Bool=false, annotations=true)
                 end
 
                 results_dictionary[(model, L, swap_move_probability, "temperatures")] = temperatures
-                results_dictionary[(model, L, swap_move_probability, "average_energy_densities")] = running_total_average_energy_densities_by_temperature/actual_number_of_trials
+                results_dictionary[(model, L, swap_move_probability, "average_energy_densities")] = running_total_energy_densities_by_temperature/actual_number_of_trials
+                
+                average_squared_energies_by_temperature = running_total_squared_energies_by_temperature / actual_number_of_trials
+                normalization_factor = 12 * L * (L - 1)
+                average_squared_energy_densities_by_temperature = average_squared_energies_by_temperature ./ (normalization_factor^2)
 
-                # println("$(model) $(L) $(swap_move_probability) $(actual_number_of_trials) Trials Temperatures: $(temperatures)")
-                # println("$(model) $(L) $(swap_move_probability) $(actual_number_of_trials) Trials Average Energy Densities: $(running_total_average_energy_densities_by_temperature/actual_number_of_trials)")
+                # Calculate standard errors using variance: SE = sqrt(Var(E)/(N_trials * N_average))
+                # Where Var(E) = <E²> - <E>²
+                N_average_per_temperature = 100
+                variances = average_squared_energy_densities_by_temperature .- results_dictionary[(model, L, swap_move_probability, "average_energy_densities")].^2
+                standard_errors = sqrt.(variances ./ (actual_number_of_trials * N_average_per_temperature))
+                results_dictionary[(model, L, swap_move_probability, "standard_errors")] = standard_errors            
             end
         end
-    end
-
-    if "clean" in models 
-        # Print average epsilon at highest temperature value 
-        # for L=11, swap_move_probability=1.0 and L=11, swap_move_probability=0.0
-
-        println("Clean epsilon at highest temperature value")
-        println("L=11, swap_move_probability=1.0: $(results_dictionary[("clean", 11, 1.0, "average_energy_densities")][1])")
-        println("L=11, swap_move_probability=0.0: $(results_dictionary[("clean", 11, 0.0, "average_energy_densities")][1])")
     end
 
 
@@ -117,16 +102,17 @@ function relaxed_anneal_figure(extraction::Bool=false, annotations=true)
             colors =  [alex_alt_blue, alex_green, alex_blue, alex_grey]
         elseif model=="inherent_disorder" 
             colors = [alex_pink, alex_red, alex_orange]
-        elseif model=="custom"
-            colors = [alex_blue]
         end
 
         for L in Ls
             for swap_move_probability in swap_move_probabilities
                 temperatures = results_dictionary[(model, L, swap_move_probability, "temperatures")]
                 average_energy_densities = results_dictionary[(model, L, swap_move_probability, "average_energy_densities")]
+                standard_errors = results_dictionary[(model, L, swap_move_probability, "standard_errors")]
 
-                linestyle = swap_move_probability == 0.0 ? :dash : :solid
+                
+                marker_style = swap_move_probability == 0.0 ? :diamond : :circle
+                marker_size = 3
 
                 label = ""
                 if swap_move_probability == 1.0
@@ -139,116 +125,119 @@ function relaxed_anneal_figure(extraction::Bool=false, annotations=true)
                     end
                 end
 
-                plot!(graph,temperatures, average_energy_densities, label=label, color=colors[mod1(color_index,length(colors))], linestyle=linestyle, linewidth=2)
-
+                # Plot with data points and error bars 
+                scatter!(graph, temperatures, average_energy_densities, 
+                       yerror=standard_errors,
+                       label=label, color=colors[mod1(color_index,length(colors))], 
+                       markersize=marker_size, markershape=marker_style, markerstrokewidth=0.05)
             end
             color_index += 1
         end
     end
 
-    ### --- ADD ANNOTATIONS TO GRAPH ---
-    if annotations
-        if "inherent_disorder" in models
-            # annotate!(graph, [(0.35, ylims(graph)[2]-0.24, Plots.text(L"\bar{\epsilon}^*", 12, alex_red, ))])
+    # ### --- ADD ANNOTATIONS TO GRAPH ---
+    # if annotations
+    #     if "inherent_disorder" in models
+    #         # annotate!(graph, [(0.35, ylims(graph)[2]-0.24, Plots.text(L"\bar{\epsilon}^*", 12, alex_red, ))])
 
-            T_star = 0.8
-            # T_on = 2.25
+    #         T_star = 0.8
+    #         # T_on = 2.25
 
-            println("T* Inherent Disorder = $T_star")
-            # println("T_on Inherent Disorder = $T_on")
-            println("epsilon at T* Inherent Disorder = $(results_dictionary[("inherent_disorder", 11, 0.0, "average_energy_densities")][argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")].-T_star))])")
-            # annotate!(graph, [(0.6, ylims(graph)[2]-0.18, Plots.text(L"(\bar{T}^{*}\!\!\!\!,\bar{\epsilon}^{\!\!\!*}\!\!)", 12, alex_red))])
-            # annotate!(graph, [(T_on + 0.2, ylims(graph)[2]-0.06, Plots.text(L"(\bar{T}^{on}\!\!\!\!,\bar{\epsilon}^{on})", 12, alex_red))])
+    #         println("T* Inherent Disorder = $T_star")
+    #         # println("T_on Inherent Disorder = $T_on")
+    #         println("epsilon at T* Inherent Disorder = $(results_dictionary[("inherent_disorder", 11, 0.0, "average_energy_densities")][argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")].-T_star))])")
+    #         # annotate!(graph, [(0.6, ylims(graph)[2]-0.18, Plots.text(L"(\bar{T}^{*}\!\!\!\!,\bar{\epsilon}^{\!\!\!*}\!\!)", 12, alex_red))])
+    #         # annotate!(graph, [(T_on + 0.2, ylims(graph)[2]-0.06, Plots.text(L"(\bar{T}^{on}\!\!\!\!,\bar{\epsilon}^{on})", 12, alex_red))])
 
 
-            # Add dot at (T_star, inherent_disorder average_energy_densities at T nearest to T_star)
-            inherent_disorder_average_energy_densities = results_dictionary[("inherent_disorder", 11, 0.0, "average_energy_densities")]
-            scatter!([T_star], [inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")].-T_star))]], color=alex_red, markerstrokecolor=alex_red, label="", markersize=2.5)
+    #         # Add dot at (T_star, inherent_disorder average_energy_densities at T nearest to T_star)
+    #         inherent_disorder_average_energy_densities = results_dictionary[("inherent_disorder", 11, 0.0, "average_energy_densities")]
+    #         scatter!([T_star], [inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")].-T_star))]], color=alex_red, markerstrokecolor=alex_red, label="", markersize=2.5)
                     
 
-            # Get \epsilon_on as the average energy density  at T_on
-            # inherent_disorder_epsilon_on = inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")].-T_on))]
-            # println("Inherent Disorder epsilon_on = $inherent_disorder_epsilon_on")        
-            # Add dot at (T_on, inherent_disorder average_energy_densities at T nearest to T_on)
-            # scatter!([T_on], [inherent_disorder_epsilon_on], color=alex_red, label="", markersize=1.5)
+    #         # Get \epsilon_on as the average energy density  at T_on
+    #         # inherent_disorder_epsilon_on = inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")].-T_on))]
+    #         # println("Inherent Disorder epsilon_on = $inherent_disorder_epsilon_on")        
+    #         # Add dot at (T_on, inherent_disorder average_energy_densities at T nearest to T_on)
+    #         # scatter!([T_on], [inherent_disorder_epsilon_on], color=alex_red, label="", markersize=1.5)
 
-            if extraction
+    #         if extraction
 
-                # Add dot at (lowest T value with average_energy_densities values, inherent_disorder average_energy_densities at T nearest to 0)
-                # scatter!([minimum(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")])], [inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")]))]], color=alex_red, label="", markersize=1.5)
+    #             # Add dot at (lowest T value with average_energy_densities values, inherent_disorder average_energy_densities at T nearest to 0)
+    #             # scatter!([minimum(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")])], [inherent_disorder_average_energy_densities[argmin(abs.(results_dictionary[("inherent_disorder", 11, 0.0, "temperatures")]))]], color=alex_red, label="", markersize=1.5)
 
-                inherent_disorder_epsilon_star_avg = minimum(results_dictionary[("inherent_disorder", 11, 0.0, "average_energy_densities")])
-                inherent_disorder_epsilon_0_avg = minimum(results_dictionary[("inherent_disorder", 11, 1.0, "average_energy_densities")])
+    #             inherent_disorder_epsilon_star_avg = minimum(results_dictionary[("inherent_disorder", 11, 0.0, "average_energy_densities")])
+    #             inherent_disorder_epsilon_0_avg = minimum(results_dictionary[("inherent_disorder", 11, 1.0, "average_energy_densities")])
 
-                println("Inherent Disorder epsilon^* = $inherent_disorder_epsilon_star_avg")
-                println("Inherent Disorder epsilon_0 = $inherent_disorder_epsilon_0_avg")
+    #             println("Inherent Disorder epsilon^* = $inherent_disorder_epsilon_star_avg")
+    #             println("Inherent Disorder epsilon_0 = $inherent_disorder_epsilon_0_avg")
 
 
 
-            end
-        end
+    #         end
+    #     end
 
-        if "clean" in models
-            if extraction
-                annotate!(graph, [(0.3, ylims(graph)[2]-0.35, Plots.text(L"{\epsilon}^*", 12, alex_alt_blue, ))])
-            end
+    #     if "clean" in models
+    #         if extraction
+    #             annotate!(graph, [(0.3, ylims(graph)[2]-0.35, Plots.text(L"{\epsilon}^*", 12, alex_alt_blue, ))])
+    #         end
 
-            T_c = 0.9
-            println("T_c = $T_c")
-            # annotate!(graph, [(T_c+0.25, ylims(graph)[1]+0.05, Plots.text(L"T_c", 12, alex_alt_blue))])
+    #         T_c = 0.9
+    #         println("T_c = $T_c")
+    #         # annotate!(graph, [(T_c+0.25, ylims(graph)[1]+0.05, Plots.text(L"T_c", 12, alex_alt_blue))])
 
-            T_star = 0.92
-            println("T* Clean = $T_star")
-            println("epsilon at T* Clean = $(results_dictionary[("clean", 11, 0.0, "average_energy_densities")][argmin(abs.(results_dictionary[("clean", 11, 0.0, "temperatures")].-T_star))])")
-            if extraction
-                annotate!(graph, [(T_star+0.6, ylims(graph)[2]-0.3, Plots.text(L"T^*", 12, alex_alt_blue))])
-            end
+    #         T_star = 0.92
+    #         println("T* Clean = $T_star")
+    #         println("epsilon at T* Clean = $(results_dictionary[("clean", 11, 0.0, "average_energy_densities")][argmin(abs.(results_dictionary[("clean", 11, 0.0, "temperatures")].-T_star))])")
+    #         if extraction
+    #             annotate!(graph, [(T_star+0.6, ylims(graph)[2]-0.3, Plots.text(L"T^*", 12, alex_alt_blue))])
+    #         end
 
-            if extraction
-                # Add dot at (T_star, clean_average_energy_densities at T nearest to T_star)
-                clean_average_energy_densities = results_dictionary[("clean", 11, 0.0, "average_energy_densities")]
-                scatter!([T_star], [clean_average_energy_densities[argmin(abs.(results_dictionary[("clean", 11, 0.0, "temperatures")].-T_star))]], color=alex_alt_blue, label="", markersize=1.5)
+    #         if extraction
+    #             # Add dot at (T_star, clean_average_energy_densities at T nearest to T_star)
+    #             clean_average_energy_densities = results_dictionary[("clean", 11, 0.0, "average_energy_densities")]
+    #             scatter!([T_star], [clean_average_energy_densities[argmin(abs.(results_dictionary[("clean", 11, 0.0, "temperatures")].-T_star))]], color=alex_alt_blue, label="", markersize=1.5)
             
-                # Add dot at (lowest T value with average_energy_densities values, clean_average_energy_densities at T nearest to 0)
-                scatter!([minimum(results_dictionary[("clean", 11, 0.0, "temperatures")])], [clean_average_energy_densities[argmin(abs.(results_dictionary[("clean", 11, 0.0, "temperatures")]))]], color=alex_alt_blue, label="", markersize=1.5)
+    #             # Add dot at (lowest T value with average_energy_densities values, clean_average_energy_densities at T nearest to 0)
+    #             scatter!([minimum(results_dictionary[("clean", 11, 0.0, "temperatures")])], [clean_average_energy_densities[argmin(abs.(results_dictionary[("clean", 11, 0.0, "temperatures")]))]], color=alex_alt_blue, label="", markersize=1.5)
 
-                # Add dot at (T_c, clean-average_energy_densities at T nearest to T_c)
-                clean_swap_average_energy_densities = results_dictionary[("clean", 11, 1.0, "average_energy_densities")]
-                scatter!([T_c], [clean_swap_average_energy_densities[argmin(abs.(results_dictionary[("clean", 11, 1.0, "temperatures")].-T_c))]], color=alex_alt_blue, label="", markersize=1.5)
+    #             # Add dot at (T_c, clean-average_energy_densities at T nearest to T_c)
+    #             clean_swap_average_energy_densities = results_dictionary[("clean", 11, 1.0, "average_energy_densities")]
+    #             scatter!([T_c], [clean_swap_average_energy_densities[argmin(abs.(results_dictionary[("clean", 11, 1.0, "temperatures")].-T_c))]], color=alex_alt_blue, label="", markersize=1.5)
 
-                clean_epsilon_star_avg = minimum(results_dictionary[("clean", 11, 0.0, "average_energy_densities")])
-                clean_epsilon_0_avg = minimum(results_dictionary[("clean", 11, 1.0, "average_energy_densities")])
+    #             clean_epsilon_star_avg = minimum(results_dictionary[("clean", 11, 0.0, "average_energy_densities")])
+    #             clean_epsilon_0_avg = minimum(results_dictionary[("clean", 11, 1.0, "average_energy_densities")])
 
-                println("Clean epsilon^* = $clean_epsilon_star_avg")
-                println("Clean epsilon_0 = $clean_epsilon_0_avg")
-            end
-        end
+    #             println("Clean epsilon^* = $clean_epsilon_star_avg")
+    #             println("Clean epsilon_0 = $clean_epsilon_0_avg")
+    #         end
+    #     end
 
-        if "custom" in models
-            annotate!(graph, [(0.35, ylims(graph)[2]-0.24, Plots.text(L"{\epsilon}^*", 12, alex_blue, ))])
+    #     if "custom" in models
+    #         annotate!(graph, [(0.35, ylims(graph)[2]-0.24, Plots.text(L"{\epsilon}^*", 12, alex_blue, ))])
 
-            T_star = 0.86
-            println("T* Custom = $T_star")
-            println("epsilon at T* Custom = $(results_dictionary[("custom", 11, 0.0, "average_energy_densities")][argmin(abs.(results_dictionary[("custom", 11, 0.0, "temperatures")].-T_star))])")
-            annotate!(graph, [(T_star+0.4, ylims(graph)[2]-0.28, Plots.text(L"T^*", 12, alex_blue))])
-            if extraction
-                # Add dot at (T_star, custom average_energy_densities at T nearest to T_star)
-                custom_average_energy_densities = results_dictionary[("custom", 11, 0.0, "average_energy_densities")]
-                scatter!([T_star], [custom_average_energy_densities[argmin(abs.(results_dictionary[("custom", 11, 0.0, "temperatures")].-T_star))]], color=alex_blue, label="", markersize=1.5)
+    #         T_star = 0.86
+    #         println("T* Custom = $T_star")
+    #         println("epsilon at T* Custom = $(results_dictionary[("custom", 11, 0.0, "average_energy_densities")][argmin(abs.(results_dictionary[("custom", 11, 0.0, "temperatures")].-T_star))])")
+    #         annotate!(graph, [(T_star+0.4, ylims(graph)[2]-0.28, Plots.text(L"T^*", 12, alex_blue))])
+    #         if extraction
+    #             # Add dot at (T_star, custom average_energy_densities at T nearest to T_star)
+    #             custom_average_energy_densities = results_dictionary[("custom", 11, 0.0, "average_energy_densities")]
+    #             scatter!([T_star], [custom_average_energy_densities[argmin(abs.(results_dictionary[("custom", 11, 0.0, "temperatures")].-T_star))]], color=alex_blue, label="", markersize=1.5)
 
-                # Add dot at (lowest T value with average_energy_densities values, custom average_energy_densities at T nearest to 0)
-                custom_average_energy_densities = results_dictionary[("custom", 11, 0.0, "average_energy_densities")]
-                scatter!([minimum(results_dictionary[("custom", 11, 0.0, "temperatures")])], [custom_average_energy_densities[argmin(abs.(results_dictionary[("custom", 11, 0.0, "temperatures")]))]], color=alex_blue, label="", markersize=1.5)
+    #             # Add dot at (lowest T value with average_energy_densities values, custom average_energy_densities at T nearest to 0)
+    #             custom_average_energy_densities = results_dictionary[("custom", 11, 0.0, "average_energy_densities")]
+    #             scatter!([minimum(results_dictionary[("custom", 11, 0.0, "temperatures")])], [custom_average_energy_densities[argmin(abs.(results_dictionary[("custom", 11, 0.0, "temperatures")]))]], color=alex_blue, label="", markersize=1.5)
             
                         
-                custom_epsilon_star_avg = minimum(results_dictionary[("custom", 11, 0.0, "average_energy_densities")])
-                custom_epsilon_0_avg = minimum(results_dictionary[("custom", 11, 1.0, "average_energy_densities")])
+    #             custom_epsilon_star_avg = minimum(results_dictionary[("custom", 11, 0.0, "average_energy_densities")])
+    #             custom_epsilon_0_avg = minimum(results_dictionary[("custom", 11, 1.0, "average_energy_densities")])
 
-                println("Custom epsilon^* = $custom_epsilon_star_avg")
-                println("Custom epsilon_0 = $custom_epsilon_0_avg")
-            end
-        end
-    end
+    #             println("Custom epsilon^* = $custom_epsilon_star_avg")
+    #             println("Custom epsilon_0 = $custom_epsilon_0_avg")
+    #         end
+    #     end
+    # end
 
 
 
@@ -308,7 +297,7 @@ function all_L_relaxed_anneal_figure(model::String="inherent_disorder")
 
 
     ### --- COLOURS ---
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
@@ -316,14 +305,11 @@ function all_L_relaxed_anneal_figure(model::String="inherent_disorder")
     alex_green = RGB(23/255,177/255,105/255) # RGB(159/255, 226/255, 191/255)
     alex_blue = RGB(100/255, 149/255, 237/255)
     alex_grey = RGB(113/255, 121/255, 126/255)
-
     alex_alt_blue = RGB(4/255, 57/255, 94/255)
 
 
     ### --- READ IN DATA ---
     filenames_that_do_not_exist=[]
-    custom_epsilon_star = []
-    custom_epsilon_0 = []
 
     results_dictionary = Dict()
     for model in models
@@ -337,7 +323,8 @@ function all_L_relaxed_anneal_figure(model::String="inherent_disorder")
 
 
                 temperatures = zeros(N_T)
-                running_total_average_energy_densities_by_temperature = zeros(N_T)
+                running_total_energy_densities_by_temperature = zeros(N_T)
+                running_total_squared_energies_by_temperature = zeros(N_T)
 
                 actual_number_of_trials=0
                 for trial in 1:trials
@@ -346,8 +333,8 @@ function all_L_relaxed_anneal_figure(model::String="inherent_disorder")
                         data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=3)
                         
                         temperatures .= data_matrix[:,1]
-                        running_total_average_energy_densities_by_temperature .+= data_matrix[:,3]
-
+                        running_total_energy_densities_by_temperature .+= data_matrix[:,3]
+                        running_total_squared_energies_by_temperature .+= data_matrix[:,4]
                         
                         actual_number_of_trials += 1
                     catch e
@@ -357,7 +344,18 @@ function all_L_relaxed_anneal_figure(model::String="inherent_disorder")
                 end
 
                 results_dictionary[(model, L, swap_move_probability, "temperatures")] = temperatures
-                results_dictionary[(model, L, swap_move_probability, "average_energy_densities")] = running_total_average_energy_densities_by_temperature/actual_number_of_trials
+                results_dictionary[(model, L, swap_move_probability, "average_energy_densities")] = running_total_energy_densities_by_temperature/actual_number_of_trials
+                
+                average_squared_energies_by_temperature = running_total_squared_energies_by_temperature / actual_number_of_trials
+                normalization_factor = 12 * L * (L - 1)
+                average_squared_energy_densities_by_temperature = average_squared_energies_by_temperature ./ (normalization_factor^2)
+                
+                # Calculate standard errors using variance: SE = sqrt(Var(E)/(N_trials * N_average))
+                # Where Var(E) = <E²> - <E>²
+                N_average_per_temperature = 100
+                variances = average_squared_energy_densities_by_temperature .- results_dictionary[(model, L, swap_move_probability, "average_energy_densities")].^2
+                standard_errors = sqrt.(variances ./ (actual_number_of_trials * N_average_per_temperature))
+                results_dictionary[(model, L, swap_move_probability, "standard_errors")] = standard_errors
             end
         end
     end
@@ -378,16 +376,17 @@ function all_L_relaxed_anneal_figure(model::String="inherent_disorder")
             colors =  [alex_alt_blue, alex_green, alex_blue, alex_grey]
         elseif model=="inherent_disorder" 
             colors = [alex_pink, alex_red, alex_orange]
-        elseif model=="custom"
-            colors = [alex_blue]
         end
 
         for L in Ls
             for swap_move_probability in swap_move_probabilities
                 temperatures = results_dictionary[(model, L, swap_move_probability, "temperatures")]
                 average_energy_densities = results_dictionary[(model, L, swap_move_probability, "average_energy_densities")]
+                standard_errors = results_dictionary[(model, L, swap_move_probability, "standard_errors")]
 
                 linestyle = swap_move_probability == 0.0 ? :dash : :solid
+                marker_style = swap_move_probability == 0.0 ? :diamond : :circle
+                marker_size = 3
 
                 label = ""
                 if swap_move_probability == 1.0
@@ -400,7 +399,20 @@ function all_L_relaxed_anneal_figure(model::String="inherent_disorder")
                     end
                 end
 
-                plot!(graph,temperatures, average_energy_densities, label=label, color=colors[mod1(color_index,length(colors))], linestyle=linestyle)
+                # TODO possibly redo this section
+                # Plot line for the average values
+                plot!(graph, temperatures, average_energy_densities, 
+                     label=label, color=colors[mod1(color_index,length(colors))], 
+                     linestyle=linestyle)
+                
+                # TODO possibly remove
+                # # Add scatter points with error bars at a sparser interval to avoid overcrowding
+                # interval = 1 # Only show error bars every 10 points
+                # scatter_indices = 1:interval:length(temperatures)
+                # scatter!(graph, temperatures[scatter_indices], average_energy_densities[scatter_indices],
+                #        yerror=standard_errors[scatter_indices],
+                #        label="", color=colors[mod1(color_index,length(colors))], 
+                #        markersize=marker_size, markershape=marker_style)
 
                 # Also print ground state energy from minimum energy from ps=1.0
                 if swap_move_probability == 1.0
@@ -673,7 +685,7 @@ function temperature_to_energy_density_extractor(L::Int64, T::Float64; model::St
 
 
                 temperatures = zeros(N_T)
-                running_total_average_energy_densities_by_temperature = zeros(N_T)
+                running_total_average_normalised_energy_densities_by_temperature = zeros(N_T)
 
                 actual_number_of_trials=0
                 for trial in 1:trials
@@ -683,16 +695,7 @@ function temperature_to_energy_density_extractor(L::Int64, T::Float64; model::St
                         data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=3)
                         
                         temperatures .= data_matrix[:,1]
-                        running_total_average_energy_densities_by_temperature .+= data_matrix[:,3]
-
-                        if model=="custom"
-                            if swap_move_probability == 0.0
-                                push!(custom_epsilon_star, minimum(data_matrix[:,3]))
-                            elseif swap_move_probability == 1.0
-                                push!(custom_epsilon_0, minimum(data_matrix[:,3]))
-                            end
-
-                        end
+                        running_total_average_normalised_energy_densities_by_temperature .+= data_matrix[:,3]
                         
                         actual_number_of_trials += 1
                     catch e
@@ -702,7 +705,7 @@ function temperature_to_energy_density_extractor(L::Int64, T::Float64; model::St
                 end
 
                 results_dictionary[(model, L, swap_move_probability, "temperatures")] = temperatures
-                results_dictionary[(model, L, swap_move_probability, "average_energy_densities")] = running_total_average_energy_densities_by_temperature/actual_number_of_trials
+                results_dictionary[(model, L, swap_move_probability, "average_energy_densities")] = running_total_average_normalised_energy_densities_by_temperature/actual_number_of_trials
 
             end
         end
@@ -731,8 +734,6 @@ function energy_density_to_temperature_extractor(L::Int64, epsilon::Float64; mod
 
     ### --- READ IN DATA ---
     filenames_that_do_not_exist=[]
-    custom_epsilon_star = []
-    custom_epsilon_0 = []
 
     results_dictionary = Dict()
     for model in models
@@ -746,7 +747,7 @@ function energy_density_to_temperature_extractor(L::Int64, epsilon::Float64; mod
 
 
                 temperatures = zeros(N_T)
-                running_total_average_energy_densities_by_temperature = zeros(N_T)
+                running_total_average_normalised_energy_densities_by_temperature = zeros(N_T)
 
                 actual_number_of_trials=0
                 for trial in 1:trials
@@ -756,16 +757,8 @@ function energy_density_to_temperature_extractor(L::Int64, epsilon::Float64; mod
                         data_matrix = readdlm(joinpath(filename), ',', Float64, '\n', skipstart=3)
                         
                         temperatures .= data_matrix[:,1]
-                        running_total_average_energy_densities_by_temperature .+= data_matrix[:,3]
+                        running_total_average_normalised_energy_densities_by_temperature .+= data_matrix[:,3]
 
-                        if model=="custom"
-                            if swap_move_probability == 0.0
-                                push!(custom_epsilon_star, minimum(data_matrix[:,3]))
-                            elseif swap_move_probability == 1.0
-                                push!(custom_epsilon_0, minimum(data_matrix[:,3]))
-                            end
-
-                        end
                         
                         actual_number_of_trials += 1
                     catch e
@@ -775,7 +768,7 @@ function energy_density_to_temperature_extractor(L::Int64, epsilon::Float64; mod
                 end
 
                 results_dictionary[(model, L, swap_move_probability, "temperatures")] = temperatures
-                results_dictionary[(model, L, swap_move_probability, "average_energy_densities")] = running_total_average_energy_densities_by_temperature/actual_number_of_trials
+                results_dictionary[(model, L, swap_move_probability, "average_energy_densities")] = running_total_average_normalised_energy_densities_by_temperature/actual_number_of_trials
 
             end
         end
@@ -788,3 +781,9 @@ function energy_density_to_temperature_extractor(L::Int64, epsilon::Float64; mod
 
     return temperature
 end
+
+relaxed_anneal_figure()
+
+all_L_relaxed_anneal_figure("inherent_disorder")
+
+all_L_relaxed_anneal_figure("clean")

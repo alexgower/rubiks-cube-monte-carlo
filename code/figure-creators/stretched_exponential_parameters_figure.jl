@@ -55,12 +55,13 @@ function stretched_exponential_parameters_figure(simulation_name::String)
     end
 
     ### --- COLOURS ---
+    Plots.default(dpi = 600)
+
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
     alex_orange = RGB(255/255, 165/255, 0/255)
     alex_green = RGB(23/255,177/255,105/255) # RGB(159/255, 226/255, 191/255)
     alex_blue = RGB(100/255, 149/255, 237/255)
-    Plots.default(dpi = 300)
 
     ### --- PLOTTING ---
     # Plot all data on same graph, use different y-axis scalings on left and right for taus and BETAS

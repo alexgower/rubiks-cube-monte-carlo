@@ -1,3 +1,6 @@
+using Pkg
+Pkg.activate("/home/apg59/rubiks-cube-monte-carlo")
+
 using LaTeXStrings
 using DelimitedFiles
 using Plots
@@ -5,7 +8,6 @@ using StatsBase
 using Plots.PlotMeasures
 using Colors, ColorSchemes
 using LsqFit
-
 using CubicSplines
 
 
@@ -303,7 +305,7 @@ function autocorrelation_function_figures()
 
 
     ### --- COLOURS ---
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_orange = RGB(255/255, 165/255, 0/255)
@@ -403,9 +405,13 @@ function autocorrelation_function_figures()
 
     tau_beta_by_temperature = Float64[]
     beta_by_temperature = Float64[]
+    tau_errors_by_temperature = Float64[]  # Add this line
+    beta_errors_by_temperature = Float64[]  # Add beta error array
 
     longer_tau_beta_by_temperature = Float64[]
     longer_beta_by_temperature = Float64[]
+    longer_tau_errors_by_temperature = Float64[]  # Add this line
+    longer_beta_errors_by_temperature = Float64[]  # Add longer beta error array
 
     for temperature in fitted_temperatures
         if temperature in excluded_temperatures_from_fitting
@@ -439,6 +445,14 @@ function autocorrelation_function_figures()
             # Extract the parameters for t=10^4 fit
             tau = autocorrelation_fit.param[1]
             beta = autocorrelation_fit.param[2]
+            
+            # Extract standard errors
+            param_errors = stderror(autocorrelation_fit)
+            tau_error = param_errors[1]
+            # Convert tau error to log10(tau) error: d(log10(tau))/dtau = 1/(tau*ln(10))
+            log_tau_error = tau_error / (tau * log(10))
+
+            
             println("t=10^4 Tau = ", tau)
             println("t=10^4 Beta = ", beta)
 
@@ -450,6 +464,8 @@ function autocorrelation_function_figures()
 
             tau_beta_by_temperature = append!(tau_beta_by_temperature, tau)
             beta_by_temperature = append!(beta_by_temperature, beta)
+            tau_errors_by_temperature = append!(tau_errors_by_temperature, log_tau_error)
+            beta_errors_by_temperature = append!(beta_errors_by_temperature, stderror(autocorrelation_fit)[2])
 
 
 
@@ -457,6 +473,14 @@ function autocorrelation_function_figures()
             longer_autocorrelation_fit = curve_fit(autocorrelation_model, longer_t_values, autocorrelation_functions_by_temperature[temperature][1:Int(longer_beta_relaxation_end)], p0, lower=lb, upper=ub)
             longer_tau = longer_autocorrelation_fit.param[1]
             longer_beta = longer_autocorrelation_fit.param[2]
+            
+            # Extract standard errors for longer fit
+            longer_param_errors = stderror(longer_autocorrelation_fit)
+            longer_tau_error = longer_param_errors[1]
+            # Convert tau error to log10(tau) error
+            longer_log_tau_error = longer_tau_error / (longer_tau * log(10))
+
+            
             println("t=10^5 Tau = ", longer_tau)
             println("t=10^5 Beta = ", longer_beta)
 
@@ -468,6 +492,8 @@ function autocorrelation_function_figures()
 
             longer_tau_beta_by_temperature = append!(longer_tau_beta_by_temperature, longer_tau)
             longer_beta_by_temperature = append!(longer_beta_by_temperature, longer_beta)
+            longer_tau_errors_by_temperature = append!(longer_tau_errors_by_temperature, longer_log_tau_error)
+            longer_beta_errors_by_temperature = append!(longer_beta_errors_by_temperature, stderror(longer_autocorrelation_fit)[2])
 
 
         else
@@ -480,6 +506,13 @@ function autocorrelation_function_figures()
 
             reduced_tau = autocorrelation_fit.param[1]
             reduced_beta = autocorrelation_fit.param[2]
+            
+            # Extract standard errors for reduced model
+            param_errors = stderror(autocorrelation_fit)
+            tau_error = param_errors[1]
+            # For reduced model, tau error is already in appropriate scale
+            log_tau_error = tau_error / (reduced_tau * log(10))
+            
             println("t=10^4 Tau From Logged Data = ", reduced_tau)
             println("t=10^4 Beta from Logged Data = ", reduced_beta)
 
@@ -491,16 +524,24 @@ function autocorrelation_function_figures()
 
             tau_beta_by_temperature = append!(tau_beta_by_temperature, reduced_tau)
             beta_by_temperature = append!(beta_by_temperature, reduced_beta)
+            tau_errors_by_temperature = append!(tau_errors_by_temperature, log_tau_error)
+            beta_errors_by_temperature = append!(beta_errors_by_temperature, stderror(autocorrelation_fit)[2])
 
 
 
             # Extract the parameters for t=10^5 fit
-            # TODO CHANGED THIS
+            # TODO CHANGED THIS
             longer_reduced_data = log.((1/(1-c)) * (autocorrelation_functions_by_temperature[temperature][1:Int(longer_beta_relaxation_end)] .- c))
 
             longer_autocorrelation_fit = curve_fit(reduced_model, longer_t_values, longer_reduced_data, p0, lower=lb, upper=ub)
             longer_reduced_tau = longer_autocorrelation_fit.param[1]
             longer_reduced_beta = longer_autocorrelation_fit.param[2]
+            
+            # Extract standard errors for longer reduced model
+            longer_param_errors = stderror(longer_autocorrelation_fit)
+            longer_tau_error = longer_param_errors[1]
+            longer_log_tau_error = longer_tau_error / (longer_reduced_tau * log(10))
+            
             println("t=10^5 Tau From Logged Data = ", longer_reduced_tau)
             println("t=10^5 Beta from Logged Data = ", longer_reduced_beta)
 
@@ -512,6 +553,8 @@ function autocorrelation_function_figures()
             
             longer_tau_beta_by_temperature = append!(longer_tau_beta_by_temperature, longer_reduced_tau)
             longer_beta_by_temperature = append!(longer_beta_by_temperature, longer_reduced_beta)
+            longer_tau_errors_by_temperature = append!(longer_tau_errors_by_temperature, longer_log_tau_error)
+            longer_beta_errors_by_temperature = append!(longer_beta_errors_by_temperature, stderror(longer_autocorrelation_fit)[2])
         end
 
 
@@ -577,15 +620,23 @@ function autocorrelation_function_figures()
 
         fit_temperatures = collect(LinRange(minimum(fitted_temperatures)-0.03, maximum(fitted_temperatures), 100))
 
-        tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3))
-        squares_only_tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3))
-        circles_only_tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3))
+        tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3), xticks=[0,1,2,3,4,5,6,7,8,9,10], yticks=[0,1,2,3,4,5,6,7,8,9,10], xlims=(0,10.5), ylims=(0,10))
+        squares_only_tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3), xticks=[0,1,2,3,4,5,6,7,8,9,10], yticks=[0,1,2,3,4,5,6,7,8,9,10], ylims=(0,10.5), xlims=(0,10.5))
+        circles_only_tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3), xticks=[0,1,2,3,4,5,6,7,8,9,10], yticks=[0,1,2,3,4,5,6,7,8,9,10], ylims=(0,10.5), xlims=(0,10.5))
 
-        scatter!(tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, color=alex_red, label="", markersize=5, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], alpha=0.8)
-        scatter!(circles_only_tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, color=alex_red, label="", markersize=5, marker=:circle, alpha=0.8, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5])
+        scatter!(tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, 
+                 yerror=tau_errors_by_temperature, color=alex_red, label="", markersize=5,
+                 ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], alpha=0.8)
+        scatter!(circles_only_tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, 
+                 yerror=tau_errors_by_temperature, color=alex_red, label="", markersize=5, marker=:circle, 
+                 alpha=0.8, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5])
 
-        scatter!(tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, color=alex_red, label="", markersize=4, marker=:square, alpha=0.8)
-        scatter!(squares_only_tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, color=alex_red, label="", markersize=4, marker=:square, alpha=0.8, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5])
+        scatter!(tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, 
+                 yerror=longer_tau_errors_by_temperature, color=alex_red, label="", markersize=4, 
+                 marker=:square, alpha=0.8)
+        scatter!(squares_only_tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, 
+                 yerror=longer_tau_errors_by_temperature, color=alex_red, label="", markersize=4, 
+                 marker=:square, alpha=0.8, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5])
 
 
         # # Arrhenius fit
@@ -735,17 +786,17 @@ function autocorrelation_function_figures()
 
         #--- FRAGILITY INSET DATA ---
         scatter!(tau_fits_graph, [1/T for T in fitted_temperatures], log_tau_beta_by_temperature,
-        color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2,
+        yerror=tau_errors_by_temperature, color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2,
         xlabel=L"1/T", ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:circle, alpha=0.8)
         scatter!(circles_only_tau_fits_graph, [1/T for T in fitted_temperatures], log_tau_beta_by_temperature,
-        color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2,
+        yerror=tau_errors_by_temperature, color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2,
         xlabel=L"1/T", ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:circle, alpha=0.8)
 
         scatter!(tau_fits_graph, [1/T for T in fitted_temperatures], longer_log_tau_beta_by_temperature,
-        color=alex_red, legend=false, subplot=2, xlabel=L"1/T",
+        yerror=longer_tau_errors_by_temperature, color=alex_red, legend=false, subplot=2, xlabel=L"1/T",
         ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:square, alpha=0.8)
         scatter!(squares_only_tau_fits_graph, [1/T for T in fitted_temperatures], longer_log_tau_beta_by_temperature,
-        color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2, xlabel=L"1/T",
+        yerror=longer_tau_errors_by_temperature, color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2, xlabel=L"1/T",
         ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:square, alpha=0.8)
 
 
@@ -805,17 +856,17 @@ function autocorrelation_function_figures()
         # --- BETA INSET DATA ---
         # Plot longer beta data
         scatter!(tau_fits_graph, fitted_temperatures, longer_beta_by_temperature,
-        color=alex_pink, marker=:square, legend=false, inset=bbox(0.23,0.05,0.3,0.35), subplot=3, xlabel=L"T", 
-        ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3)
+        yerror=longer_beta_errors_by_temperature, color=alex_pink, marker=:square, legend=false, inset=bbox(0.27,0.05,0.3,0.35), subplot=3, xlabel=L"T", 
+        ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3, xlims=(0,10.5), ylims=(0,1.05), xticks=[0,2,4,6,8,10], yticks=[0,0.2,0.4,0.6,0.8,1.0])
         scatter!(squares_only_tau_fits_graph, fitted_temperatures, longer_beta_by_temperature,
-        color=alex_pink, marker=:square, legend=false, inset=bbox(0.23,0.05,0.3,0.35), subplot=3, xlabel=L"T",
-        ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3)
+        yerror=longer_beta_errors_by_temperature, color=alex_pink, marker=:square, legend=false, inset=bbox(0.27,0.05,0.3,0.35), subplot=3, xlabel=L"T",
+        ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3, xlims=(0,10.5), ylims=(0,1.05), xticks=[0,2,4,6,8,10], yticks=[0,0.2,0.4,0.6,0.8,1.0])
 
         # Plot the shorter beta data
         scatter!(tau_fits_graph, fitted_temperatures, beta_by_temperature,
-        color=alex_pink, marker=:circle, legend=false,  subplot=3)
+        yerror=beta_errors_by_temperature, color=alex_pink, marker=:circle, legend=false,  subplot=3)
         scatter!(circles_only_tau_fits_graph, fitted_temperatures, beta_by_temperature, ylabel=L"\beta",
-        color=alex_pink, marker=:circle, legend=false,  inset=bbox(0.23,0.05,0.3,0.35), subplot=3)
+        yerror=beta_errors_by_temperature, color=alex_pink, marker=:circle, legend=false,  inset=bbox(0.27,0.05,0.3,0.35), subplot=3, xlims=(0,10.5), ylims=(0,1.05), xticks=[0,2,4,6,8,10], yticks=[0,0.2,0.4,0.6,0.8,1.0])
 
 
 
@@ -842,7 +893,7 @@ function autocorrelation_function_figures()
         hline!(tau_fits_graph, [beta_stretch], color=alex_red, label="β = $(beta_stretch)", linestyle=:dash, linewidth=2, subplot=3)
         # Plot vline at temperature_at_beta_stretch
         vline!(tau_fits_graph, [temperature_at_beta_stretch], color=alex_red, label=L"\bar T^{\rm on}", linestyle=:dash, linewidth=2, subplot=3)
-        annotate!(tau_fits_graph, [(temperature_at_beta_stretch+0.2, 0.25, text(L"\bar T^{\rm on}", 8, :left, color=alex_red))], subplot=3)
+        annotate!(tau_fits_graph, [(temperature_at_beta_stretch+0.2, 0.1, text(L"\bar T^{\rm on}", 10, :left, color=alex_red))], subplot=3)
         
 
         savefig(tau_fits_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_relaxation_time_fits.png"))
@@ -902,7 +953,7 @@ function swap_autocorrelation_function_figures()
 
 
     ### --- COLOURS ---
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_orange = RGB(255/255, 165/255, 0/255)
@@ -1012,7 +1063,6 @@ end
 
 
 
-
 function full_swap_autocorrelation_function_figures()
 
     simulation_name = "combined_swap"
@@ -1061,7 +1111,7 @@ function full_swap_autocorrelation_function_figures()
 
 
     ### --- COLOURS ---
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_orange = RGB(255/255, 165/255, 0/255)
@@ -1221,7 +1271,7 @@ function full_swap_autocorrelation_function_figures()
 
 
             # Extract the parameters for t=10^5 fit
-            # TODO CHANGED THIS
+            # TODO CHANGED THIS
             longer_reduced_data = log.((1/(1-c)) * (autocorrelation_functions_by_temperature[temperature][1:Int(longer_beta_relaxation_end)] .- c))
 
             longer_autocorrelation_fit = curve_fit(reduced_model, longer_t_values, longer_reduced_data, p0, lower=lb, upper=ub)
@@ -1309,11 +1359,19 @@ function full_swap_autocorrelation_function_figures()
         squares_only_tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3))
         circles_only_tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3))
 
-        scatter!(tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, color=alex_red, label="", markersize=5, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], alpha=0.8)
-        scatter!(circles_only_tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, color=alex_red, label="", markersize=5, marker=:circle, alpha=0.8, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5])
+        scatter!(tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, 
+                 yerror=tau_errors_by_temperature, color=alex_red, label="", markersize=5, 
+                 ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], alpha=0.8)
+        scatter!(circles_only_tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, 
+                 yerror=tau_errors_by_temperature, color=alex_red, label="", markersize=5, marker=:circle, 
+                 alpha=0.8, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5])
 
-        scatter!(tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, color=alex_red, label="", markersize=4, marker=:square, alpha=0.8)
-        scatter!(squares_only_tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, color=alex_red, label="", markersize=4, marker=:square, alpha=0.8, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5])
+        scatter!(tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, 
+                 yerror=longer_tau_errors_by_temperature, color=alex_red, label="", markersize=4, 
+                 marker=:square, alpha=0.8)
+        scatter!(squares_only_tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, 
+                 yerror=longer_tau_errors_by_temperature, color=alex_red, label="", markersize=4, 
+                 marker=:square, alpha=0.8, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5])
 
 
         # # Arrhenius fit
@@ -1419,17 +1477,17 @@ function full_swap_autocorrelation_function_figures()
 
         #--- FRAGILITY INSET DATA ---
         scatter!(tau_fits_graph, [1/T for T in fitted_temperatures], log_tau_beta_by_temperature,
-        color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35),  subplot=2, xticks=(0.25,0.75,1.25,1.75),
+        yerror=tau_errors_by_temperature, color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2,
         xlabel=L"1/T", ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:circle, alpha=0.8)
         scatter!(circles_only_tau_fits_graph, [1/T for T in fitted_temperatures], log_tau_beta_by_temperature,
-        color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2, xticks=(0.25,0.75,1.25,1.75),
+        yerror=tau_errors_by_temperature, color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2,
         xlabel=L"1/T", ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:circle, alpha=0.8)
 
         scatter!(tau_fits_graph, [1/T for T in fitted_temperatures], longer_log_tau_beta_by_temperature,
-        color=alex_red, legend=false, subplot=2, xlabel=L"1/T",
+        yerror=longer_tau_errors_by_temperature, color=alex_red, legend=false, subplot=2, xlabel=L"1/T",
         ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:square, alpha=0.8)
         scatter!(squares_only_tau_fits_graph, [1/T for T in fitted_temperatures], longer_log_tau_beta_by_temperature,
-        color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2, xlabel=L"1/T",
+        yerror=longer_tau_errors_by_temperature, color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35), subplot=2, xlabel=L"1/T",
         ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:square, alpha=0.8)
 
 
@@ -1453,17 +1511,17 @@ function full_swap_autocorrelation_function_figures()
         # --- BETA INSET DATA ---
         # Plot longer beta data
         scatter!(tau_fits_graph, fitted_temperatures, longer_beta_by_temperature,
-        color=alex_pink, marker=:square, legend=false, inset=bbox(0.23,0.05,0.3,0.35), subplot=3, xlabel=L"T", 
-        ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3)
+        yerror=longer_beta_errors_by_temperature, color=alex_pink, marker=:square, legend=false, inset=bbox(0.27,0.05,0.3,0.35), subplot=3, xlabel=L"T", 
+        ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3, xlims=(0,10.5), ylims=(0,1.05), xticks=[0,2,4,6,8,10], yticks=[0,0.2,0.4,0.6,0.8,1.0])
         scatter!(squares_only_tau_fits_graph, fitted_temperatures, longer_beta_by_temperature,
-        color=alex_pink, marker=:square, legend=false, inset=bbox(0.23,0.05,0.3,0.35), subplot=3, xlabel=L"T",
-        ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3)
+        yerror=longer_beta_errors_by_temperature, color=alex_pink, marker=:square, legend=false, inset=bbox(0.27,0.05,0.3,0.35), subplot=3, xlabel=L"T",
+        ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3, xlims=(0,10.5), ylims=(0,1.05), xticks=[0,2,4,6,8,10], yticks=[0,0.2,0.4,0.6,0.8,1.0])
 
         # Plot the shorter beta data
         scatter!(tau_fits_graph, fitted_temperatures, beta_by_temperature,
-        color=alex_pink, marker=:circle, legend=false,  subplot=3)
-        scatter!(circles_only_tau_fits_graph, fitted_temperatures, beta_by_temperature,
-        color=alex_pink, marker=:circle, legend=false,  inset=bbox(0.23,0.05,0.3,0.35), subplot=3)
+        yerror=beta_errors_by_temperature, color=alex_pink, marker=:circle, legend=false,  subplot=3)
+        scatter!(circles_only_tau_fits_graph, fitted_temperatures, beta_by_temperature, ylabel=L"\beta",
+        yerror=beta_errors_by_temperature, color=alex_pink, marker=:circle, legend=false,  inset=bbox(0.27,0.05,0.3,0.35), subplot=3, xlims=(0,10.5), ylims=(0,1.05), xticks=[0,2,4,6,8,10], yticks=[0,0.2,0.4,0.6,0.8,1.0])
 
         savefig(tau_fits_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_relaxation_time_fits.png"))
         savefig(tau_fits_graph, joinpath("results/autocorrelation_anneal_results",simulation_name*"_relaxation_time_fits.pdf"))
@@ -1549,7 +1607,7 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
 
 
         ### --- COLOURS ---
-        Plots.default(dpi = 300)
+        Plots.default(dpi = 600)
 
         alex_red = RGB(227/255, 11/255, 92/255)
         alex_orange = RGB(255/255, 165/255, 0/255)
@@ -1610,9 +1668,13 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
 
         tau_beta_by_temperature = Float64[]
         beta_by_temperature = Float64[]
+        tau_errors_by_temperature = Float64[]  # Add this line
+        beta_errors_by_temperature = Float64[]  # Add beta error array
 
         longer_tau_beta_by_temperature = Float64[]
         longer_beta_by_temperature = Float64[]
+        longer_tau_errors_by_temperature = Float64[]  # Add this line
+        longer_beta_errors_by_temperature = Float64[]  # Add longer beta error array
 
         for temperature in fitted_temperatures
             if temperature in excluded_temperatures_from_fitting
@@ -1646,6 +1708,13 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
                 # Extract the parameters for t=10^4 fit
                 tau = autocorrelation_fit.param[1]
                 beta = autocorrelation_fit.param[2]
+                
+                # Extract standard errors
+                param_errors = stderror(autocorrelation_fit)
+                tau_error = param_errors[1]
+                # Convert tau error to log10(tau) error: d(log10(tau))/dtau = 1/(tau*ln(10))
+                log_tau_error = tau_error / (tau * log(10))
+                
                 println("t=10^4 Tau = ", tau)
                 println("t=10^4 Beta = ", beta)
 
@@ -1657,6 +1726,8 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
 
                 tau_beta_by_temperature = append!(tau_beta_by_temperature, tau)
                 beta_by_temperature = append!(beta_by_temperature, beta)
+                tau_errors_by_temperature = append!(tau_errors_by_temperature, log_tau_error)
+                beta_errors_by_temperature = append!(beta_errors_by_temperature, stderror(autocorrelation_fit)[2])
 
 
 
@@ -1664,6 +1735,14 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
                 longer_autocorrelation_fit = curve_fit(autocorrelation_model, longer_t_values, autocorrelation_functions_by_temperature[temperature][1:Int(longer_beta_relaxation_end)], p0, lower=lb, upper=ub)
                 longer_tau = longer_autocorrelation_fit.param[1]
                 longer_beta = longer_autocorrelation_fit.param[2]
+                
+                # Extract standard errors for longer fit
+                longer_param_errors = stderror(longer_autocorrelation_fit)
+                longer_tau_error = longer_param_errors[1]
+                # Convert tau error to log10(tau) error
+                longer_log_tau_error = longer_tau_error / (longer_tau * log(10))
+
+
                 println("t=10^5 Tau = ", longer_tau)
                 println("t=10^5 Beta = ", longer_beta)
 
@@ -1675,6 +1754,8 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
 
                 longer_tau_beta_by_temperature = append!(longer_tau_beta_by_temperature, longer_tau)
                 longer_beta_by_temperature = append!(longer_beta_by_temperature, longer_beta)
+                longer_tau_errors_by_temperature = append!(longer_tau_errors_by_temperature, longer_log_tau_error)
+                longer_beta_errors_by_temperature = append!(longer_beta_errors_by_temperature, stderror(longer_autocorrelation_fit)[2])
 
 
             else
@@ -1698,11 +1779,13 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
 
                 tau_beta_by_temperature = append!(tau_beta_by_temperature, reduced_tau)
                 beta_by_temperature = append!(beta_by_temperature, reduced_beta)
+                tau_errors_by_temperature = append!(tau_errors_by_temperature, log_tau_error)
+                beta_errors_by_temperature = append!(beta_errors_by_temperature, stderror(autocorrelation_fit)[2])
 
 
 
                 # Extract the parameters for t=10^5 fit
-                # TODO CHANGED THIS
+                # TODO CHANGED THIS
                 longer_reduced_data = log.((1/(1-c)) * (autocorrelation_functions_by_temperature[temperature][1:Int(longer_beta_relaxation_end)] .- c))
 
                 longer_autocorrelation_fit = curve_fit(reduced_model, longer_t_values, longer_reduced_data, p0, lower=lb, upper=ub)
@@ -1719,6 +1802,8 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
                 
                 longer_tau_beta_by_temperature = append!(longer_tau_beta_by_temperature, longer_reduced_tau)
                 longer_beta_by_temperature = append!(longer_beta_by_temperature, longer_reduced_beta)
+                longer_tau_errors_by_temperature = append!(longer_tau_errors_by_temperature, longer_log_tau_error)
+                longer_beta_errors_by_temperature = append!(longer_beta_errors_by_temperature, stderror(longer_autocorrelation_fit)[2])
             end
 
 
@@ -1772,9 +1857,13 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
 
             tau_fits_graph = plot(title="", xlabel="Temperature, "*L"T", ylabel="Relaxation Time, "*L"\log_{10}(\tau)", legend=(0.85,0.3))
 
-            scatter!(tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, color=alex_red, label="", markersize=5, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], alpha=0.8)
+            scatter!(tau_fits_graph, fitted_temperatures, log_tau_beta_by_temperature, 
+                     yerror=tau_errors_by_temperature, color=alex_red, label="", markersize=5, 
+                     ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], alpha=0.8)
 
-            scatter!(tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, color=alex_red, label="", markersize=4, marker=:square, alpha=0.8)
+            scatter!(tau_fits_graph, fitted_temperatures, longer_log_tau_beta_by_temperature, 
+                     yerror=longer_tau_errors_by_temperature, color=alex_red, label="", markersize=4, 
+                     marker=:square, alpha=0.8)
     
 
             # # Arrhenius fit
@@ -1877,12 +1966,12 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
             #--- FRAGILITY INSET DATA ---
             # TODO readd
             scatter!(tau_fits_graph, [1/T for T in fitted_temperatures], log_tau_beta_by_temperature,
-            color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35),  subplot=2, 
+            yerror=tau_errors_by_temperature, color=alex_red, legend=false, inset=bbox(0.65,0.05,0.3,0.35),  subplot=2, 
             # xticks=(0.25,0.75,1.25,1.75),
             xlabel=L"1/T", ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:circle, alpha=0.8)
 
             scatter!(tau_fits_graph, [1/T for T in fitted_temperatures], longer_log_tau_beta_by_temperature,
-            color=alex_red, legend=false, subplot=2, xlabel=L"1/T",
+            yerror=longer_tau_errors_by_temperature, color=alex_red, legend=false, subplot=2, xlabel=L"1/T",
             ylabel=L"\log_{10}(\tau)", yguidefontsize=12,xguidefontsize=12, ylims=extrema(longer_log_tau_beta_by_temperature) .+ [-0.5, 0.5], marker=:square, alpha=0.8)
 
 
@@ -1901,11 +1990,17 @@ function other_L_autocorrelation_function_figures(L_values::Vector{Int})
             # --- BETA INSET DATA ---
             # Plot longer beta data
             scatter!(tau_fits_graph, fitted_temperatures, longer_beta_by_temperature,
-            color=alex_pink, marker=:square, legend=false, inset=bbox(0.23,0.05,0.3,0.35), subplot=3, xlabel=L"T", 
-            ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3)
+            yerror=longer_beta_errors_by_temperature, color=alex_pink, marker=:square, legend=false, inset=bbox(0.27,0.05,0.3,0.35), subplot=3, xlabel=L"T", 
+            ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3, xlims=(0,10.5), ylims=(0,1.05), xticks=[0,2,4,6,8,10], yticks=[0,0.2,0.4,0.6,0.8,1.0])
+            scatter!(squares_only_tau_fits_graph, fitted_temperatures, longer_beta_by_temperature,
+            yerror=longer_beta_errors_by_temperature, color=alex_pink, marker=:square, legend=false, inset=bbox(0.27,0.05,0.3,0.35), subplot=3, xlabel=L"T",
+            ylabel=L"\beta", yguidefontsize=12,xguidefontsize=12, linewidth=3, xlims=(0,10.5), ylims=(0,1.05), xticks=[0,2,4,6,8,10], yticks=[0,0.2,0.4,0.6,0.8,1.0])
+
             # Plot the shorter beta data
             scatter!(tau_fits_graph, fitted_temperatures, beta_by_temperature,
-            color=alex_pink, marker=:circle, legend=false,  subplot=3)
+            yerror=beta_errors_by_temperature, color=alex_pink, marker=:circle, legend=false,  subplot=3)
+            scatter!(circles_only_tau_fits_graph, fitted_temperatures, beta_by_temperature, ylabel=L"\beta",
+            yerror=beta_errors_by_temperature, color=alex_pink, marker=:circle, legend=false,  inset=bbox(0.27,0.05,0.3,0.35), subplot=3, xlims=(0,10.5), ylims=(0,1.05), xticks=[0,2,4,6,8,10], yticks=[0,0.2,0.4,0.6,0.8,1.0])
 
 
 
@@ -1989,7 +2084,7 @@ function combined_L_beta_plot()
 
 
             ### --- COLOURS ---
-            Plots.default(dpi = 300)
+            Plots.default(dpi = 600)
 
             alex_red = RGB(227/255, 11/255, 92/255)
             alex_orange = RGB(255/255, 165/255, 0/255)
@@ -2088,9 +2183,13 @@ function combined_L_beta_plot()
 
         tau_beta_by_temperature = Float64[]
         beta_by_temperature = Float64[]
+        tau_errors_by_temperature = Float64[]  # Add this line
+        beta_errors_by_temperature = Float64[]  # Add beta error array
 
         longer_tau_beta_by_temperature = Float64[]
         longer_beta_by_temperature = Float64[]
+        longer_tau_errors_by_temperature = Float64[]  # Add this line
+        longer_beta_errors_by_temperature = Float64[]  # Add longer beta error array
 
 
         for temperature in fitted_temperatures
@@ -2122,6 +2221,13 @@ function combined_L_beta_plot()
                 # Extract the parameters for t=10^4 fit
                 tau = autocorrelation_fit.param[1]
                 beta = autocorrelation_fit.param[2]
+                
+                # Extract standard errors
+                param_errors = stderror(autocorrelation_fit)
+                tau_error = param_errors[1]
+                # Convert tau error to log10(tau) error: d(log10(tau))/dtau = 1/(tau*ln(10))
+                log_tau_error = tau_error / (tau * log(10))
+                
                 println("t=10^4 Tau = ", tau)
                 println("t=10^4 Beta = ", beta)
 
@@ -2133,6 +2239,8 @@ function combined_L_beta_plot()
 
                 tau_beta_by_temperature = append!(tau_beta_by_temperature, tau)
                 beta_by_temperature = append!(beta_by_temperature, beta)
+                tau_errors_by_temperature = append!(tau_errors_by_temperature, log_tau_error)
+                beta_errors_by_temperature = append!(beta_errors_by_temperature, stderror(autocorrelation_fit)[2])
 
 
 
@@ -2140,6 +2248,14 @@ function combined_L_beta_plot()
                 longer_autocorrelation_fit = curve_fit(autocorrelation_model, longer_t_values, autocorrelation_functions_by_temperature[temperature][1:Int(longer_beta_relaxation_end)], p0, lower=lb, upper=ub)
                 longer_tau = longer_autocorrelation_fit.param[1]
                 longer_beta = longer_autocorrelation_fit.param[2]
+                
+                # Extract standard errors for longer fit
+                longer_param_errors = stderror(longer_autocorrelation_fit)
+                longer_tau_error = longer_param_errors[1]
+                # Convert tau error to log10(tau) error
+                longer_log_tau_error = longer_tau_error / (longer_tau * log(10))
+
+
                 println("t=10^5 Tau = ", longer_tau)
                 println("t=10^5 Beta = ", longer_beta)
 
@@ -2151,6 +2267,8 @@ function combined_L_beta_plot()
 
                 longer_tau_beta_by_temperature = append!(longer_tau_beta_by_temperature, longer_tau)
                 longer_beta_by_temperature = append!(longer_beta_by_temperature, longer_beta)
+                longer_tau_errors_by_temperature = append!(longer_tau_errors_by_temperature, longer_log_tau_error)
+                longer_beta_errors_by_temperature = append!(longer_beta_errors_by_temperature, stderror(longer_autocorrelation_fit)[2])
 
 
             else
@@ -2163,6 +2281,13 @@ function combined_L_beta_plot()
 
                 reduced_tau = autocorrelation_fit.param[1]
                 reduced_beta = autocorrelation_fit.param[2]
+                
+                # Extract standard errors for reduced model
+                param_errors = stderror(autocorrelation_fit)
+                tau_error = param_errors[1]
+                # For reduced model, tau error is already in appropriate scale
+                log_tau_error = tau_error / (reduced_tau * log(10))
+                
                 println("t=10^4 Tau From Logged Data = ", reduced_tau)
                 println("t=10^4 Beta from Logged Data = ", reduced_beta)
 
@@ -2174,16 +2299,24 @@ function combined_L_beta_plot()
 
                 tau_beta_by_temperature = append!(tau_beta_by_temperature, reduced_tau)
                 beta_by_temperature = append!(beta_by_temperature, reduced_beta)
+                tau_errors_by_temperature = append!(tau_errors_by_temperature, log_tau_error)
+                beta_errors_by_temperature = append!(beta_errors_by_temperature, stderror(autocorrelation_fit)[2])
 
 
 
                 # Extract the parameters for t=10^5 fit
-                # TODO CHANGED THIS
+                # TODO CHANGED THIS
                 longer_reduced_data = log.((1/(1-c)) * (autocorrelation_functions_by_temperature[temperature][1:Int(longer_beta_relaxation_end)] .- c))
 
                 longer_autocorrelation_fit = curve_fit(reduced_model, longer_t_values, longer_reduced_data, p0, lower=lb, upper=ub)
                 longer_reduced_tau = longer_autocorrelation_fit.param[1]
                 longer_reduced_beta = longer_autocorrelation_fit.param[2]
+                
+                # Extract standard errors for longer reduced model
+                longer_param_errors = stderror(longer_autocorrelation_fit)
+                longer_tau_error = longer_param_errors[1]
+                longer_log_tau_error = longer_tau_error / (longer_reduced_tau * log(10))
+
                 println("t=10^5 Tau From Logged Data = ", longer_reduced_tau)
                 println("t=10^5 Beta from Logged Data = ", longer_reduced_beta)
 
@@ -2195,6 +2328,8 @@ function combined_L_beta_plot()
                 
                 longer_tau_beta_by_temperature = append!(longer_tau_beta_by_temperature, longer_reduced_tau)
                 longer_beta_by_temperature = append!(longer_beta_by_temperature, longer_reduced_beta)
+                longer_tau_errors_by_temperature = append!(longer_tau_errors_by_temperature, longer_log_tau_error)
+                longer_beta_errors_by_temperature = append!(longer_beta_errors_by_temperature, stderror(longer_autocorrelation_fit)[2])
             end
 
         end
@@ -2370,3 +2505,9 @@ function plot_autocorrelation_with_fits(T::Float64, t_final::Int; L::Int = 5)
     println("Shorter Fit Parameters: τ = $(tau_short), β = $(beta_short)")
     println("Longer Fit Parameters: τ = $(tau_long), β = $(beta_long)")
 end
+
+
+autocorrelation_function_figures()
+
+combined_L_beta_plot()
+

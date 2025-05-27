@@ -5,8 +5,6 @@ using StatsBase
 using Plots.PlotMeasures
 using Colors
 
-using Images
-
 using CubicSplines
 using QuadGK
 using CurveFit
@@ -27,7 +25,7 @@ function entropy_figure()
 
 
     ### --- COLOURS ---
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
     alex_red = RGB(227/255, 11/255, 92/255)
     alex_pink = RGB(255/255, 105/255, 180/255)
@@ -232,3 +230,5 @@ function entropy_figure()
     end
 
 end
+
+entropy_figure()

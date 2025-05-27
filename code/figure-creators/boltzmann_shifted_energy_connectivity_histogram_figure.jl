@@ -9,7 +9,6 @@ using Colors
 # using ColorTypes, ColorSchemes
 using Plots.PlotMeasures
 
-using Images
 using CubicSplines
 
 include("../core/rubiks_cube.jl")
@@ -58,7 +57,7 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(connectivity::St
 
     # Remove NaNs and overflow 
     energy_connections_data_matrix = remove_bad_rows(energy_connections_data_matrix, L)
-    Plots.default(dpi = 300)
+    Plots.default(dpi = 600)
 
 
     ### --- GET AVERAGE ENERGY AGAINST TEMPERATURE DATA ---
@@ -160,15 +159,23 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(connectivity::St
     smoothing_window = 60
     mean_j_minus_i_smoothed = [mean(mean_j_minus_i[i:i+smoothing_window]) for i in 1:smoothing_window:length(mean_j_minus_i)-smoothing_window]
     # Dont plot 0.0s
-    yticks = connectivity == "Slice-Rotation" ? [0,0.005,0.01] : [-0.001,0.,0.001]
-    graph = scatter(-1 .+ (bin_edges_x[1:end-1][mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i[mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube)), label=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", title="", legend=false, xtickfontsize=30, ytickfontsize=30, xguidefontsize=30, yguidefontsize=30, margin=5mm, xticks=[-0.3,-0.5,-0.7], yticks=yticks)
 
+    # INSET PLOT
+    yticks = connectivity == "Slice-Rotation" ? [0,0.005,0.01] : [-0.001,0.,0.001]
+    # graph = scatter(-1 .+ (bin_edges_x[1:end-1][mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i[mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube)), label=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", title="", legend=false, xtickfontsize=30, ytickfontsize=30, xguidefontsize=30, yguidefontsize=30, margin=5mm, xticks=[-0.3,-0.5,-0.7], yticks=yticks)
+
+    # SM PLOT
+    graph = scatter(-1 .+ (bin_edges_x[1:end-1][mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i[mean_j_minus_i .!= 0.0]./abs(solved_configuration_energy(cube)), label=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", title="", legend=false, margin=5mm, yticks=yticks)
 
     # Do smoothed line
     if connectivity=="Swap-Move"
         plot!(graph, -1 .+ (bin_edges_x[1:end-1][1:smoothing_window:end-smoothing_window][mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i_smoothed[mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube)), line=:solid, color=:orange, lw=3, xlims=(-0.71,-0.25), xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", ylims=(minimum(yticks), maximum(yticks)))
+        # plot!(graph, -1 .+ (bin_edges_x[1:end-1][1:smoothing_window:end-smoothing_window][mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i_smoothed[mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube)), line=:solid, color=:orange, lw=3, xlims=(-0.71,-0.25), xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle")
+
     elseif connectivity=="Slice-Rotation"
         plot!(graph, -1 .+ (bin_edges_x[1:end-1][1:smoothing_window:end-smoothing_window][mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i_smoothed[mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube)), line=:solid, color=:orange, lw=3, xlims=(-0.71,-0.25), xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle", ylims=(minimum(yticks)-0.003, maximum(yticks)+0.001))
+        # plot!(graph, -1 .+ (bin_edges_x[1:end-1][1:smoothing_window:end-smoothing_window][mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube))), mean_j_minus_i_smoothed[mean_j_minus_i_smoothed .!= 0.0]./abs(solved_configuration_energy(cube)), line=:solid, color=:orange, lw=3, xlims=(-0.71,-0.25), xlabel=L"\epsilon^{(0)}", ylabel=L"\langle \langle \epsilon^{(1)} - \epsilon^{(0)} \rangle \rangle")
+
     end
 
     # Plot 0.0 line
@@ -177,6 +184,7 @@ function boltzmann_shifted_energy_connectivity_histogram_figure(connectivity::St
     # Plot E* line
     if connectivity == "Slice-Rotation"
         vline!(graph, [E_star], line=:dash, color=:green, lw=2, label="")
+        annotate!(graph, [(E_star+0.015, ylims(graph)[1]+0.0005, Plots.text(L"\bar\epsilon^*", 10, :black))])
     end
 
     # Plot E_on line
